@@ -1,15 +1,13 @@
+from sqlmodel import Session, select
 from fastapi import FastAPI
+from db import create_db_and_tables, engine
 from models import Transaction
-from datetime import date
-from typing import List
 
 app = FastAPI()
 
-test_transaction = Transaction(id=1, date=date(2025, 2, 6), description="Test transaction", category="Food", amount=25.5)
-
-transactions: List[Transaction] = []
-
-transactions.append(test_transaction)
+@app.on_event("startup")
+def on_startup():
+  create_db_and_tables()
 
 @app.get("/")
 async def root():
@@ -17,4 +15,6 @@ async def root():
 
 @app.get("/transactions")
 def read_transactions():
-  return transactions
+  with Session(engine) as session:
+    transactions = session.exec(select(Transaction)).all()
+    return transactions
