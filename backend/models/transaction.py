@@ -9,7 +9,7 @@ class TransactionBase(SQLModel):
 
   __tablename__ = "transactions"
 
-class Transaction(TransactionBase, table=True):
+class Transaction(TransactionBase, table=True): # when we create a class that inherits from SQLModel and has table=True, it is registered in `metadata` attribute.
   id: int | None = Field(default=None, primary_key=True)
 
 class TransactionPublic(TransactionBase):
