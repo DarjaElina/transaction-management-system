@@ -1,8 +1,8 @@
 from typing import Annotated
 from fastapi import APIRouter, Query, HTTPException
-from models import Transaction, TransactionPublic, TransactionCreate, TransactionUpdate
+from ..models.transaction import Transaction, TransactionPublic, TransactionCreate, TransactionUpdate
 from sqlmodel import select
-from db import SessionDep
+from ..db.database import SessionDep
 
 router = APIRouter(prefix="/transactions")
 
