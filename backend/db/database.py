@@ -2,7 +2,9 @@ from typing import Annotated
 from sqlmodel import Session, create_engine
 from fastapi import Depends
 
-DATABASE_URL = "sqlite:///transactions.db"
+SQLITE_FILE_NAME = "transactions.db"
+
+DATABASE_URL = f"sqlite:///{SQLITE_FILE_NAME}"
 
 engine = create_engine(
   DATABASE_URL,
