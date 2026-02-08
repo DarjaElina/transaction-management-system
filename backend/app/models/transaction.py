@@ -19,6 +19,7 @@ class TransactionCreate(TransactionBase):
   pass
 
 class TransactionUpdate(TransactionBase):
+  date: datetime | None = None
   description: str | None = None
   category: str | None = None
   amount: float | None = None
