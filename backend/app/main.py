@@ -22,5 +22,5 @@ async def root():
 
 
 @app.get("/myfrogs")
-async def root():
+async def read_frogs():
     return {"Frogs": "🐸🐸🐸🐸🐸"}
