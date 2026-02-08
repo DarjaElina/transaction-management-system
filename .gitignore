@@ -1,16 +1,7 @@
-# Python
-__pycache__/
-*.pyc
-venv/
-.env
-
-# Node
-node_modules/
-dist/
-
-# OS / Editor
+# Editor / OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
 .DS_Store
-.vscode/
 
-# Database
-*.db
+node_modules/

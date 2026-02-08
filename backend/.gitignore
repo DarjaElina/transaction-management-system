@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+app.egg-info
+.mypy_cache/
+.venv/
+.cache/
+.coverage
+htmlcov/
+
+# Backend environment
+.venv
+
+# Database
+*.db
