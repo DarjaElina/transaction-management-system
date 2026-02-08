@@ -19,3 +19,8 @@ app.include_router(transactions.router)
 @app.get("/")
 async def root():
     return {"message": "Hello! :-)"}
+
+
+@app.get("/myfrogs")
+async def root():
+    return {"Frogs": "🐸🐸🐸🐸🐸"}
