@@ -1,6 +1,7 @@
 from sqlmodel import Session
 from fastapi.testclient import TestClient
 from datetime import datetime
+from decimal import Decimal
 
 from app.models.transaction import Transaction
 
@@ -21,7 +22,7 @@ def test_create_transaction(client: TestClient):
     assert data["date"] == "2026-02-07T18:57:38.803000"
     assert data["description"] == "Test description"
     assert data["category"] == "Test category"
-    assert data["amount"] == 99.99
+    assert Decimal(data["amount"]) == Decimal("99.99")
 
 
 def test_create_transaction_incomplete(client: TestClient):
@@ -42,14 +43,85 @@ def test_create_transaction_date_invalid(client: TestClient):
     assert response.status_code == 422
 
 
-def test_create_transaction_amount_invalid(client: TestClient):
+def test_amount_cannot_be_any_string(client: TestClient):
     response = client.post(
         "/transactions/",
         json={
             "date": "2026-02-07T18:57:38.803000",
             "description": "Test description",
             "category": "Test category",
-            "amount": "Not a float :(",
+            "amount": "Not a decimal :(",
+        },
+    )
+    assert response.status_code == 422
+
+
+def test_amount_can_be_decimal_string(client: TestClient):
+    response = client.post(
+        "/transactions/",
+        json={
+            "date": "2026-02-07T18:57:38.803000",
+            "description": "Test description",
+            "category": "Test category",
+            "amount": "99.99",
+        },
+    )
+    assert response.status_code == 200
+
+
+def test_amount_max_decimal_places_is_2(client: TestClient):
+    response = client.post(
+        "/transactions/",
+        json={
+            "date": "2026-02-07T18:57:38.803000",
+            "description": "Test description",
+            "category": "Test category",
+            "amount": 99.9999,
+        },
+    )
+    assert response.status_code == 422
+
+
+def test_amount_is_converted_to_decimal(client: TestClient):
+    response = client.post(
+        "/transactions/",
+        json={
+            "date": "2026-02-07T18:57:38.803000",
+            "description": "Test description",
+            "category": "Test category",
+            "amount": 99,
+        },
+    )
+    data = response.json()
+
+    assert response.status_code == 200
+    assert Decimal(data["amount"]) == Decimal("99.00")
+
+
+def test_amount_is_rounded_to_two_decimals(client: TestClient):
+    response = client.post(
+        "/transactions/",
+        json={
+            "date": "2026-02-07T18:57:38.803000",
+            "description": "Test description",
+            "category": "Test category",
+            "amount": 10.1,
+        },
+    )
+    data = response.json()
+
+    assert response.status_code == 200
+    assert Decimal(data["amount"]) == Decimal("10.10")
+
+
+def test_amount_max_digits_cannot_exceed_19(client: TestClient):
+    response = client.post(
+        "/transactions/",
+        json={
+            "date": "2026-02-07T18:57:38.803000",
+            "description": "Test description",
+            "category": "Test category",
+            "amount": 9999999999999999999.99,
         },
     )
     assert response.status_code == 422
@@ -60,13 +132,13 @@ def test_read_transactions(session: Session, client: TestClient):
         date=datetime(2025, 5, 17),
         description="Test transaction for 99.99€",
         category="Food",
-        amount=99.99,
+        amount=Decimal("99.99"),
     )
     transaction_2 = Transaction(
         date=datetime(2025, 5, 18),
         description="Test transaction for 10.50€",
         category="Sport",
-        amount=10.50,
+        amount=Decimal("10.50"),
     )
 
     session.add(transaction_1)
@@ -80,10 +152,10 @@ def test_read_transactions(session: Session, client: TestClient):
     assert len(data) == 2
     assert data[0]["description"] == transaction_1.description
     assert data[0]["category"] == transaction_1.category
-    assert data[0]["amount"] == transaction_1.amount
+    assert Decimal(data[0]["amount"]) == Decimal(str(transaction_1.amount))
     assert data[1]["description"] == transaction_2.description
     assert data[1]["category"] == transaction_2.category
-    assert data[1]["amount"] == transaction_2.amount
+    assert Decimal(data[1]["amount"]) == Decimal(str(transaction_2.amount))
 
 
 def test_read_transaction(session: Session, client: TestClient):
@@ -91,7 +163,7 @@ def test_read_transaction(session: Session, client: TestClient):
         date=datetime(2025, 5, 17),
         description="Test transaction for 99.99€",
         category="Food",
-        amount=99.99,
+        amount=Decimal("99.99"),
     )
 
     session.add(transaction)
@@ -103,7 +175,7 @@ def test_read_transaction(session: Session, client: TestClient):
     assert response.status_code == 200
     assert data["description"] == transaction.description
     assert data["category"] == transaction.category
-    assert data["amount"] == transaction.amount
+    assert Decimal(data["amount"]) == Decimal(str(transaction.amount))
 
 
 def test_update_transaction(session: Session, client: TestClient):
@@ -111,7 +183,7 @@ def test_update_transaction(session: Session, client: TestClient):
         date=datetime(2025, 5, 17),
         description="Test transaction for 99.99€",
         category="Food",
-        amount=99.99,
+        amount=Decimal("99.99"),
     )
     session.add(transaction)
     session.commit()
@@ -131,7 +203,7 @@ def test_delete_transaction(session: Session, client: TestClient):
         date=datetime(2025, 5, 17),
         description="Test transaction for 99.99€",
         category="Food",
-        amount=99.99,
+        amount=Decimal("99.99"),
     )
     session.add(transaction)
     session.commit()
