@@ -55,6 +55,7 @@ def test_amount_cannot_be_any_string(client: TestClient):
     )
     assert response.status_code == 422
 
+
 def test_amount_can_be_decimal_string(client: TestClient):
     response = client.post(
         "/transactions/",
@@ -67,6 +68,7 @@ def test_amount_can_be_decimal_string(client: TestClient):
     )
     assert response.status_code == 200
 
+
 def test_amount_max_decimal_places_is_2(client: TestClient):
     response = client.post(
         "/transactions/",
@@ -78,6 +80,7 @@ def test_amount_max_decimal_places_is_2(client: TestClient):
         },
     )
     assert response.status_code == 422
+
 
 def test_amount_is_converted_to_decimal(client: TestClient):
     response = client.post(
@@ -94,6 +97,7 @@ def test_amount_is_converted_to_decimal(client: TestClient):
     assert response.status_code == 200
     assert Decimal(data["amount"]) == Decimal("99.00")
 
+
 def test_amount_is_rounded_to_two_decimals(client: TestClient):
     response = client.post(
         "/transactions/",
@@ -108,6 +112,7 @@ def test_amount_is_rounded_to_two_decimals(client: TestClient):
 
     assert response.status_code == 200
     assert Decimal(data["amount"]) == Decimal("10.10")
+
 
 def test_amount_max_digits_cannot_exceed_19(client: TestClient):
     response = client.post(
