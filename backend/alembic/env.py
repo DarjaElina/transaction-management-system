@@ -9,7 +9,7 @@ import sys
 import os
 
 sys.path.insert(0, os.path.realpath(os.path.join(os.path.dirname(__file__), "..")))
-from app.models.transaction import Transaction
+import app.models  # noqa: F401 - required for Alembic autogenerate
 from sqlmodel import SQLModel
 
 # this is the Alembic Config object, which provides
