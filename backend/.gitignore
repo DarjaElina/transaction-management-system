@@ -16,3 +16,6 @@ htmlcov/
 
 # Docker volumes
 pgdata
+
+# Environmental variables
+.env
