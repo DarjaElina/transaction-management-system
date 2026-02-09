@@ -13,3 +13,6 @@ htmlcov/
 
 # Database
 *.db
+
+# Docker volumes
+pgdata
