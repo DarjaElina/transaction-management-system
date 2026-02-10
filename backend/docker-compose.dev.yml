@@ -1,0 +1,24 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: dev.Dockerfile
+    ports:
+      - 8001:8000
+    volumes:
+      - ./app:/backend/app
+    environment:
+      DATABASE_URL: postgresql://postgres:mysecretpassword@postgres:5432/postgres
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: mysecretpassword
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data

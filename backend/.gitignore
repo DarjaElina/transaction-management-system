@@ -13,3 +13,9 @@ htmlcov/
 
 # Database
 *.db
+
+# Docker volumes
+pgdata
+
+# Environmental variables
+.env

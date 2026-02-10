@@ -1,20 +1,26 @@
 from typing import Annotated
 from sqlmodel import Session, create_engine
 from fastapi import Depends
+from app.config import Settings
+from functools import lru_cache
 
-SQLITE_FILE_NAME = "transactions.db"
 
-DATABASE_URL = f"sqlite:///{SQLITE_FILE_NAME}"
+@lru_cache
+def get_settings() -> Settings:
+    return Settings()
 
-engine = create_engine(
-    DATABASE_URL,
-    echo=True,
-    connect_args={"check_same_thread": False},
-)
+
+@lru_cache
+def get_engine():
+    settings = get_settings()
+    return create_engine(
+        settings.database_url,
+        echo=True,
+    )
 
 
 def get_session():
-    with Session(engine) as session:
+    with Session(get_engine()) as session:
         yield session
 
 
