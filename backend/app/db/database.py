@@ -10,15 +10,17 @@ def get_settings() -> Settings:
     return Settings()
 
 
-settings = get_settings()
-engine = create_engine(
-    settings.database_url,
-    echo=True,
-)
+@lru_cache
+def get_engine():
+    settings = get_settings()
+    return create_engine(
+        settings.database_url,
+        echo=True,
+    )
 
 
 def get_session():
-    with Session(engine) as session:
+    with Session(get_engine()) as session:
         yield session
 
 
