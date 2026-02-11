@@ -259,7 +259,7 @@ def test_delete_transaction(session: Session, client: TestClient):
     assert transaction_in_db is None
 
 
-def test_transaction_type_should_be_income_expense_or_transfer(client: TestClient):
+def test_transaction_type_should_be_income_or_expense(client: TestClient):
     response = client.post(
         "/transactions/",
         json={
