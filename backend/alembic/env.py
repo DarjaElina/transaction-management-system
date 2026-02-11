@@ -11,7 +11,6 @@ import os
 sys.path.insert(0, os.path.realpath(os.path.join(os.path.dirname(__file__), "..")))
 import app.models  # noqa: F401 - required for Alembic autogenerate
 from sqlmodel import SQLModel
-import alembic_postgresql_enum
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
