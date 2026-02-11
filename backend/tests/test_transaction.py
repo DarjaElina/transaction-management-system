@@ -135,6 +135,32 @@ def test_amount_max_digits_cannot_exceed_19(client: TestClient):
     )
     assert response.status_code == 422
 
+def test_amount_cannot_be_negative(client: TestClient):
+    response = client.post(
+        "/transactions/",
+        json={
+            "date": "2026-02-07T18:57:38.803000",
+            "description": "Test description",
+            "category": "Test category",
+            "amount": -15.99,
+            "transaction_type": "income"
+        },
+    )
+    assert response.status_code == 422
+
+def test_amount_cannot_be_zero(client: TestClient):
+    response = client.post(
+        "/transactions/",
+        json={
+            "date": "2026-02-07T18:57:38.803000",
+            "description": "Test description",
+            "category": "Test category",
+            "amount": 0,
+            "transaction_type": "income"
+        },
+    )
+    assert response.status_code == 422
+
 
 def test_read_transactions(session: Session, client: TestClient):
     transaction_1 = Transaction(
