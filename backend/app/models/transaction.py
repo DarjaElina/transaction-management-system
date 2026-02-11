@@ -1,14 +1,18 @@
 from decimal import Decimal
 
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, SQLModel, Column, Enum
 from datetime import datetime
+from .enums import TransactionType
 
 
 class TransactionBase(SQLModel):
     date: datetime = Field(index=True)
     description: str
     category: str = Field(index=True)
-    amount: Decimal = Field(default=0, max_digits=19, decimal_places=2)
+    amount: Decimal = Field(gt=0, max_digits=19, decimal_places=2)
+    transaction_type: TransactionType = Field(
+        sa_column=Column(Enum(TransactionType), nullable=False)
+    )
 
     __tablename__ = "transactions"
 
@@ -32,3 +36,4 @@ class TransactionUpdate(TransactionBase):
     description: str | None = None
     category: str | None = None
     amount: Decimal | None = None
+    transaction_type: TransactionType | None = None
