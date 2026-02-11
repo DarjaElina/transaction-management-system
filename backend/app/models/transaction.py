@@ -36,3 +36,4 @@ class TransactionUpdate(TransactionBase):
     description: str | None = None
     category: str | None = None
     amount: Decimal | None = None
+    transaction_type: TransactionType | None = None
