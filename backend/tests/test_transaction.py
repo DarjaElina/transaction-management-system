@@ -255,3 +255,28 @@ def test_delete_transaction(session: Session, client: TestClient):
     assert response.status_code == 200
 
     assert transaction_in_db is None
+
+def test_transaction_type_should_be_income_expense_or_transfer(client: TestClient):
+    response = client.post(
+        "/transactions/",
+        json={
+            "date": "2026-02-07T18:57:38.803000",
+            "description": "Test description",
+            "category": "Test category",
+            "amount": 1000.00,
+            "transaction_type": "bought a pony 🦄"
+        },
+    )
+    assert response.status_code == 422
+
+def test_transaction_type_cannot_be_null(client: TestClient):
+    response = client.post(
+        "/transactions/",
+        json={
+            "date": "2026-02-07T18:57:38.803000",
+            "description": "Test description",
+            "category": "Test category",
+            "amount": 1000.00
+        },
+    )
+    assert response.status_code == 422
