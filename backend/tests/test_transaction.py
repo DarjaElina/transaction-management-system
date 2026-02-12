@@ -314,6 +314,4 @@ def test_unknown_attribute_forbidden(client: TestClient, category):
             "should_not_be_here": "hello 👹",
         },
     )
-    data = response.json()
-
     assert response.status_code == 422
