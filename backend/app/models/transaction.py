@@ -1,26 +1,26 @@
 from decimal import Decimal
 
-from sqlmodel import Field, SQLModel, Column, Enum
+from sqlmodel import Field, SQLModel, Column, Enum, Relationship
 from datetime import datetime
 from .enums import TransactionType
+from .category import Category
 
 
 class TransactionBase(SQLModel):
     date: datetime = Field(index=True)
     description: str
-    category: str = Field(index=True)
     amount: Decimal = Field(gt=0, max_digits=19, decimal_places=2)
     transaction_type: TransactionType = Field(
         sa_column=Column(Enum(TransactionType), nullable=False)
     )
+    category_id: int | None = Field(default=None, foreign_key="categories.id")
 
     __tablename__ = "transactions"
 
 
-class Transaction(
-    TransactionBase, table=True
-):  # when we create a class that inherits from SQLModel and has table=True, it is registered in `metadata` attribute.
+class Transaction(TransactionBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
+    category: Category = Relationship(back_populates="transactions")
 
 
 class TransactionPublic(TransactionBase):
