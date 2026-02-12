@@ -301,3 +301,19 @@ def test_transaction_type_cannot_be_null(client: TestClient, category):
         },
     )
     assert response.status_code == 422
+
+
+def test_unknown_attribute_forbidden(client: TestClient, category):
+    response = client.post(
+        "/transactions/",
+        json={
+            "date": "2026-02-07T18:57:38.803000",
+            "description": "Test description",
+            "category_id": category.id,
+            "amount": 1000.00,
+            "should_not_be_here": "hello 👹",
+        },
+    )
+    data = response.json()
+
+    assert response.status_code == 422
