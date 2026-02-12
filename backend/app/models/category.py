@@ -1,4 +1,5 @@
 from sqlmodel import Field, SQLModel, Column, Relationship
+from pydantic import ConfigDict
 from .enums import TransactionType
 from sqlalchemy.dialects import postgresql
 from typing import TYPE_CHECKING
@@ -30,10 +31,12 @@ class CategoryPublic(CategoryBase):
 
 
 class CategoryCreate(CategoryBase):
-    pass
+    model_config = ConfigDict(extra="forbid")
 
 
 class CategoryUpdate(CategoryBase):
+    model_config = ConfigDict(extra="forbid")
+
     name: str | None = None
     description: str | None = None
     allowed_type: TransactionType | None = None
