@@ -18,6 +18,6 @@ class TransactionUpdate(TransactionBase):
 
     date: datetime | None = None
     description: str | None = None
-    category_id: str | None = None
+    category_id: int | None = None
     amount: Decimal | None = None
     transaction_type: TransactionType | None = None
