@@ -1,6 +1,5 @@
 from sqlmodel import Field, SQLModel, Column, Relationship
-from pydantic import ConfigDict
-from .enums import TransactionType
+from ..core.enums import TransactionType
 from sqlalchemy.dialects import postgresql
 from typing import TYPE_CHECKING
 
@@ -24,20 +23,3 @@ class CategoryBase(SQLModel):
 class Category(CategoryBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
     transactions: list["Transaction"] = Relationship(back_populates="category")
-
-
-class CategoryPublic(CategoryBase):
-    id: int
-
-
-class CategoryCreate(CategoryBase):
-    model_config = ConfigDict(extra="forbid")
-
-
-class CategoryUpdate(CategoryBase):
-    model_config = ConfigDict(extra="forbid")
-
-    name: str | None = None
-    description: str | None = None
-    allowed_type: TransactionType | None = None
-    is_active: bool | None = None

@@ -1,9 +1,7 @@
 from decimal import Decimal
-
 from sqlmodel import Field, SQLModel, Column, Enum, Relationship
 from datetime import datetime
-from pydantic import ConfigDict
-from .enums import TransactionType
+from ..core.enums import TransactionType
 from .category import Category
 
 
@@ -22,21 +20,3 @@ class TransactionBase(SQLModel):
 class Transaction(TransactionBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
     category: Category = Relationship(back_populates="transactions")
-
-
-class TransactionPublic(TransactionBase):
-    id: int
-
-
-class TransactionCreate(TransactionBase):
-    model_config = ConfigDict(extra="forbid")
-
-
-class TransactionUpdate(TransactionBase):
-    model_config = ConfigDict(extra="forbid")
-
-    date: datetime | None = None
-    description: str | None = None
-    category_id: str | None = None
-    amount: Decimal | None = None
-    transaction_type: TransactionType | None = None
