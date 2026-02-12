@@ -1,7 +1,10 @@
 from sqlmodel import Field, SQLModel, Column, Relationship
 from .enums import TransactionType
-from .transaction import Transaction
 from sqlalchemy.dialects import postgresql
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .transaction import Transaction
 
 
 class CategoryBase(SQLModel):
