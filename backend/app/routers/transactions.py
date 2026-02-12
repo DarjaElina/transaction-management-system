@@ -1,7 +1,7 @@
 from typing import Annotated
 from fastapi import APIRouter, Query, HTTPException
-from ..models.transaction import (
-    Transaction,
+from ..models.transaction import Transaction
+from ..schemas.transactions import (
     TransactionPublic,
     TransactionCreate,
     TransactionUpdate,

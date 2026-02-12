@@ -6,7 +6,7 @@ from decimal import Decimal
 
 from app.models.transaction import Transaction
 from app.models.category import Category
-from app.models.enums import TransactionType
+from app.core.enums import TransactionType
 
 
 @pytest.fixture

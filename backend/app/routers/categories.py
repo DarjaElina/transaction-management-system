@@ -1,7 +1,7 @@
 from typing import Annotated
 from fastapi import APIRouter, Query, HTTPException
-from ..models.category import (
-    Category,
+from ..models.category import Category
+from ..schemas.categories import (
     CategoryPublic,
     CategoryCreate,
     CategoryUpdate,

@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 from sqlmodel import Session
-from app.models.enums import TransactionType
+from app.core.enums import TransactionType
 
 
 def test_create_category(client: TestClient):
