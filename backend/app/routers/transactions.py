@@ -1,13 +1,13 @@
 from typing import Annotated
 from fastapi import APIRouter, Query, HTTPException
-from ..models.transaction import Transaction
 from ..schemas.transactions import (
     TransactionPublic,
     TransactionCreate,
     TransactionUpdate,
 )
-from sqlmodel import select
 from ..db.database import SessionDep
+
+from ..services import transaction_service
 
 router = APIRouter(prefix="/transactions")
 
@@ -18,13 +18,13 @@ def read_transactions(
     offset: int = 0,
     limit: Annotated[int, Query(le=100)] = 100,
 ):
-    transactions = session.exec(select(Transaction).offset(offset).limit(limit)).all()
+    transactions = transaction_service.get_transactions(session, offset, limit)
     return transactions
 
 
 @router.get("/{transaction_id}", response_model=TransactionPublic)
 def read_transaction(transaction_id: int, session: SessionDep):
-    transaction = session.get(Transaction, transaction_id)
+    transaction = transaction_service.get_transaction(session, transaction_id)
     if not transaction:
         raise HTTPException(status_code=404, detail="Transaction not found")
     return transaction
@@ -32,20 +32,13 @@ def read_transaction(transaction_id: int, session: SessionDep):
 
 @router.post("/", response_model=TransactionPublic)
 def create_transaction(transaction: TransactionCreate, session: SessionDep):
-    db_transaction = Transaction.model_validate(transaction)
-    session.add(db_transaction)
-    session.commit()
-    session.refresh(db_transaction)
+    db_transaction = transaction_service.create_transaction(transaction, session)
     return db_transaction
 
 
 @router.delete("/{transaction_id}")
 def delete_transaction(transaction_id: int, session: SessionDep):
-    transaction = session.get(Transaction, transaction_id)
-    if not transaction:
-        raise HTTPException(status_code=404, detail="Transaction not found")
-    session.delete(transaction)
-    session.commit()
+    transaction_service.delete_transaction(session, transaction_id)
     return {"ok": True}
 
 
@@ -53,12 +46,7 @@ def delete_transaction(transaction_id: int, session: SessionDep):
 def update_transaction(
     transaction_id: int, transaction: TransactionUpdate, session: SessionDep
 ):
-    transaction_db = session.get(Transaction, transaction_id)
-    if not transaction_db:
-        raise HTTPException(status_code=404, detail="Transaction not found")
-    transaction_data = transaction.model_dump(exclude_unset=True)
-    transaction_db.sqlmodel_update(transaction_data)
-    session.add(transaction_db)
-    session.commit()
-    session.refresh(transaction_db)
-    return transaction_db
+    db_transaction = transaction_service.update_transaction(
+        session, transaction, transaction_id
+    )
+    return db_transaction
