@@ -1,0 +1,96 @@
+from sqlalchemy.exc import IntegrityError
+from ..models.category import Category
+from ..schemas.categories import CategoryCreate
+from ..db.database import SessionDep
+from ..exceptions import NotFoundError, ConflictError
+from ..core.enums import TransactionType
+from .utils import (
+    apply_sorting,
+    filter_equal,
+    filter_ilike,
+    validate_and_normalize_category_name,
+)
+
+
+def get_categories(
+    session: SessionDep,
+    offset: int,
+    limit: int,
+    name: str | None,
+    is_active: bool | None,
+    allowed_type: TransactionType | None,
+    sort_by: str,
+    order: str,
+):
+    query = apply_sorting(Category, sort_by, order)
+
+    query = filter_ilike(query, Category.name, name)
+    query = filter_equal(query, Category.is_active, is_active)
+    query = filter_equal(query, Category.allowed_type, allowed_type)
+
+    return session.exec(query.offset(offset).limit(limit)).all()
+
+
+def get_category(session: SessionDep, category_id):
+    category = session.get(Category, category_id)
+
+    if not category:
+        raise NotFoundError("Category", category_id)
+
+    return category
+
+
+def create_category(category: CategoryCreate, session: SessionDep):
+
+    db_name = validate_and_normalize_category_name(category.name, session)
+
+    category.name = db_name
+
+    db_category = Category.model_validate(category)
+    session.add(db_category)
+    try:
+        session.commit()
+    except IntegrityError:
+        session.rollback()
+        raise ConflictError("Category")
+    session.refresh(db_category)
+    return db_category
+
+
+def delete_category(session: SessionDep, category_id):
+    category = session.get(Category, category_id)
+
+    if not category:
+        raise NotFoundError("Category", category_id)
+
+    session.delete(category)
+    session.commit()
+
+
+def update_category(session: SessionDep, category, category_id):
+    category_db = session.get(Category, category_id)
+
+    if not category_db:
+        raise NotFoundError("Category", category_id)
+
+    if category.name:
+        db_name = validate_and_normalize_category_name(category.name, session)
+
+        category.name = db_name
+
+    if category.allowed_type is not None:
+        if category_db.transactions:
+            raise ConflictError(
+                "Category", "Cannot change allowed type because transactions exist"
+            )
+
+    category_data = category.model_dump(exclude_unset=True)
+    category_db.sqlmodel_update(category_data)
+    session.add(category_db)
+    try:
+        session.commit()
+    except IntegrityError:
+        session.rollback()
+        raise ConflictError("Category")
+    session.refresh(category_db)
+    return category_db
