@@ -1,16 +1,17 @@
+import os
+from dotenv import load_dotenv
 import pytest
 from sqlmodel import Session, SQLModel, create_engine
 from fastapi.testclient import TestClient
 
 from app.main import app
 from app.db.database import get_session
-from app.db.database import get_settings
 
+load_dotenv()
 
 @pytest.fixture(scope="session")
 def engine():
-    settings = get_settings()
-    engine = create_engine(settings.test_database_url)
+    engine = create_engine(os.getenv("TEST_DATABASE_URL"), echo=True)
     SQLModel.metadata.create_all(engine)
     yield engine
     SQLModel.metadata.drop_all(engine)
