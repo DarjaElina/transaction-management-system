@@ -1,0 +1,4 @@
+[tool.ruff]
+line-length = 88
+target-version = "py313"
+exclude = ["venv", ".git", "__pycache__", "backend/__pycache__"]
