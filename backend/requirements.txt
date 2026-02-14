@@ -1,4 +1,5 @@
 alembic==1.18.3
+alembic-postgresql-enum==1.9.0
 annotated-doc==0.0.4
 annotated-types==0.7.0
 anyio==4.12.1
@@ -37,6 +38,7 @@ pytest==9.0.2
 python-dotenv==1.2.1
 python-multipart==0.0.22
 pytokens==0.4.1
+pytz==2025.2
 PyYAML==6.0.3
 rich==14.3.2
 rich-toolkit==0.18.1

@@ -1,30 +1,45 @@
 from typing import Annotated
 from fastapi import APIRouter, Query, HTTPException
-from ..models.category import Category
 from ..schemas.categories import (
     CategoryPublic,
     CategoryCreate,
     CategoryUpdate,
 )
-from sqlmodel import select
 from ..db.database import SessionDep
+
+from ..services import category_service
+from ..core.enums import TransactionType
+from typing import Literal
 
 router = APIRouter(prefix="/categories")
 
 
 @router.get("/", response_model=list[CategoryPublic])
-def read_categorys(
+def read_categories(
     session: SessionDep,
     offset: int = 0,
-    limit: Annotated[int, Query(le=100)] = 100,
+    limit: Annotated[int, Query(ge=0, le=100)] = 20,
+    name: str | None = None,
+    is_active: bool | None = None,
+    allowed_type: TransactionType | None = None,
+    sort_by: Literal["name"] = "name",
+    order: Literal["asc", "desc"] = "desc",
 ):
-    categorys = session.exec(select(Category).offset(offset).limit(limit)).all()
-    return categorys
+    return category_service.get_categories(
+        session=session,
+        offset=offset,
+        limit=limit,
+        name=name,
+        is_active=is_active,
+        allowed_type=allowed_type,
+        sort_by=sort_by,
+        order=order,
+    )
 
 
 @router.get("/{category_id}", response_model=CategoryPublic)
 def read_category(category_id: int, session: SessionDep):
-    category = session.get(Category, category_id)
+    category = category_service.get_category(session, category_id)
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
     return category
@@ -32,31 +47,17 @@ def read_category(category_id: int, session: SessionDep):
 
 @router.post("/", response_model=CategoryPublic)
 def create_category(category: CategoryCreate, session: SessionDep):
-    db_category = Category.model_validate(category)
-    session.add(db_category)
-    session.commit()
-    session.refresh(db_category)
+    db_category = category_service.create_category(category, session)
     return db_category
 
 
 @router.delete("/{category_id}")
 def delete_category(category_id: int, session: SessionDep):
-    category = session.get(Category, category_id)
-    if not category:
-        raise HTTPException(status_code=404, detail="Category not found")
-    session.delete(category)
-    session.commit()
+    category_service.delete_category(session, category_id)
     return {"ok": True}
 
 
 @router.patch("/{category_id}", response_model=CategoryPublic)
 def update_category(category_id: int, category: CategoryUpdate, session: SessionDep):
-    category_db = session.get(Category, category_id)
-    if not category_db:
-        raise HTTPException(status_code=404, detail="Category not found")
-    category_data = category.model_dump(exclude_unset=True)
-    category_db.sqlmodel_update(category_data)
-    session.add(category_db)
-    session.commit()
-    session.refresh(category_db)
-    return category_db
+    db_category = category_service.update_category(session, category, category_id)
+    return db_category

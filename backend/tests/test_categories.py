@@ -16,7 +16,7 @@ def test_create_category(client: TestClient):
     data = response.json()
 
     assert response.status_code == 200
-    assert data["name"] == "Software Licenses"
+    assert data["name"] == "software licenses"
     assert data["description"] == "Software Licenses expenses"
     assert data["allowed_type"] == "expense"
     assert data["is_active"] is True
@@ -93,7 +93,7 @@ def test_update_category(session: Session, client: TestClient):
     data = response.json()
 
     assert response.status_code == 200
-    assert data["name"] == "New name"
+    assert data["name"] == "new name"
 
 
 def test_delete_category(session: Session, client: TestClient):
