@@ -9,6 +9,7 @@ from app.db.database import get_session
 
 load_dotenv()
 
+
 @pytest.fixture(scope="session")
 def engine():
     engine = create_engine(os.getenv("TEST_DATABASE_URL"), echo=True)
