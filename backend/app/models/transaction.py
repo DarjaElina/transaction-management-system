@@ -1,12 +1,15 @@
 from decimal import Decimal
-from sqlmodel import Field, SQLModel, Column, Enum, Relationship
 from datetime import datetime
+from sqlmodel import Field, SQLModel, Column, Enum, Relationship
+from sqlalchemy import DateTime
 from ..core.enums import TransactionType
 from .category import Category
 
 
 class TransactionBase(SQLModel):
-    date: datetime = Field(index=True)
+    date: datetime = Field(
+        sa_column=Column(DateTime(timezone=True), nullable=False, index=True)
+    )
     description: str
     amount: Decimal = Field(gt=0, max_digits=19, decimal_places=2)
     transaction_type: TransactionType = Field(
