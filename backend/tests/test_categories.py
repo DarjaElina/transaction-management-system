@@ -1,6 +1,11 @@
 from fastapi.testclient import TestClient
 from sqlmodel import Session
+from datetime import datetime
+from decimal import Decimal
+
 from app.core.enums import TransactionType
+from app.models.transaction import Transaction
+from app.models.category import Category
 
 
 def test_create_category(client: TestClient):
@@ -48,7 +53,6 @@ def test_category_allowed_type_invalid(client: TestClient):
 
 
 def test_read_categories(session: Session, client: TestClient):
-    from app.models.category import Category
 
     category_1 = Category(
         name="Food",
@@ -74,7 +78,6 @@ def test_read_categories(session: Session, client: TestClient):
 
 
 def test_update_category(session: Session, client: TestClient):
-    from app.models.category import Category
 
     category = Category(
         name="Old name",
@@ -97,7 +100,6 @@ def test_update_category(session: Session, client: TestClient):
 
 
 def test_delete_category(session: Session, client: TestClient):
-    from app.models.category import Category
 
     category = Category(
         name="To delete",
@@ -128,3 +130,145 @@ def test_unknown_attribute_forbidden(client: TestClient):
         },
     )
     assert response.status_code == 422
+
+
+def test_read_category_not_found(client: TestClient):
+    response = client.get("/categories/99999")
+
+    assert response.status_code == 404
+    assert response.json()["error"]["message"] == "Category with ID 99999 not found"
+
+
+def test_delete_category_not_found(client: TestClient):
+    response = client.get("/categories/99999")
+
+    assert response.status_code == 404
+    assert response.json()["error"]["message"] == "Category with ID 99999 not found"
+
+
+def test_update_category_not_found(client: TestClient):
+    response = client.patch(
+        "/categories/99999",
+        json={"name": "Does not exist"},
+    )
+
+    assert response.status_code == 404
+    assert response.json()["error"]["message"] == "Category with ID 99999 not found"
+
+
+def test_update_category_allowed_type_conflict(session: Session, client: TestClient):
+    category = Category(
+        name="Food",
+        allowed_type=TransactionType.EXPENSE,
+        is_active=True,
+    )
+    session.add(category)
+    session.commit()
+
+    transaction = Transaction(
+        date=datetime(2025, 1, 1),
+        description="Existing transaction",
+        category_id=category.id,
+        amount=Decimal("10.00"),
+        transaction_type=TransactionType.EXPENSE,
+    )
+    session.add(transaction)
+    session.commit()
+
+    response = client.patch(
+        f"/categories/{category.id}",
+        json={"allowed_type": "income"},
+    )
+
+    assert response.status_code == 409
+    assert (
+        response.json()["error"]["message"]
+        == "Cannot change allowed type because transactions exist"
+    )
+
+
+def test_create_category_duplicate_name(client: TestClient):
+    category = {
+        "name": "Food",
+        "allowed_type": "expense",
+        "is_active": True,
+    }
+
+    client.post("/categories/", json=category)
+    response = client.post("/categories/", json=category)
+
+    assert response.status_code == 409
+    assert response.json()["error"]["message"] == "Category already exists"
+
+
+def test_filter_categories_by_name(session: Session, client: TestClient):
+    session.add(
+        Category(name="Food", allowed_type=TransactionType.EXPENSE, is_active=True)
+    )
+    session.add(
+        Category(name="Salary", allowed_type=TransactionType.INCOME, is_active=True)
+    )
+    session.commit()
+
+    response = client.get("/categories/?name=foo")
+
+    data = response.json()
+
+    assert len(data) == 1
+    assert data[0]["name"] == "Food"
+
+
+def test_filter_categories_by_is_active(session: Session, client: TestClient):
+
+    session.add(
+        Category(name="Active", allowed_type=TransactionType.EXPENSE, is_active=True)
+    )
+    session.add(
+        Category(name="Inactive", allowed_type=TransactionType.EXPENSE, is_active=False)
+    )
+    session.commit()
+
+    response = client.get("/categories/?is_active=true")
+
+    data = response.json()
+
+    assert len(data) == 1
+    assert data[0]["name"] == "Active"
+
+
+def test_filter_categories_by_allowed_type(session: Session, client: TestClient):
+
+    session.add(
+        Category(
+            name="ExpenseCat", allowed_type=TransactionType.EXPENSE, is_active=True
+        )
+    )
+    session.add(
+        Category(name="IncomeCat", allowed_type=TransactionType.INCOME, is_active=True)
+    )
+    session.commit()
+
+    response = client.get("/categories/?allowed_type=expense")
+
+    data = response.json()
+
+    assert len(data) == 1
+    assert data[0]["allowed_type"] == "expense"
+
+
+def test_categories_pagination(session: Session, client: TestClient):
+    for i in range(5):
+        session.add(
+            Category(
+                name=f"Cat{i}",
+                allowed_type=TransactionType.EXPENSE,
+                is_active=True,
+            )
+        )
+    session.commit()
+
+    response = client.get("/categories/?offset=0&limit=2")
+
+    data = response.json()
+
+    assert len(data) == 2
