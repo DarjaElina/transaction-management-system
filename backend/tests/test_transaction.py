@@ -1,14 +1,12 @@
 import pytest
 from sqlmodel import Session
 from fastapi.testclient import TestClient
-from datetime import datetime
+from datetime import datetime, UTC, timedelta
 from decimal import Decimal
 
 from app.models.transaction import Transaction
 from app.models.category import Category
 from app.core.enums import TransactionType
-
-import pytz
 
 
 @pytest.fixture
@@ -242,9 +240,8 @@ def test_read_transaction(session: Session, client: TestClient, category):
 
 
 def test_update_transaction(session: Session, client: TestClient, category):
-    tz = pytz.timezone("Asia/Singapore")
     transaction = Transaction(
-        date=datetime(2023, 5, 4, 10, 30, 0, tzinfo=tz),
+        date=datetime(2025, 5, 17),
         description="Test transaction for 99.99€",
         category_id=category.id,
         amount=Decimal("99.99"),
@@ -264,9 +261,8 @@ def test_update_transaction(session: Session, client: TestClient, category):
 
 
 def test_delete_transaction(session: Session, client: TestClient, category):
-    tz = pytz.timezone("Asia/Singapore")
     transaction = Transaction(
-        date=datetime(2023, 5, 4, 10, 30, 0, tzinfo=tz),
+        date=datetime(2025, 5, 17),
         description="Test transaction for 99.99€",
         category_id=category.id,
         amount=Decimal("99.99"),
@@ -323,3 +319,145 @@ def test_unknown_attribute_forbidden(client: TestClient, category):
         },
     )
     assert response.status_code == 422
+
+
+def test_read_transaction_not_found(client: TestClient):
+    response = client.get("/transactions/99999")
+
+    assert response.status_code == 404
+    assert response.json()["error"]["message"] == "Transaction with ID 99999 not found"
+
+
+def test_delete_transaction_not_found(client: TestClient):
+    response = client.delete("/transactions/99999")
+
+    assert response.status_code == 404
+    assert response.json()["error"]["message"] == "Transaction with ID 99999 not found"
+
+
+def test_update_transaction_not_found(client: TestClient):
+    response = client.patch(
+        "/transactions/99999",
+        json={"description": "Nope"},
+    )
+
+    assert response.status_code == 404
+    assert response.json()["error"]["message"] == "Transaction with ID 99999 not found"
+
+
+def test_create_transaction_future_date_forbidden(client: TestClient, category):
+    future_date = (datetime.now(UTC) + timedelta(days=1)).isoformat()
+
+    response = client.post(
+        "/transactions/",
+        json={
+            "date": future_date,
+            "description": "Future transaction",
+            "category_id": category.id,
+            "amount": 10.00,
+            "transaction_type": "expense",
+        },
+    )
+
+    assert response.status_code == 422
+    assert (
+        response.json()["error"]["message"]
+        == "Validation error on field 'date': Transaction date must be in the past"
+    )
+
+
+def test_update_transaction_future_date_forbidden(
+    session: Session, client: TestClient, category
+):
+    transaction = Transaction(
+        date=datetime(2023, 1, 1),
+        description="Old",
+        category_id=category.id,
+        amount=Decimal("10.00"),
+        transaction_type=TransactionType.EXPENSE,
+    )
+    session.add(transaction)
+    session.commit()
+
+    future_date = (datetime.now(UTC) + timedelta(days=1)).isoformat()
+
+    response = client.patch(
+        f"/transactions/{transaction.id}",
+        json={"date": future_date},
+    )
+
+    assert response.status_code == 422
+    assert (
+        response.json()["error"]["message"]
+        == "Validation error on field 'date': Transaction date must be in the past"
+    )
+
+
+def test_create_transaction_category_type_mismatch(
+    client: TestClient, session: Session
+):
+    category = Category(
+        name="ExpenseOnly",
+        allowed_type=TransactionType.EXPENSE,
+        is_active=True,
+    )
+    session.add(category)
+    session.commit()
+
+    response = client.post(
+        "/transactions/",
+        json={
+            "date": "2025-01-01T10:00:00Z",
+            "description": "Invalid",
+            "category_id": category.id,
+            "amount": 50.00,
+            "transaction_type": "income",
+        },
+    )
+
+    assert response.status_code == 422
+    assert (
+        response.json()["error"]["message"]
+        == "Validation error on field 'transaction_type': Transaction of this type is not allowed for category ExpenseOnly"
+    )
+
+
+def test_filter_transactions_by_category(
+    session: Session, client: TestClient, category
+):
+    other_category = Category(
+        name="Other",
+        allowed_type=TransactionType.EXPENSE,
+        is_active=True,
+    )
+    session.add(other_category)
+    session.commit()
+
+    session.add(
+        Transaction(
+            date=datetime(2025, 1, 1),
+            description="Cat1",
+            category_id=category.id,
+            amount=Decimal("10.00"),
+            transaction_type=TransactionType.EXPENSE,
+        )
+    )
+
+    session.add(
+        Transaction(
+            date=datetime(2025, 1, 1),
+            description="Cat2",
+            category_id=other_category.id,
+            amount=Decimal("20.00"),
+            transaction_type=TransactionType.EXPENSE,
+        )
+    )
+
+    session.commit()
+
+    response = client.get(f"/transactions/?category_id={category.id}")
+
+    data = response.json()
+
+    assert len(data) == 1
+    assert data[0]["description"] == "Cat1"
