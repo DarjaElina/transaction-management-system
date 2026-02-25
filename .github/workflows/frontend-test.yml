@@ -1,4 +1,4 @@
-name: Frontend CI
+name: Frontend test
 
 on:
   pull_request:
@@ -8,7 +8,7 @@ on:
       - "frontend/**"
 
 jobs:
-  frontend-ci:
+  frontend-test:
     runs-on: ubuntu-latest
 
     defaults:

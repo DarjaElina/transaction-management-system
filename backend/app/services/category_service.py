@@ -41,7 +41,6 @@ def get_category(session: SessionDep, category_id):
 
 
 def create_category(category: CategoryCreate, session: SessionDep):
-
     db_name = validate_and_normalize_category_name(category.name, session)
 
     category.name = db_name

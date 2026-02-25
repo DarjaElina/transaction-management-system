@@ -1,4 +1,4 @@
-name: Backend CI
+name: Backend test
 
 on:
   pull_request:
@@ -8,7 +8,7 @@ on:
       - "backend/**"
 
 jobs:
-  backend-ci:
+  backend-test:
     runs-on: ubuntu-latest
 
     defaults:
