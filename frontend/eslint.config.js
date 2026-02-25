@@ -5,11 +5,15 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
 import eslintConfigPrettier from 'eslint-config-prettier/flat'
+import queryPlugin from '@tanstack/eslint-plugin-query'
 
 export default defineConfig([
   globalIgnores(['dist']),
   {
     files: ['**/*.{ts,tsx}'],
+    plugins: {
+      '@tanstack/query': queryPlugin,
+    },
     extends: [
       js.configs.recommended,
       tseslint.configs.recommended,
