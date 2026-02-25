@@ -52,7 +52,6 @@ def get_transaction(session: SessionDep, transaction_id):
 
 
 def create_transaction(transaction: TransactionCreate, session: SessionDep):
-
     validate_category_for_transaction(
         transaction.category_id, transaction.transaction_type, session
     )

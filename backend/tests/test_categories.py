@@ -53,7 +53,6 @@ def test_category_allowed_type_invalid(client: TestClient):
 
 
 def test_read_categories(session: Session, client: TestClient):
-
     category_1 = Category(
         name="Food",
         allowed_type=TransactionType.EXPENSE,
@@ -78,7 +77,6 @@ def test_read_categories(session: Session, client: TestClient):
 
 
 def test_update_category(session: Session, client: TestClient):
-
     category = Category(
         name="Old name",
         allowed_type=TransactionType.EXPENSE,
@@ -100,7 +98,6 @@ def test_update_category(session: Session, client: TestClient):
 
 
 def test_delete_category(session: Session, client: TestClient):
-
     category = Category(
         name="To delete",
         allowed_type=TransactionType.EXPENSE,
@@ -219,7 +216,6 @@ def test_filter_categories_by_name(session: Session, client: TestClient):
 
 
 def test_filter_categories_by_is_active(session: Session, client: TestClient):
-
     session.add(
         Category(name="Active", allowed_type=TransactionType.EXPENSE, is_active=True)
     )
@@ -237,7 +233,6 @@ def test_filter_categories_by_is_active(session: Session, client: TestClient):
 
 
 def test_filter_categories_by_allowed_type(session: Session, client: TestClient):
-
     session.add(
         Category(
             name="ExpenseCat", allowed_type=TransactionType.EXPENSE, is_active=True
