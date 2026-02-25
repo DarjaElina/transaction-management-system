@@ -19,3 +19,4 @@ pgdata
 
 # Environmental variables
 .env
+.env.*
