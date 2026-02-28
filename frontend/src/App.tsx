@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
-import { Button } from './components/ui/button'
 import axios from 'axios'
+import { TransactionsTable } from './components/TransactionsTable/TransactionsTable'
+import { columns } from './components/TransactionsTable/Columns'
 
 function App() {
   const result = useQuery({
@@ -20,10 +21,10 @@ function App() {
   console.log(transactions)
 
   return (
-    <>
-      <p className="bg-amber-400">Hello app :-)</p>
-      <Button>Click me</Button>
-    </>
+    <div className="container mx-auto">
+      <h1 className="text-center mb-1">Transactions</h1>
+      <TransactionsTable columns={columns} data={transactions} />
+    </div>
   )
 }
 
