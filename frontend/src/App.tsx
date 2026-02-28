@@ -21,9 +21,16 @@ function App() {
   console.log(transactions)
 
   return (
-    <div className="container mx-auto">
-      <h1 className="text-center mb-1">Transactions</h1>
-      <TransactionsTable columns={columns} data={transactions} />
+    <div className="min-h-screen bg-muted/40">
+      <div className="mx-auto max-w-6xl px-6 py-10">
+        <div className="mb-8">
+          <h1 className="text-3xl font-semibold">Transactions</h1>
+        </div>
+
+        <div className="bg-background rounded-xl border p-6">
+          <TransactionsTable columns={columns} data={transactions} />
+        </div>
+      </div>
     </div>
   )
 }
