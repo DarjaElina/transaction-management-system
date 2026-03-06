@@ -41,7 +41,19 @@ export const columns: ColumnDef<Transaction>[] = [
   },
   {
     accessorKey: 'amount',
-    header: () => <div className="text-right">Amount</div>,
+    header: ({ column }) => {
+      return (
+        <div className="text-center">
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          >
+            Amount
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
+      )
+    },
     cell: ({ row }) => {
       const amount = parseFloat(row.getValue('amount'))
       const formatted = new Intl.NumberFormat('fi-FI', {
@@ -49,7 +61,7 @@ export const columns: ColumnDef<Transaction>[] = [
         currency: 'EUR',
       }).format(amount)
 
-      return <div className="text-right font-medium">{formatted}</div>
+      return <div className="text-center font-medium">{formatted}</div>
     },
   },
   {
