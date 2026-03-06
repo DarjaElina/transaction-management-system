@@ -2,8 +2,10 @@
 
 import {
   type ColumnDef,
+  type ColumnFiltersState,
   flexRender,
   getCoreRowModel,
+  getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   type SortingState,
@@ -20,6 +22,7 @@ import {
 } from '@/components/ui/table'
 
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 import { useState } from 'react'
 
@@ -33,6 +36,7 @@ export function TransactionsTable<TData, TValue>({
   data,
 }: TransactionsTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([])
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 
   const table = useReactTable({
     data,
@@ -41,13 +45,28 @@ export function TransactionsTable<TData, TValue>({
     getPaginationRowModel: getPaginationRowModel(),
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
+    onColumnFiltersChange: setColumnFilters,
+    getFilteredRowModel: getFilteredRowModel(),
     state: {
       sorting,
+      columnFilters,
     },
   })
 
   return (
     <div>
+      <div className="flex items-center py-4">
+        <Input
+          placeholder="Filter by description..."
+          value={
+            (table.getColumn('description')?.getFilterValue() as string) ?? ''
+          }
+          onChange={(event) =>
+            table.getColumn('description')?.setFilterValue(event.target.value)
+          }
+          className="max-w-sm"
+        />
+      </div>
       <div className="overflow-hidden rounded-md border">
         <Table>
           <TableHeader>
