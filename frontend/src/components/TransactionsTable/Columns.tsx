@@ -1,6 +1,6 @@
 import type { Transaction } from '@/types/transactions.types'
 import type { ColumnDef } from '@tanstack/react-table'
-import { ArrowUpDown, MoreHorizontal } from 'lucide-react'
+import { MoreHorizontal } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Checkbox } from '@/components/ui/checkbox'
+import { DataTableColumnHeader } from './ColumnHeader'
 
 export const columns: ColumnDef<Transaction>[] = [
   {
@@ -38,17 +39,9 @@ export const columns: ColumnDef<Transaction>[] = [
   },
   {
     accessorKey: 'date',
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          Date
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      )
-    },
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Date" />
+    ),
   },
   {
     accessorKey: 'description',
@@ -64,19 +57,13 @@ export const columns: ColumnDef<Transaction>[] = [
   },
   {
     accessorKey: 'amount',
-    header: ({ column }) => {
-      return (
-        <div className="text-center">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Amount
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
-      )
-    },
+    header: ({ column }) => (
+      <DataTableColumnHeader
+        column={column}
+        title="Amount"
+        className="justify-center"
+      />
+    ),
     cell: ({ row }) => {
       const amount = parseFloat(row.getValue('amount'))
       const formatted = new Intl.NumberFormat('fi-FI', {
