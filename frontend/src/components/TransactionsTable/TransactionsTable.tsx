@@ -26,7 +26,7 @@ import { Input } from '@/components/ui/input'
 
 import { useState } from 'react'
 import { DataTablePagination } from './DataTablePagination'
-import { DataTableViewOptions } from './DataTabeleViewOptions'
+import { DataTableViewOptions } from './DataTableViewOptions'
 
 interface TransactionsTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
