@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { TransactionsTable } from './components/TransactionsTable/TransactionsTable'
 import { columns } from './components/TransactionsTable/Columns'
 import { getTransactons } from './api/transactions'
+import { Toaster } from '@/components/ui/sonner'
 
 function App() {
   const result = useQuery({
@@ -15,8 +16,6 @@ function App() {
 
   const transactions = result.data
 
-  console.log(transactions)
-
   return (
     <div className="min-h-screen bg-muted/40">
       <div className="mx-auto max-w-6xl px-6 py-10">
@@ -29,6 +28,7 @@ function App() {
             <TransactionsTable columns={columns} data={transactions} />
           </div>
         )}
+        <Toaster />
       </div>
     </div>
   )

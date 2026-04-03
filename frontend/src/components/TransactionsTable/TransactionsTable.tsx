@@ -27,6 +27,7 @@ import { Input } from '@/components/ui/input'
 import { useState } from 'react'
 import { DataTablePagination } from './DataTablePagination'
 import { DataTableViewOptions } from './DataTableViewOptions'
+import { CreateTransactionDialog } from '../CreateTransactionDialog'
 
 interface TransactionsTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -63,7 +64,7 @@ export function TransactionsTable<TData, TValue>({
 
   return (
     <div>
-      <div className="flex items-center py-4">
+      <div className="flex items-center justify-between py-4">
         <Input
           placeholder="Filter by description..."
           value={
@@ -74,7 +75,10 @@ export function TransactionsTable<TData, TValue>({
           }
           className="max-w-sm"
         />
-        <DataTableViewOptions table={table} />
+        <div className="flex items-center gap-2">
+          <DataTableViewOptions table={table} />
+          <CreateTransactionDialog />
+        </div>
       </div>
       <div className="overflow-hidden rounded-md border">
         <Table>
