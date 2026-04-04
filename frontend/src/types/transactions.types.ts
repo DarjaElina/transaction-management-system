@@ -7,6 +7,10 @@ export interface Transaction {
   description: string
   transaction_type: 'income' | 'expence'
   amount: number
+  category: {
+    id: number
+    name: string
+  }
 }
 
 export type CreateTransactionType = Omit<
