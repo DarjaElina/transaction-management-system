@@ -24,13 +24,26 @@ import { DatePicker } from './DatePicker'
 import { useForm } from '@tanstack/react-form'
 import { createTransactionSchema } from '@/schemas/transactions'
 import { toast } from 'sonner'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { createTransaction } from '@/api/transactions'
+import type { Transaction } from '@/types/transactions.types'
+import { useState } from 'react'
 
 export function CreateTransactionDialog() {
+  const queryClient = useQueryClient()
   const { isPending, mutate } = useMutation({
     mutationFn: createTransaction,
+    onSuccess: (newTransaction) => {
+      queryClient.setQueryData(
+        ['transactions'],
+        (oldTransactions: Transaction[]) => [
+          ...oldTransactions,
+          newTransaction,
+        ],
+      )
+    },
   })
+  const [open, setOpen] = useState(false)
 
   const form = useForm({
     defaultValues: {
@@ -43,7 +56,6 @@ export function CreateTransactionDialog() {
       onSubmit: createTransactionSchema,
     },
     onSubmit: async ({ value }) => {
-      console.log('VALUE IS', value)
       mutate(
         {
           ...value,
@@ -51,10 +63,10 @@ export function CreateTransactionDialog() {
         },
         {
           onError: (e) => {
-            console.log('ERROR IS', e)
-            toast.error('Something went wrong 🥲')
+            toast.error(e?.message ?? 'Something went wrong 🥲')
           },
           onSuccess: () => {
+            setOpen(false)
             toast.success('Transaction created succesfully! 🦄')
           },
         },
@@ -63,7 +75,7 @@ export function CreateTransactionDialog() {
   })
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm">
           <Plus />
