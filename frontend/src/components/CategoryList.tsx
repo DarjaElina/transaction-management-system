@@ -9,6 +9,7 @@ import {
 import { useState } from 'react'
 import { getCategories } from '@/api/categories'
 import React from 'react'
+import useDebounce from '@/hooks/useDebounce'
 
 interface Category {
   id: number
@@ -32,9 +33,10 @@ export function CategoryList({
 }: CategoryListProps) {
   const [open, setOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
+  const debouncedSearchTerm = useDebounce(searchTerm, 300)
 
   const { data, isError, error, isFetching } = useQuery({
-    queryKey: ['categories', searchTerm],
+    queryKey: ['categories', debouncedSearchTerm],
     queryFn: () => getCategories({ name: searchTerm }),
     enabled: Boolean(searchTerm),
   })
