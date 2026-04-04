@@ -1,15 +1,13 @@
 import { useQuery } from '@tanstack/react-query'
-import axios from 'axios'
 import { TransactionsTable } from './components/TransactionsTable/TransactionsTable'
 import { columns } from './components/TransactionsTable/Columns'
+import { getTransactons } from './api/transactions'
+import { Toaster } from 'sonner'
 
 function App() {
   const result = useQuery({
     queryKey: ['transactions'],
-    queryFn: async () => {
-      const response = await axios.get('http://localhost:8000/transactions')
-      return response.data
-    },
+    queryFn: getTransactons,
   })
 
   if (result.isLoading) {
@@ -27,9 +25,12 @@ function App() {
           <h1 className="text-3xl font-semibold">Transactions</h1>
         </div>
 
-        <div className="bg-background rounded-xl border p-6">
-          <TransactionsTable columns={columns} data={transactions} />
-        </div>
+        {transactions && (
+          <div className="bg-background rounded-xl border p-6">
+            <TransactionsTable columns={columns} data={transactions} />
+          </div>
+        )}
+        <Toaster richColors />
       </div>
     </div>
   )

@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Query, HTTPException
 from ..schemas.transactions import (
     TransactionPublic,
+    TransactionPublicWithCategory,
     TransactionCreate,
     TransactionUpdate,
 )
@@ -16,7 +17,7 @@ from ..core.enums import TransactionType
 router = APIRouter(prefix="/transactions")
 
 
-@router.get("/", response_model=list[TransactionPublic])
+@router.get("/", response_model=list[TransactionPublicWithCategory])
 def read_transactions(
     session: SessionDep,
     offset: int = 0,
