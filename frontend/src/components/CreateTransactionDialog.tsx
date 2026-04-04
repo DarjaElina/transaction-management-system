@@ -21,7 +21,6 @@ import { Input } from '@/components/ui/input'
 import { Plus } from 'lucide-react'
 import { RadioGroup, RadioGroupItem } from './ui/radio-group'
 import { DatePicker } from './DatePicker'
-import { useState } from 'react'
 import { useForm } from '@tanstack/react-form'
 import { createTransactionSchema } from '@/schemas/transactions'
 import { toast } from 'sonner'
@@ -29,8 +28,6 @@ import { useMutation } from '@tanstack/react-query'
 import { createTransaction } from '@/api/transactions'
 
 export function CreateTransactionDialog() {
-  const [date, setDate] = useState<Date>()
-
   const { isPending, mutate } = useMutation({
     mutationFn: createTransaction,
   })
@@ -127,11 +124,19 @@ export function CreateTransactionDialog() {
                         onValueChange={field.handleChange}
                       >
                         <div className="flex items-center gap-3">
-                          <RadioGroupItem value="income" id="income" />
+                          <RadioGroupItem
+                            value="income"
+                            id="income"
+                            aria-invalid={isInvalid}
+                          />
                           <FieldLabel htmlFor="income">Income</FieldLabel>
                         </div>
                         <div className="flex items-center gap-3">
-                          <RadioGroupItem value="expense" id="expense" />
+                          <RadioGroupItem
+                            value="expense"
+                            id="expense"
+                            aria-invalid={isInvalid}
+                          />
                           <FieldLabel htmlFor="expense">Expense</FieldLabel>
                         </div>
                       </RadioGroup>
@@ -178,7 +183,10 @@ export function CreateTransactionDialog() {
                 return (
                   <Field data-invalid={isInvalid}>
                     <FieldLabel htmlFor={field.name}>Date</FieldLabel>
-                    <DatePicker date={date} setDate={setDate} />
+                    <DatePicker
+                      date={field.state.value}
+                      setDate={(date) => field.handleChange(date)}
+                    />
                     {isInvalid && (
                       <FieldError errors={field.state.meta.errors} />
                     )}

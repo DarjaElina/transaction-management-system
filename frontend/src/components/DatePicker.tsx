@@ -10,10 +10,11 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
+import type { Updater } from '@tanstack/react-form'
 
 interface DatePickerProps {
   date: Date | undefined
-  setDate: React.Dispatch<React.SetStateAction<Date | undefined>>
+  setDate: (updater: Updater<Date>) => void
 }
 
 export function DatePicker({ date, setDate }: DatePickerProps) {
@@ -30,7 +31,7 @@ export function DatePicker({ date, setDate }: DatePickerProps) {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0">
-        <Calendar mode="single" selected={date} onSelect={setDate} />
+        <Calendar required mode="single" selected={date} onSelect={setDate} />
       </PopoverContent>
     </Popover>
   )
