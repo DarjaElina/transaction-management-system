@@ -15,3 +15,10 @@ export const createTransaction = async (
   const { data } = await api.post('/transactions', newTransaction)
   return data
 }
+
+export const deleteTransaction = async (
+  transactionId: string,
+): Promise<{ ok: string }> => {
+  const { data } = await api.delete(`/transactions/${transactionId}`)
+  return data
+}
