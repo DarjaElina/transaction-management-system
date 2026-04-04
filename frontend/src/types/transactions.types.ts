@@ -9,6 +9,11 @@ export interface Transaction {
   amount: number
 }
 
-export type CreateTransactionType = z.infer<typeof createTransactionSchema> & {
+export type CreateTransactionType = Omit<
+  z.infer<typeof createTransactionSchema> & {
+    category_id: number
+  },
+  'category'
+> & {
   category_id: number
 }

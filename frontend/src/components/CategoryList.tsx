@@ -18,15 +18,20 @@ interface Category {
 interface CategoryListProps {
   container?: HTMLElement | null
   onFocus: () => void
-  id: string
+  inputId: string
+  categoryId: number
+  setCategoryId: (categoryId: number) => void
 }
 
-export function CategoryList({ container, onFocus, id }: CategoryListProps) {
+export function CategoryList({
+  container,
+  onFocus,
+  inputId,
+  categoryId,
+  setCategoryId,
+}: CategoryListProps) {
   const [open, setOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(
-    null,
-  )
 
   const { data, isError, error, isFetching } = useQuery({
     queryKey: ['categories', searchTerm],
@@ -50,7 +55,7 @@ export function CategoryList({ container, onFocus, id }: CategoryListProps) {
       return error.message
     }
 
-    if (trimmedSearchTerm === '' && !selectedCategory) {
+    if (trimmedSearchTerm === '' && !categoryId) {
       return 'Start typing to search categories...'
     }
 
@@ -69,8 +74,11 @@ export function CategoryList({ container, onFocus, id }: CategoryListProps) {
       itemToStringLabel={(category: Category) => category.name}
       filter={null}
       onValueChange={(nextSelectedCategory) => {
-        setSelectedCategory(nextSelectedCategory)
+        setOpen(false)
         setSearchTerm('')
+        if (nextSelectedCategory?.id) {
+          setCategoryId(nextSelectedCategory.id)
+        }
       }}
       onInputValueChange={(nextSearchTerm) => {
         setSearchTerm(nextSearchTerm)
@@ -80,7 +88,7 @@ export function CategoryList({ container, onFocus, id }: CategoryListProps) {
         placeholder="Select a category or create new"
         showClear
         onFocus={onFocus}
-        id={id}
+        id={inputId}
       />
       <ComboboxContent container={container}>
         {getStatus() && (

@@ -10,11 +10,10 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import type { Updater } from '@tanstack/react-form'
 
 interface DatePickerProps {
   date: Date | undefined
-  setDate: (updater: Updater<Date>) => void
+  setDate: (date: Date) => void
   id: string
 }
 

@@ -55,13 +55,12 @@ export function CreateTransactionDialog() {
       transaction_type: '',
       description: '',
       date: new Date(),
-      category_id: 1,
+      category_id: 0,
     },
     validators: {
       onSubmit: createTransactionSchema,
     },
     onSubmit: async ({ value }) => {
-      console.log('VALUE IS', value)
       mutate(value, {
         onError: (e) => {
           toast.error(e?.message ?? 'Something went wrong 🥲')
@@ -197,13 +196,17 @@ export function CreateTransactionDialog() {
                   <Field data-invalid={isInvalid}>
                     <FieldLabel htmlFor={field.name}>Category</FieldLabel>
                     <CategoryList
-                      id={field.name}
+                      inputId={field.name}
                       container={container}
                       onFocus={() => {
                         if (contentRef.current) {
                           setContainer(contentRef.current)
                         }
                       }}
+                      categoryId={field.state.value}
+                      setCategoryId={(categoryId) =>
+                        field.handleChange(categoryId)
+                      }
                     />
                     {isInvalid && (
                       <FieldError errors={field.state.meta.errors} />
