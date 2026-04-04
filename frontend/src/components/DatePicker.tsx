@@ -15,9 +15,10 @@ import type { Updater } from '@tanstack/react-form'
 interface DatePickerProps {
   date: Date | undefined
   setDate: (updater: Updater<Date>) => void
+  id: string
 }
 
-export function DatePicker({ date, setDate }: DatePickerProps) {
+export function DatePicker({ date, setDate, id }: DatePickerProps) {
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -25,6 +26,7 @@ export function DatePicker({ date, setDate }: DatePickerProps) {
           variant="outline"
           data-empty={!date}
           className="justify-start text-left font-normal data-[empty=true]:text-muted-foreground"
+          id={id}
         >
           <CalendarIcon />
           {date ? format(date, 'PPP') : <span>Pick a date</span>}

@@ -27,9 +27,13 @@ import { toast } from 'sonner'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { createTransaction } from '@/api/transactions'
 import type { Transaction } from '@/types/transactions.types'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
+import { CategoryList } from './CategoryList'
 
 export function CreateTransactionDialog() {
+  const contentRef = useRef<HTMLDivElement | null>(null)
+  const [container, setContainer] = useState<HTMLDivElement | null>(null)
+
   const queryClient = useQueryClient()
   const { isPending, mutate } = useMutation({
     mutationFn: createTransaction,
@@ -51,26 +55,22 @@ export function CreateTransactionDialog() {
       transaction_type: '',
       description: '',
       date: new Date(),
+      category_id: 1,
     },
     validators: {
       onSubmit: createTransactionSchema,
     },
     onSubmit: async ({ value }) => {
-      mutate(
-        {
-          ...value,
-          category_id: 1,
+      console.log('VALUE IS', value)
+      mutate(value, {
+        onError: (e) => {
+          toast.error(e?.message ?? 'Something went wrong 🥲')
         },
-        {
-          onError: (e) => {
-            toast.error(e?.message ?? 'Something went wrong 🥲')
-          },
-          onSuccess: () => {
-            setOpen(false)
-            toast.success('Transaction created succesfully! 🦄')
-          },
+        onSuccess: () => {
+          setOpen(false)
+          toast.success('Transaction created succesfully! 🦄')
         },
-      )
+      })
     },
   })
 
@@ -82,7 +82,7 @@ export function CreateTransactionDialog() {
           Add Transaction
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-sm">
+      <DialogContent ref={contentRef}>
         <DialogHeader>
           <DialogTitle>Create new transaction</DialogTitle>
           <DialogDescription>Something here?</DialogDescription>
@@ -104,6 +104,7 @@ export function CreateTransactionDialog() {
                   <Field data-invalid={isInvalid}>
                     <FieldLabel htmlFor={field.name}>Amount</FieldLabel>
                     <Input
+                      autoFocus
                       id={field.name}
                       name={field.name}
                       value={field.state.value}
@@ -188,6 +189,31 @@ export function CreateTransactionDialog() {
             />
 
             <form.Field
+              name="category_id"
+              children={(field) => {
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid
+                return (
+                  <Field data-invalid={isInvalid}>
+                    <FieldLabel htmlFor={field.name}>Category</FieldLabel>
+                    <CategoryList
+                      id={field.name}
+                      container={container}
+                      onFocus={() => {
+                        if (contentRef.current) {
+                          setContainer(contentRef.current)
+                        }
+                      }}
+                    />
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
+                  </Field>
+                )
+              }}
+            />
+
+            <form.Field
               name="date"
               children={(field) => {
                 const isInvalid =
@@ -196,6 +222,7 @@ export function CreateTransactionDialog() {
                   <Field data-invalid={isInvalid}>
                     <FieldLabel htmlFor={field.name}>Date</FieldLabel>
                     <DatePicker
+                      id={field.name}
                       date={field.state.value}
                       setDate={(date) => field.handleChange(date)}
                     />
