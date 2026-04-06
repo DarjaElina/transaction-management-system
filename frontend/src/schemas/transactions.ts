@@ -10,3 +10,11 @@ export const createTransactionSchema = z.object({
   date: z.date(),
   category_id: z.number(),
 })
+
+export const createCategorySchema = z.object({
+  name: z
+    .string()
+    .min(5, 'Category must be at least 5 characters.')
+    .max(20, 'Category must be at most 100 characters.'),
+  allowed_type: z.string(), // change to proper enum later,
+})

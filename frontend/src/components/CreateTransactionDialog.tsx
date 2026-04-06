@@ -216,6 +216,8 @@ export function CreateTransactionDialog() {
               }}
             />
 
+            {/* Here only after category select I need to show readonly input with allowed transaction type */}
+
             <form.Field
               name="date"
               children={(field) => {
