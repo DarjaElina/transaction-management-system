@@ -122,7 +122,7 @@ export function CategoryList({
           }
         }}
         onInputValueChange={(nextSearchTerm) => {
-          onCategoryClear()
+          // Still need to find a way to deal with errors properly!
           setSearchTerm(nextSearchTerm)
         }}
       >
