@@ -1,10 +1,11 @@
 from pydantic import ConfigDict
 from ..models.category import CategoryBase
 from ..core.enums import TransactionType
+import uuid
 
 
 class CategoryPublic(CategoryBase):
-    id: int
+    id: uuid.UUID
 
 
 class CategoryCreate(CategoryBase):

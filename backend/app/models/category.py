@@ -2,6 +2,7 @@ from sqlmodel import Field, SQLModel, Column, Relationship
 from ..core.enums import TransactionType
 from sqlalchemy.dialects import postgresql
 from typing import TYPE_CHECKING
+import uuid
 
 if TYPE_CHECKING:
     from .transaction import Transaction
@@ -21,5 +22,5 @@ class CategoryBase(SQLModel):
 
 
 class Category(CategoryBase, table=True):
-    id: int | None = Field(default=None, primary_key=True)
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     transactions: list["Transaction"] = Relationship(back_populates="category")

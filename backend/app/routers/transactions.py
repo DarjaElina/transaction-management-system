@@ -56,7 +56,7 @@ def read_transaction(transaction_id: int, session: SessionDep):
     return transaction
 
 
-@router.post("/", response_model=TransactionPublic)
+@router.post("/", response_model=TransactionPublicWithCategory)
 def create_transaction(transaction: TransactionCreate, session: SessionDep):
     db_transaction = transaction_service.create_transaction(transaction, session)
     return db_transaction
