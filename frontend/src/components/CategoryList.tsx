@@ -27,21 +27,22 @@ import { Input } from './ui/input'
 import { getCategoriesStatus } from '@/helpers'
 import { toast } from 'sonner'
 import { RadioGroup, RadioGroupItem } from './ui/radio-group'
-
 interface CategoryListProps {
   container?: HTMLElement | null
   onFocus: () => void
   inputId: string
-  categoryId: number
-  setCategoryId: (categoryId: number) => void
+  onCategorySelect: (category: Category) => void
+  onCategoryClear: () => void
+  dataInvalid?: boolean
 }
 
 export function CategoryList({
   container,
   onFocus,
   inputId,
-  categoryId,
-  setCategoryId,
+  onCategorySelect,
+  onCategoryClear,
+  dataInvalid,
 }: CategoryListProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const debouncedSearchTerm = useDebounce(searchTerm, 300)
@@ -59,15 +60,17 @@ export function CategoryList({
   const { isPending, mutate } = useMutation({
     mutationFn: createCategory,
     onSuccess: (newCategory) => {
+      onCategorySelect(newCategory)
+
       setDialogOpen(false)
-      if (newCategory.id) {
-        setCategoryId(newCategory.id)
-      }
+
       toast.success(`Category ${newCategory.name} created successfully!`)
       queryClient.setQueryData(['categories'], (oldCategories: Category[]) => [
         ...oldCategories,
         newCategory,
       ])
+      setSearchTerm('')
+      setAllowedType('income')
     },
   })
 
@@ -86,19 +89,16 @@ export function CategoryList({
           {
             name: trimmedSearchTerm,
             creatable: true,
+            id: `create:${trimmedSearchTerm}`,
           },
         ]
       : data
 
   const handleSubmit = () => {
-    try {
-      mutate({
-        name: searchTerm,
-        allowed_type: allowedType,
-      })
-    } catch (e) {
-      console.log(e)
-    }
+    mutate({
+      name: searchTerm,
+      allowed_type: allowedType,
+    })
   }
 
   return (
@@ -115,18 +115,19 @@ export function CategoryList({
             return
           }
 
-          if (
-            typeof nextSelectedCategory?.id === 'number' &&
-            nextSelectedCategory?.id
-          ) {
-            setCategoryId(nextSelectedCategory.id)
+          if (nextSelectedCategory) {
+            onCategorySelect(nextSelectedCategory)
+          } else {
+            onCategoryClear()
           }
         }}
         onInputValueChange={(nextSearchTerm) => {
+          onCategoryClear()
           setSearchTerm(nextSearchTerm)
         }}
       >
         <ComboboxInput
+          aria-invalid={dataInvalid}
           placeholder="Select a category or create new"
           showClear
           onFocus={onFocus}
@@ -139,7 +140,6 @@ export function CategoryList({
             isError,
             error,
             trimmedSearchTerm,
-            categoryId,
           ) && (
             <div className="px-3 py-2 text-sm text-muted-foreground">
               {getCategoriesStatus(
@@ -147,14 +147,13 @@ export function CategoryList({
                 isError,
                 error,
                 trimmedSearchTerm,
-                categoryId,
               )}
             </div>
           )}
           <ComboboxList>
             {(category) =>
               category.creatable ? (
-                <ComboboxItem key={category.name} value={category}>
+                <ComboboxItem key={category.id} value={category}>
                   <span>
                     <PlusIcon />
                   </span>

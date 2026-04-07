@@ -8,16 +8,16 @@ export interface Transaction {
   transaction_type: 'income' | 'expence'
   amount: number
   category: {
-    id: number
+    id: string
     name: string
   }
 }
 
 export type CreateTransactionType = Omit<
   z.infer<typeof createTransactionSchema> & {
-    category_id: number
+    category_id: string
   },
   'category'
 > & {
-  category_id: number
+  category_id: string
 }

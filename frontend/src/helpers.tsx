@@ -5,7 +5,6 @@ export const getCategoriesStatus = (
   isError: boolean,
   error: Error | null,
   trimmedSearchTerm: string,
-  categoryId: string | number,
 ) => {
   if (isFetching) {
     return (
@@ -20,7 +19,7 @@ export const getCategoriesStatus = (
     return error?.message
   }
 
-  if (trimmedSearchTerm === '' && !categoryId) {
+  if (trimmedSearchTerm === '') {
     return 'Start typing to search categories...'
   }
 

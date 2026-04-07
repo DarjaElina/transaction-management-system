@@ -14,12 +14,9 @@ import {
   FieldError,
   FieldGroup,
   FieldLabel,
-  FieldLegend,
-  FieldSet,
 } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Plus } from 'lucide-react'
-import { RadioGroup, RadioGroupItem } from './ui/radio-group'
 import { DatePicker } from './DatePicker'
 import { useForm } from '@tanstack/react-form'
 import { createTransactionSchema } from '@/schemas/transactions'
@@ -29,6 +26,7 @@ import { createTransaction } from '@/api/transactions'
 import type { Transaction } from '@/types/transactions.types'
 import { useRef, useState } from 'react'
 import { CategoryList } from './CategoryList'
+import type { Category } from '@/types/categories.types'
 
 export function CreateTransactionDialog() {
   const contentRef = useRef<HTMLDivElement | null>(null)
@@ -55,7 +53,7 @@ export function CreateTransactionDialog() {
       transaction_type: '',
       description: '',
       date: new Date(),
-      category_id: 0,
+      category_id: '',
     },
     validators: {
       onSubmit: createTransactionSchema,
@@ -66,12 +64,19 @@ export function CreateTransactionDialog() {
           toast.error(e?.message ?? 'Something went wrong 🥲')
         },
         onSuccess: () => {
+          handleClearCategory()
           setOpen(false)
+          form.reset()
           toast.success('Transaction created succesfully! 🦄')
         },
       })
     },
   })
+
+  const handleClearCategory = () => {
+    form.resetField('category_id')
+    form.resetField('transaction_type')
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -84,7 +89,7 @@ export function CreateTransactionDialog() {
       <DialogContent ref={contentRef}>
         <DialogHeader>
           <DialogTitle>Create new transaction</DialogTitle>
-          <DialogDescription>Something here?</DialogDescription>
+          <DialogDescription className="sr-only"></DialogDescription>
         </DialogHeader>
         <form
           id="transactions-form"
@@ -117,46 +122,6 @@ export function CreateTransactionDialog() {
                       <FieldError errors={field.state.meta.errors} />
                     )}
                   </Field>
-                )
-              }}
-            />
-
-            <form.Field
-              name="transaction_type"
-              children={(field) => {
-                const isInvalid =
-                  field.state.meta.isTouched && !field.state.meta.isValid
-                return (
-                  <FieldSet>
-                    <FieldLegend>Transaction Type</FieldLegend>
-                    <Field data-invalid={isInvalid}>
-                      <RadioGroup
-                        name={field.name}
-                        value={field.state.value}
-                        onValueChange={field.handleChange}
-                      >
-                        <div className="flex items-center gap-3">
-                          <RadioGroupItem
-                            value="income"
-                            id="income"
-                            aria-invalid={isInvalid}
-                          />
-                          <FieldLabel htmlFor="income">Income</FieldLabel>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <RadioGroupItem
-                            value="expense"
-                            id="expense"
-                            aria-invalid={isInvalid}
-                          />
-                          <FieldLabel htmlFor="expense">Expense</FieldLabel>
-                        </div>
-                      </RadioGroup>
-                      {isInvalid && (
-                        <FieldError errors={field.state.meta.errors} />
-                      )}
-                    </Field>
-                  </FieldSet>
                 )
               }}
             />
@@ -203,10 +168,19 @@ export function CreateTransactionDialog() {
                           setContainer(contentRef.current)
                         }
                       }}
-                      categoryId={field.state.value}
-                      setCategoryId={(categoryId) =>
-                        field.handleChange(categoryId)
-                      }
+                      onCategorySelect={(category: Category) => {
+                        if (category.id) {
+                          field.handleChange(category.id)
+                        }
+                        if (category.allowed_type) {
+                          form.setFieldValue(
+                            'transaction_type',
+                            category.allowed_type,
+                          )
+                        }
+                      }}
+                      onCategoryClear={handleClearCategory}
+                      dataInvalid={isInvalid}
                     />
                     {isInvalid && (
                       <FieldError errors={field.state.meta.errors} />
@@ -216,7 +190,27 @@ export function CreateTransactionDialog() {
               }}
             />
 
-            {/* Here only after category select I need to show readonly input with allowed transaction type */}
+            <form.Field
+              name="transaction_type"
+              children={(field) => {
+                if (field.state.value === '') return null
+
+                return (
+                  <Field>
+                    <FieldLabel htmlFor={field.name}>
+                      Transaction Type
+                    </FieldLabel>
+                    <Input
+                      readOnly
+                      id={field.name}
+                      name={field.name}
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                    />
+                  </Field>
+                )
+              }}
+            />
 
             <form.Field
               name="date"
