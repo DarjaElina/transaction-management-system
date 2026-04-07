@@ -13,6 +13,7 @@ from ..db.database import SessionDep
 from ..services import transaction_service
 
 from ..core.enums import TransactionType
+import uuid
 
 router = APIRouter(prefix="/transactions")
 
@@ -22,7 +23,7 @@ def read_transactions(
     session: SessionDep,
     offset: int = 0,
     limit: Annotated[int, Query(ge=0, le=100)] = 20,
-    category_id: int | None = None,
+    category_id: uuid.UUID | None = None,
     transaction_type: TransactionType | None = None,
     description: str | None = None,
     start_date: datetime | None = None,
@@ -49,7 +50,7 @@ def read_transactions(
 
 
 @router.get("/{transaction_id}", response_model=TransactionPublic)
-def read_transaction(transaction_id: int, session: SessionDep):
+def read_transaction(transaction_id: uuid.UUID, session: SessionDep):
     transaction = transaction_service.get_transaction(session, transaction_id)
     if not transaction:
         raise HTTPException(status_code=404, detail="Transaction not found")
@@ -63,14 +64,14 @@ def create_transaction(transaction: TransactionCreate, session: SessionDep):
 
 
 @router.delete("/{transaction_id}")
-def delete_transaction(transaction_id: int, session: SessionDep):
+def delete_transaction(transaction_id: uuid.UUID, session: SessionDep):
     transaction_service.delete_transaction(session, transaction_id)
     return {"ok": True}
 
 
 @router.patch("/{transaction_id}", response_model=TransactionPublic)
 def update_transaction(
-    transaction_id: int, transaction: TransactionUpdate, session: SessionDep
+    transaction_id: uuid.UUID, transaction: TransactionUpdate, session: SessionDep
 ):
     db_transaction = transaction_service.update_transaction(
         session, transaction, transaction_id
