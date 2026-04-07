@@ -7,6 +7,8 @@ from app.core.enums import TransactionType
 from app.models.transaction import Transaction
 from app.models.category import Category
 
+import uuid
+
 
 def test_create_category(client: TestClient):
     response = client.post(
@@ -130,27 +132,36 @@ def test_unknown_attribute_forbidden(client: TestClient):
 
 
 def test_read_category_not_found(client: TestClient):
-    response = client.get("/categories/99999")
+    fake_id = str(uuid.uuid4())
+    response = client.get(f"/categories/{fake_id}")
 
     assert response.status_code == 404
-    assert response.json()["error"]["message"] == "Category with ID 99999 not found"
+    assert (
+        response.json()["error"]["message"] == f"Category with ID {fake_id} not found"
+    )
 
 
 def test_delete_category_not_found(client: TestClient):
-    response = client.get("/categories/99999")
+    fake_id = str(uuid.uuid4())
+    response = client.delete(f"/categories/{fake_id}")
 
     assert response.status_code == 404
-    assert response.json()["error"]["message"] == "Category with ID 99999 not found"
+    assert (
+        response.json()["error"]["message"] == f"Category with ID {fake_id} not found"
+    )
 
 
 def test_update_category_not_found(client: TestClient):
+    fake_id = str(uuid.uuid4())
     response = client.patch(
-        "/categories/99999",
+        f"/categories/{fake_id}",
         json={"name": "Does not exist"},
     )
 
     assert response.status_code == 404
-    assert response.json()["error"]["message"] == "Category with ID 99999 not found"
+    assert (
+        response.json()["error"]["message"] == f"Category with ID {fake_id} not found"
+    )
 
 
 def test_update_category_allowed_type_conflict(session: Session, client: TestClient):

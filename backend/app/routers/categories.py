@@ -11,6 +11,8 @@ from ..services import category_service
 from ..core.enums import TransactionType
 from typing import Literal
 
+import uuid
+
 router = APIRouter(prefix="/categories")
 
 
@@ -38,7 +40,7 @@ def read_categories(
 
 
 @router.get("/{category_id}", response_model=CategoryPublic)
-def read_category(category_id: int, session: SessionDep):
+def read_category(category_id: uuid.UUID, session: SessionDep):
     category = category_service.get_category(session, category_id)
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
@@ -52,12 +54,14 @@ def create_category(category: CategoryCreate, session: SessionDep):
 
 
 @router.delete("/{category_id}")
-def delete_category(category_id: int, session: SessionDep):
+def delete_category(category_id: uuid.UUID, session: SessionDep):
     category_service.delete_category(session, category_id)
     return {"ok": True}
 
 
 @router.patch("/{category_id}", response_model=CategoryPublic)
-def update_category(category_id: int, category: CategoryUpdate, session: SessionDep):
+def update_category(
+    category_id: uuid.UUID, category: CategoryUpdate, session: SessionDep
+):
     db_category = category_service.update_category(session, category, category_id)
     return db_category

@@ -3,10 +3,11 @@ from decimal import Decimal
 from ..models.transaction import TransactionBase
 from ..core.enums import TransactionType
 from .categories import CategoryPublic
+import uuid
 
 
 class TransactionPublic(TransactionBase):
-    id: int
+    id: uuid.UUID
     date: AwareDatetime
 
 
@@ -24,6 +25,6 @@ class TransactionUpdate(TransactionBase):
 
     date: AwareDatetime | None = None
     description: str | None = None
-    category_id: int | None = None
+    category_id: uuid.UUID | None = None
     amount: Decimal | None = None
     transaction_type: TransactionType | None = None
