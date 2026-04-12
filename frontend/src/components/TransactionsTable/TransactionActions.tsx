@@ -12,6 +12,7 @@ import { MoreHorizontal } from 'lucide-react'
 import { Button } from '../ui/button'
 import { deleteTransaction } from '@/api/transactions'
 import { toast } from 'sonner'
+import { TransactionDialog } from '../TransactionDialog'
 
 function TransactionActions({ transaction }: { transaction: Transaction }) {
   const queryClient = useQueryClient()
@@ -46,7 +47,7 @@ function TransactionActions({ transaction }: { transaction: Transaction }) {
 
   const handleDelete = (transactionId: string) => {
     try {
-      toast('Are you sure you want to delete this transaction?', {
+      toast.warning('Are you sure you want to delete this transaction?', {
         action: {
           label: 'Delete',
           onClick: () => mutate(transactionId),
@@ -62,31 +63,35 @@ function TransactionActions({ transaction }: { transaction: Transaction }) {
   }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="h-8 w-8 p-0">
-          <span className="sr-only">Open menu</span>
-          <MoreHorizontal className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-        <DropdownMenuItem>Edit</DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => navigator.clipboard.writeText(transaction.id)}
-        >
-          Copy transaction ID
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          variant="destructive"
-          disabled={isPending}
-          onClick={() => handleDelete(transaction.id)}
-        >
-          Delete
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="h-8 w-8 p-0">
+            <span className="sr-only">Open menu</span>
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+
+          <TransactionDialog existing={transaction} mode="edit" />
+
+          <DropdownMenuItem
+            onClick={() => navigator.clipboard.writeText(transaction.id)}
+          >
+            Copy transaction ID
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            variant="destructive"
+            disabled={isPending}
+            onClick={() => handleDelete(transaction.id)}
+          >
+            Delete
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </>
   )
 }
 

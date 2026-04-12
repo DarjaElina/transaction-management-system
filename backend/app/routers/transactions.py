@@ -69,7 +69,7 @@ def delete_transaction(transaction_id: uuid.UUID, session: SessionDep):
     return {"ok": True}
 
 
-@router.patch("/{transaction_id}", response_model=TransactionPublic)
+@router.patch("/{transaction_id}", response_model=TransactionPublicWithCategory)
 def update_transaction(
     transaction_id: uuid.UUID, transaction: TransactionUpdate, session: SessionDep
 ):

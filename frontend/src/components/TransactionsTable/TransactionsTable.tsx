@@ -27,8 +27,7 @@ import { Input } from '@/components/ui/input'
 import { useState } from 'react'
 import { DataTablePagination } from './DataTablePagination'
 import { DataTableViewOptions } from './DataTableViewOptions'
-import { CreateTransactionDialog } from '../CreateTransactionDialog'
-
+import { TransactionDialog } from '../TransactionDialog'
 interface TransactionsTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
@@ -77,7 +76,7 @@ export function TransactionsTable<TData, TValue>({
         />
         <div className="flex items-center gap-2">
           <DataTableViewOptions table={table} />
-          <CreateTransactionDialog />
+          <TransactionDialog mode="create" />
         </div>
       </div>
       <div className="overflow-hidden rounded-md border">

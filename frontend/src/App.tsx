@@ -3,6 +3,7 @@ import { TransactionsTable } from './components/TransactionsTable/TransactionsTa
 import { columns } from './components/TransactionsTable/Columns'
 import { getTransactons } from './api/transactions'
 import { Toaster } from 'sonner'
+import { TransactionRowSkeleton } from './components/TransactionRowSkeleton'
 
 function App() {
   const result = useQuery({
@@ -10,13 +11,7 @@ function App() {
     queryFn: getTransactons,
   })
 
-  if (result.isLoading) {
-    return <p>Loading transactions...</p>
-  }
-
   const transactions = result.data
-
-  console.log(transactions)
 
   return (
     <div className="min-h-screen bg-muted/40">
@@ -25,11 +20,20 @@ function App() {
           <h1 className="text-3xl font-semibold">Transactions</h1>
         </div>
 
-        {transactions && (
-          <div className="bg-background rounded-xl border p-6">
+        <div className="bg-background rounded-xl border p-6">
+          {transactions && (
             <TransactionsTable columns={columns} data={transactions} />
-          </div>
-        )}
+          )}
+
+          {result.isLoading && (
+            <div className="space-y-2">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <TransactionRowSkeleton key={i} />
+              ))}
+            </div>
+          )}
+        </div>
+
         <Toaster richColors />
       </div>
     </div>
