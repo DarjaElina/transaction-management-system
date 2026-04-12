@@ -16,8 +16,6 @@ function App() {
 
   const transactions = result.data
 
-  console.log(transactions)
-
   return (
     <div className="min-h-screen bg-muted/40">
       <div className="mx-auto max-w-6xl px-6 py-10">

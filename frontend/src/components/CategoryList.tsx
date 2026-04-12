@@ -30,19 +30,15 @@ import { RadioGroup, RadioGroupItem } from './ui/radio-group'
 interface CategoryListProps {
   container?: HTMLElement | null
   onFocus: () => void
-  inputId: string
-  onCategorySelect: (category: Category) => void
-  onCategoryClear: () => void
-  dataInvalid?: boolean
+  selectedCategory: Category
+  setSelectedCategory: (category: Category) => void
 }
 
 export function CategoryList({
   container,
   onFocus,
-  inputId,
-  onCategorySelect,
-  onCategoryClear,
-  dataInvalid,
+  selectedCategory,
+  setSelectedCategory,
 }: CategoryListProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const debouncedSearchTerm = useDebounce(searchTerm, 300)
@@ -60,7 +56,7 @@ export function CategoryList({
   const { isPending, mutate } = useMutation({
     mutationFn: createCategory,
     onSuccess: (newCategory) => {
-      onCategorySelect(newCategory)
+      setSelectedCategory(newCategory)
 
       setDialogOpen(false)
 
@@ -96,7 +92,7 @@ export function CategoryList({
 
   const handleSubmit = () => {
     mutate({
-      name: searchTerm,
+      name: selectedCategory?.name,
       allowed_type: allowedType,
     })
   }
@@ -104,6 +100,7 @@ export function CategoryList({
   return (
     <>
       <Combobox
+        value={selectedCategory}
         items={categoriesForView}
         itemToStringLabel={(category: Category) => category.name}
         filter={null}
@@ -111,27 +108,31 @@ export function CategoryList({
           const creatableSelection = nextSelectedCategory?.creatable
 
           if (creatableSelection) {
+            setSelectedCategory(nextSelectedCategory)
             setDialogOpen(true)
             return
           }
 
           if (nextSelectedCategory) {
-            onCategorySelect(nextSelectedCategory)
+            console.log(nextSelectedCategory)
+            setSelectedCategory(nextSelectedCategory)
           } else {
-            onCategoryClear()
+            setSelectedCategory({
+              id: '',
+              name: '',
+              creatable: false,
+              allowed_type: undefined,
+            })
           }
         }}
         onInputValueChange={(nextSearchTerm) => {
-          // Still need to find a way to deal with errors properly!
           setSearchTerm(nextSearchTerm)
         }}
       >
         <ComboboxInput
-          aria-invalid={dataInvalid}
           placeholder="Select a category or create new"
           showClear
           onFocus={onFocus}
-          id={inputId}
         />
 
         <ComboboxContent container={container}>
@@ -179,7 +180,17 @@ export function CategoryList({
           <FieldGroup>
             <Field>
               <Label htmlFor="category">Category</Label>
-              <Input id="category" name="category" defaultValue={searchTerm} />
+              <Input
+                id="category"
+                name="category"
+                onChange={(e) => {
+                  setSelectedCategory({
+                    ...selectedCategory,
+                    name: e.target.value,
+                  })
+                }}
+                value={selectedCategory?.name}
+              />
             </Field>
             <Field>
               <RadioGroup

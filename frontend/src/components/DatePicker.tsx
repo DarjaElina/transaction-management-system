@@ -15,9 +15,10 @@ interface DatePickerProps {
   date: Date | undefined
   setDate: (date: Date) => void
   id: string
+  isInvalid: boolean
 }
 
-export function DatePicker({ date, setDate, id }: DatePickerProps) {
+export function DatePicker({ date, setDate, id, isInvalid }: DatePickerProps) {
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -26,6 +27,7 @@ export function DatePicker({ date, setDate, id }: DatePickerProps) {
           data-empty={!date}
           className="justify-start text-left font-normal data-[empty=true]:text-muted-foreground"
           id={id}
+          aria-invalid={isInvalid}
         >
           <CalendarIcon />
           {date ? format(date, 'PPP') : <span>Pick a date</span>}

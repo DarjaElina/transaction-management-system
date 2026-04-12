@@ -5,7 +5,7 @@ export interface Transaction {
   id: string
   date: Date
   description: string
-  transaction_type: 'income' | 'expence'
+  transaction_type: 'income' | 'expense'
   amount: number
   category: {
     id: string
@@ -13,11 +13,7 @@ export interface Transaction {
   }
 }
 
-export type CreateTransactionType = Omit<
-  z.infer<typeof createTransactionSchema> & {
-    category_id: string
-  },
-  'category'
-> & {
+export type CreateTransactionType = z.infer<typeof createTransactionSchema> & {
   category_id: string
+  transaction_type: string
 }

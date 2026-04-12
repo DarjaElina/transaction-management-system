@@ -27,15 +27,28 @@ import type { Transaction } from '@/types/transactions.types'
 import { useRef, useState } from 'react'
 import { CategoryList } from './CategoryList'
 import type { Category } from '@/types/categories.types'
+import { Label } from './ui/label'
 
 export function CreateTransactionDialog() {
   const contentRef = useRef<HTMLDivElement | null>(null)
   const [container, setContainer] = useState<HTMLDivElement | null>(null)
+  const [selectedCategory, setSelectedCategory] = useState<Category>({
+    id: '',
+    name: '',
+    creatable: false,
+    allowed_type: undefined,
+  })
 
   const queryClient = useQueryClient()
   const { isPending, mutate } = useMutation({
     mutationFn: createTransaction,
     onSuccess: (newTransaction) => {
+      setSelectedCategory({
+        id: '',
+        name: '',
+        creatable: false,
+        allowed_type: undefined,
+      })
       queryClient.setQueryData(
         ['transactions'],
         (oldTransactions: Transaction[]) => [
@@ -49,34 +62,37 @@ export function CreateTransactionDialog() {
 
   const form = useForm({
     defaultValues: {
-      amount: '',
-      transaction_type: '',
+      amount: 0,
       description: '',
       date: new Date(),
-      category_id: '',
     },
     validators: {
       onSubmit: createTransactionSchema,
     },
     onSubmit: async ({ value }) => {
-      mutate(value, {
-        onError: (e) => {
-          toast.error(e?.message ?? 'Something went wrong 🥲')
+      if (!selectedCategory.allowed_type) {
+        toast.error('Please select a category')
+        return
+      }
+      mutate(
+        {
+          ...value,
+          transaction_type: selectedCategory.allowed_type,
+          category_id: selectedCategory.id,
         },
-        onSuccess: () => {
-          handleClearCategory()
-          setOpen(false)
-          form.reset()
-          toast.success('Transaction created succesfully! 🦄')
+        {
+          onError: (e) => {
+            toast.error(e?.message ?? 'Something went wrong 🥲')
+          },
+          onSuccess: () => {
+            setOpen(false)
+            form.reset()
+            toast.success('Transaction created succesfully! 🦄')
+          },
         },
-      })
+      )
     },
   })
-
-  const handleClearCategory = () => {
-    form.resetField('category_id')
-    form.resetField('transaction_type')
-  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -113,10 +129,13 @@ export function CreateTransactionDialog() {
                       name={field.name}
                       value={field.state.value}
                       onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
+                      onChange={(e) =>
+                        field.handleChange(Number(e.target.value))
+                      }
                       aria-invalid={isInvalid}
                       placeholder="10.50"
                       autoComplete="off"
+                      type="number"
                     />
                     {isInvalid && (
                       <FieldError errors={field.state.meta.errors} />
@@ -152,65 +171,23 @@ export function CreateTransactionDialog() {
               }}
             />
 
-            <form.Field
-              name="category_id"
-              children={(field) => {
-                const isInvalid =
-                  field.state.meta.isTouched && !field.state.meta.isValid
-                return (
-                  <Field data-invalid={isInvalid}>
-                    <FieldLabel htmlFor={field.name}>Category</FieldLabel>
-                    <CategoryList
-                      inputId={field.name}
-                      container={container}
-                      onFocus={() => {
-                        if (contentRef.current) {
-                          setContainer(contentRef.current)
-                        }
-                      }}
-                      onCategorySelect={(category: Category) => {
-                        if (category.id) {
-                          field.handleChange(category.id)
-                        }
-                        if (category.allowed_type) {
-                          form.setFieldValue(
-                            'transaction_type',
-                            category.allowed_type,
-                          )
-                        }
-                      }}
-                      onCategoryClear={handleClearCategory}
-                      dataInvalid={isInvalid}
-                    />
-                    {isInvalid && (
-                      <FieldError errors={field.state.meta.errors} />
-                    )}
-                  </Field>
-                )
+            <CategoryList
+              container={container}
+              onFocus={() => {
+                if (contentRef.current) {
+                  setContainer(contentRef.current)
+                }
               }}
+              selectedCategory={selectedCategory}
+              setSelectedCategory={setSelectedCategory}
             />
 
-            <form.Field
-              name="transaction_type"
-              children={(field) => {
-                if (field.state.value === '') return null
-
-                return (
-                  <Field>
-                    <FieldLabel htmlFor={field.name}>
-                      Transaction Type
-                    </FieldLabel>
-                    <Input
-                      readOnly
-                      id={field.name}
-                      name={field.name}
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                    />
-                  </Field>
-                )
-              }}
-            />
+            {selectedCategory.allowed_type && (
+              <>
+                <Label>Transaction type</Label>
+                <Input readOnly value={selectedCategory.allowed_type} />
+              </>
+            )}
 
             <form.Field
               name="date"
@@ -221,6 +198,7 @@ export function CreateTransactionDialog() {
                   <Field data-invalid={isInvalid}>
                     <FieldLabel htmlFor={field.name}>Date</FieldLabel>
                     <DatePicker
+                      isInvalid={isInvalid}
                       id={field.name}
                       date={field.state.value}
                       setDate={(date) => field.handleChange(date)}
