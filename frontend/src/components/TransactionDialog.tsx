@@ -11,25 +11,31 @@ import {
 } from '@/components/ui/dialog'
 import {
   Field,
+  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
 } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import { Plus } from 'lucide-react'
 import { DatePicker } from './DatePicker'
 import { useForm } from '@tanstack/react-form'
 import { createTransactionSchema } from '@/schemas/transactions'
 import { toast } from 'sonner'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { createTransaction } from '@/api/transactions'
+import { createTransaction, editTransaction } from '@/api/transactions'
 import type { Transaction } from '@/types/transactions.types'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { CategoryList } from './CategoryList'
 import type { Category } from '@/types/categories.types'
-import { Label } from './ui/label'
+import { Plus } from 'lucide-react'
 
-export function CreateTransactionDialog() {
+interface TransactionDialogProps {
+  mode: 'edit' | 'create'
+  existing?: Transaction
+}
+
+export function TransactionDialog({ mode, existing }: TransactionDialogProps) {
+  const [dialogOpen, setDialogOpen] = useState(false)
   const contentRef = useRef<HTMLDivElement | null>(null)
   const [container, setContainer] = useState<HTMLDivElement | null>(null)
   const [selectedCategory, setSelectedCategory] = useState<Category>({
@@ -58,14 +64,39 @@ export function CreateTransactionDialog() {
       )
     },
   })
-  const [open, setOpen] = useState(false)
+
+  const { isPending: isEditPending, mutate: mutateEdit } = useMutation({
+    mutationFn: editTransaction,
+    onSuccess: (newTransaction) => {
+      console.log('NEW TRANSACTION IS', newTransaction)
+      setSelectedCategory({
+        id: '',
+        name: '',
+        creatable: false,
+        allowed_type: undefined,
+      })
+      queryClient.setQueryData(
+        ['transactions'],
+        (oldTransactions: Transaction[]) =>
+          oldTransactions.map((t) =>
+            t.id === newTransaction.id ? newTransaction : t,
+          ),
+      )
+    },
+  })
 
   const form = useForm({
-    defaultValues: {
-      amount: 0,
-      description: '',
-      date: new Date(),
-    },
+    defaultValues: existing
+      ? {
+          amount: Number(existing.amount),
+          description: existing.description,
+          date: new Date(existing.date),
+        }
+      : {
+          amount: 0,
+          description: '',
+          date: new Date(),
+        },
     validators: {
       onSubmit: createTransactionSchema,
     },
@@ -74,37 +105,86 @@ export function CreateTransactionDialog() {
         toast.error('Please select a category')
         return
       }
-      mutate(
-        {
-          ...value,
-          transaction_type: selectedCategory.allowed_type,
-          category_id: selectedCategory.id,
-        },
-        {
-          onError: (e) => {
-            toast.error(e?.message ?? 'Something went wrong 🥲')
+      if (mode === 'create') {
+        mutate(
+          {
+            ...value,
+            transaction_type: selectedCategory.allowed_type,
+            category_id: selectedCategory.id,
           },
-          onSuccess: () => {
-            setOpen(false)
-            form.reset()
-            toast.success('Transaction created succesfully! 🦄')
+          {
+            onError: (e) => {
+              toast.error(e?.message ?? 'Something went wrong 🥲')
+            },
+            onSuccess: () => {
+              setDialogOpen(false)
+              form.reset()
+              toast.success('Transaction created succesfully! 🦄')
+            },
           },
-        },
-      )
+        )
+      } else if (existing && existing.id) {
+        mutateEdit(
+          {
+            ...value,
+            id: existing.id,
+            transaction_type: selectedCategory.allowed_type,
+            category_id: selectedCategory.id,
+          },
+          {
+            onError: (e) => {
+              toast.error(e?.message ?? 'Something went wrong 🥲')
+            },
+            onSuccess: () => {
+              setDialogOpen(false)
+              form.reset()
+              toast.success('Transaction updated succesfully! 🦄')
+            },
+          },
+        )
+      }
     },
   })
 
+  useEffect(() => {
+    const setExistingCategory = () => {
+      if (existing) {
+        setSelectedCategory(existing.category)
+      }
+    }
+    if (existing) {
+      form.reset({
+        amount: Number(existing.amount),
+        description: existing.description,
+        date: new Date(existing.date),
+      })
+    }
+    setExistingCategory()
+  }, [existing, form])
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <DialogTrigger asChild>
-        <Button size="sm">
-          <Plus />
-          Add Transaction
-        </Button>
+        {mode === 'create' ? (
+          <Button size="sm">
+            <Plus />
+            Add Transaction
+          </Button>
+        ) : (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="justify-start w-full font-normal px-2 py-1.5 cursor-auto"
+          >
+            Edit
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent ref={contentRef}>
         <DialogHeader>
-          <DialogTitle>Create new transaction</DialogTitle>
+          <DialogTitle>
+            {mode === 'create' ? 'Create new transaction' : 'Edit transaction'}
+          </DialogTitle>
           <DialogDescription className="sr-only"></DialogDescription>
         </DialogHeader>
         <form
@@ -136,6 +216,8 @@ export function CreateTransactionDialog() {
                       placeholder="10.50"
                       autoComplete="off"
                       type="number"
+                      min={0.1}
+                      step={0.01}
                     />
                     {isInvalid && (
                       <FieldError errors={field.state.meta.errors} />
@@ -183,10 +265,21 @@ export function CreateTransactionDialog() {
             />
 
             {selectedCategory.allowed_type && (
-              <>
-                <Label>Transaction type</Label>
-                <Input readOnly value={selectedCategory.allowed_type} />
-              </>
+              <Field data-disabled>
+                <FieldLabel htmlFor="transaction_type">
+                  Transaction type
+                </FieldLabel>
+                <Input
+                  id="transaction_type"
+                  disabled
+                  readOnly
+                  value={selectedCategory.allowed_type}
+                />
+                <FieldDescription>
+                  Transaction type is preselected based on category allowed
+                  type.
+                </FieldDescription>
+              </Field>
             )}
 
             <form.Field
@@ -217,7 +310,7 @@ export function CreateTransactionDialog() {
             <Button variant="outline">Cancel</Button>
           </DialogClose>
           <Button disabled={isPending} type="submit" form="transactions-form">
-            {isPending ? 'Saving...' : 'Save changes'}
+            {isPending || isEditPending ? 'Saving...' : 'Save changes'}
           </Button>
         </DialogFooter>
       </DialogContent>

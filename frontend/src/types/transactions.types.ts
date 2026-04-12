@@ -17,3 +17,7 @@ export type CreateTransactionType = z.infer<typeof createTransactionSchema> & {
   category_id: string
   transaction_type: string
 }
+
+export type EditTransactionType = CreateTransactionType & {
+  id: string
+}

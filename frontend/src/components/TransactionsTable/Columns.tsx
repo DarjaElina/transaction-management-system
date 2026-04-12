@@ -3,6 +3,7 @@ import type { ColumnDef } from '@tanstack/react-table'
 import { Checkbox } from '@/components/ui/checkbox'
 import { DataTableColumnHeader } from './ColumnHeader'
 import TransactionActions from './TransactionActions'
+import { Badge } from '../ui/badge'
 
 export const columns: ColumnDef<Transaction>[] = [
   {
@@ -32,6 +33,10 @@ export const columns: ColumnDef<Transaction>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Date" />
     ),
+    cell: ({ row }) => {
+      const formatted = new Date(row.getValue('date')).toDateString()
+      return <div>{formatted}</div>
+    },
   },
   {
     accessorKey: 'description',
@@ -40,10 +45,35 @@ export const columns: ColumnDef<Transaction>[] = [
   {
     accessorKey: 'category.name',
     header: 'Category',
+    cell: ({ row }) => {
+      const category = row.original.category
+
+      if (!category) return null
+
+      return <Badge variant="secondary">{category.name}</Badge>
+    },
   },
   {
     accessorKey: 'transaction_type',
     header: 'Type',
+    cell: ({ row }) => {
+      const type = row.getValue('transaction_type') as string
+
+      const isIncome = type === 'income'
+
+      return (
+        <Badge
+          variant="outline"
+          className={
+            isIncome
+              ? 'bg-green-100 text-green-700 border-green-200'
+              : 'bg-red-100 text-red-700 border-red-200'
+          }
+        >
+          {type.charAt(0).toUpperCase() + type.slice(1)}
+        </Badge>
+      )
+    },
   },
   {
     accessorKey: 'amount',
@@ -68,7 +98,11 @@ export const columns: ColumnDef<Transaction>[] = [
     id: 'actions',
     cell: ({ row }) => {
       const transaction = row.original
-      return <TransactionActions transaction={transaction} />
+      return (
+        <>
+          <TransactionActions transaction={transaction} />
+        </>
+      )
     },
   },
 ]
