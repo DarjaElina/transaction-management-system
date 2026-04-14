@@ -1,6 +1,6 @@
 # 💰 Transaction Management System
 
-This is a work-in-progress full-stack application for managing financial transactions.  
+This is a work-in-progress full-stack application for managing financial transactions.
 The main goal of this project is not only functionality, but building a **production-quality development workflow** with a focus on testing, CI/CD, and maintainable architecture.
 
 ---
@@ -51,7 +51,7 @@ The goal of this project is to simulate a real-world production environment by f
 - Testing strategy (frontend + backend)
 - Automated quality checks
 - CI/CD pipeline integration
-  
+
 ## 📌 Current Features
 - Create, read, update, delete transactions
 - Interactive transaction table built with TanStack Table
