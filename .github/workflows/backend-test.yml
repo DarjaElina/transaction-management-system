@@ -4,11 +4,31 @@ on:
   pull_request:
     branches:
       - main
-    paths:
-      - "backend/**"
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    # Set job outputs to values from filter step
+    outputs:
+      changed: ${{ steps.filter.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dorny/paths-filter@v4
+        id: filter
+        with:
+          filters: |
+            changed:
+              - backend/**
+              - docker-compose*.yml
+              - .github/workflows/backend-test.yml
+
   backend-test:
+    needs:
+      - changes
+    if : ${{ needs.changes.outputs.changed == 'true' }}
     runs-on: ubuntu-latest
 
     defaults:
@@ -34,10 +54,10 @@ jobs:
       TEST_DATABASE_URL: postgresql://postgres:mysecretpassword@localhost:5432/postgres_test
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: 3.13
 
@@ -48,3 +68,17 @@ jobs:
 
       - name: Run unit tests
         run: pytest
+
+  # This job is only used for branch protection
+  alls-green-backend-test:
+    if: always()
+    needs:
+      - backend-test
+      - changes
+    runs-on: ubuntu-latest
+    steps:
+      - name: Decide whether the needed jobs succeeded or failed
+        uses: re-actors/alls-green@release/v1
+        with:
+          jobs: ${{ toJSON(needs) }}
+          allowed-skips: backend-test
