@@ -143,20 +143,20 @@ describe('TransactionsTable', () => {
     const user = userEvent.setup()
 
     let rows = screen.getAllByRole('rowgroup')
-    expect(rows[1]).toHaveTextContent(/4.50 €/)
-    const amountHeadner = await screen.findByText(/amount/i)
-    await user.click(amountHeadner)
+    expect(rows[1]).toHaveTextContent(/4,50\s?€/)
+    const amountHeader = await screen.findByText(/amount/i)
+    await user.click(amountHeader)
 
     const asc = await screen.findByText('Asc')
     await user.click(asc)
     rows = screen.getAllByRole('rowgroup')
-    expect(rows[1]).toHaveTextContent(/1.00 €/)
+    expect(rows[1]).toHaveTextContent(/1,00\s?€/)
 
-    await user.click(amountHeadner)
+    await user.click(amountHeader)
     const desc = await screen.findByText('Desc')
     await user.click(desc)
     rows = screen.getAllByRole('rowgroup')
-    expect(rows[1]).toHaveTextContent(/100.00 €/)
+    expect(rows[1]).toHaveTextContent(/100,00\s?€/)
   })
 
   it('toggles column visibility', async () => {
