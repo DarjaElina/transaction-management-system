@@ -1,11 +1,12 @@
 import type {
+  ApiTransaction,
   CreateTransactionType,
   EditTransactionType,
   Transaction,
 } from '@/types/transactions.types'
 import { api } from './client'
 
-export const getTransactons = async (): Promise<Transaction[]> => {
+export const getTransactons = async (): Promise<ApiTransaction[]> => {
   const { data } = await api.get('/transactions')
   return data
 }

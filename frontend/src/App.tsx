@@ -6,6 +6,7 @@ import { Toaster } from 'sonner'
 import { TransactionRowSkeleton } from './components/TransactionRowSkeleton'
 import { ThemeProvider } from './components/ThemeProvider'
 import { ModeToggle } from './components/ModeToggle'
+import { mapTransactions } from './helpers'
 
 function App() {
   const result = useQuery({
@@ -14,6 +15,10 @@ function App() {
   })
 
   const transactions = result.data
+
+  const mappedTransactions = mapTransactions(transactions)
+
+  console.log(transactions)
 
   return (
     <ThemeProvider>
@@ -28,7 +33,7 @@ function App() {
 
           <div className="bg-background rounded-xl border p-6">
             {transactions && (
-              <TransactionsTable columns={columns} data={transactions} />
+              <TransactionsTable columns={columns} data={mappedTransactions} />
             )}
 
             {result.isLoading && (

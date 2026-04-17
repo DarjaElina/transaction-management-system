@@ -21,3 +21,7 @@ export type CreateTransactionType = z.infer<typeof createTransactionSchema> & {
 export type EditTransactionType = CreateTransactionType & {
   id: string
 }
+
+export type ApiTransaction = Omit<Transaction, 'amount'> & {
+  amount: string
+}

@@ -77,6 +77,7 @@ export const columns: ColumnDef<Transaction>[] = [
   },
   {
     accessorKey: 'amount',
+    sortingFn: 'basic',
     header: ({ column }) => (
       <DataTableColumnHeader
         column={column}
