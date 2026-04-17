@@ -1,4 +1,5 @@
 import React from 'react'
+import type { ApiTransaction, Transaction } from './types/transactions.types'
 
 export const getCategoriesStatus = (
   isFetching: boolean,
@@ -24,4 +25,15 @@ export const getCategoriesStatus = (
   }
 
   return null
+}
+
+export const mapTransactions = (
+  apiTxs: ApiTransaction[] | undefined,
+): Transaction[] => {
+  if (!apiTxs) return []
+
+  return apiTxs.map((t) => ({
+    ...t,
+    amount: Number(t.amount),
+  }))
 }
