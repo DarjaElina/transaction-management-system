@@ -20,3 +20,5 @@ pgdata
 # Environmental variables
 .env
 .env.*
+
+!.env.example
