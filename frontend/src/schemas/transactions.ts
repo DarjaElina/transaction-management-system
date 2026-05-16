@@ -1,7 +1,7 @@
 import * as z from 'zod'
 
 export const createTransactionSchema = z.object({
-  amount: z.float32().min(0.1, 'Minimum amount is `0.10`'),
+  amount: z.coerce.number<string>().min(0.1, 'Minimum amount is 0.10'),
   description: z
     .string()
     .min(5, 'Description must be at least 5 characters.')
