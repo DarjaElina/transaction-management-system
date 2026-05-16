@@ -24,9 +24,7 @@ export const openDialog = async () => {
   const user = userEvent.setup()
 
   await user.click(
-    await screen.findByRole('button', {
-      name: /add transaction/i,
-    }),
+    await screen.findByRole('button', { name: /add transaction/i }),
   )
 }
 
@@ -174,16 +172,10 @@ describe('TransactionDialog', () => {
       'Food',
     )
 
-    await user.click(
-      await screen.findByRole('option', {
-        name: 'Food',
-      }),
-    )
+    await user.click(await screen.findByRole('option', { name: 'Food' }))
 
     await user.click(
-      await screen.findByRole('button', {
-        name: /save changes/i,
-      }),
+      await screen.findByRole('button', { name: /save changes/i }),
     )
 
     expect(

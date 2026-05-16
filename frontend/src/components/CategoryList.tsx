@@ -60,11 +60,10 @@ export function CategoryList({
 
       setDialogOpen(false)
 
-      toast.success(`Category ${newCategory.name} created successfully!`)
-      queryClient.setQueryData(['categories'], (oldCategories: Category[]) => [
-        ...oldCategories,
-        newCategory,
-      ])
+      queryClient.setQueryData(
+        ['categories'],
+        (oldCategories: Category[] = []) => [...oldCategories, newCategory],
+      )
       setSearchTerm('')
       setAllowedType('income')
     },
@@ -91,10 +90,20 @@ export function CategoryList({
       : data
 
   const handleSubmit = () => {
-    mutate({
-      name: selectedCategory?.name,
-      allowed_type: allowedType,
-    })
+    mutate(
+      {
+        name: selectedCategory?.name,
+        allowed_type: allowedType,
+      },
+      {
+        onError: (e) => {
+          toast.error(e?.message ?? 'Something went wrong 🥲')
+        },
+        onSuccess: (category: Category) => {
+          toast.success(`Category ${category.name} created successfully!`)
+        },
+      },
+    )
   }
 
   return (
