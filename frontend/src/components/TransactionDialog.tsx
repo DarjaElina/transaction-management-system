@@ -57,7 +57,7 @@ export function TransactionDialog({ mode, existing }: TransactionDialogProps) {
       })
       queryClient.setQueryData(
         ['transactions'],
-        (oldTransactions: Transaction[]) => [
+        (oldTransactions: Transaction[] = []) => [
           ...oldTransactions,
           newTransaction,
         ],
@@ -68,7 +68,6 @@ export function TransactionDialog({ mode, existing }: TransactionDialogProps) {
   const { isPending: isEditPending, mutate: mutateEdit } = useMutation({
     mutationFn: editTransaction,
     onSuccess: (newTransaction) => {
-      console.log('NEW TRANSACTION IS', newTransaction)
       setSelectedCategory({
         id: '',
         name: '',
@@ -88,12 +87,12 @@ export function TransactionDialog({ mode, existing }: TransactionDialogProps) {
   const form = useForm({
     defaultValues: existing
       ? {
-          amount: Number(existing.amount),
+          amount: String(existing.amount),
           description: existing.description,
           date: new Date(existing.date),
         }
       : {
-          amount: 0,
+          amount: '',
           description: '',
           date: new Date(),
         },
@@ -109,6 +108,7 @@ export function TransactionDialog({ mode, existing }: TransactionDialogProps) {
         mutate(
           {
             ...value,
+            amount: Number(value.amount),
             transaction_type: selectedCategory.allowed_type,
             category_id: selectedCategory.id,
           },
@@ -127,6 +127,7 @@ export function TransactionDialog({ mode, existing }: TransactionDialogProps) {
         mutateEdit(
           {
             ...value,
+            amount: Number(value.amount),
             id: existing.id,
             transaction_type: selectedCategory.allowed_type,
             category_id: selectedCategory.id,
@@ -154,7 +155,7 @@ export function TransactionDialog({ mode, existing }: TransactionDialogProps) {
     }
     if (existing) {
       form.reset({
-        amount: Number(existing.amount),
+        amount: String(existing.amount),
         description: existing.description,
         date: new Date(existing.date),
       })
@@ -209,9 +210,7 @@ export function TransactionDialog({ mode, existing }: TransactionDialogProps) {
                       name={field.name}
                       value={field.state.value}
                       onBlur={field.handleBlur}
-                      onChange={(e) =>
-                        field.handleChange(Number(e.target.value))
-                      }
+                      onChange={(e) => field.handleChange(e.target.value)}
                       aria-invalid={isInvalid}
                       placeholder="10.50"
                       autoComplete="off"

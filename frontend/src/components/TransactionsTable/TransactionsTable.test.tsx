@@ -1,25 +1,10 @@
-import { render, screen } from '@testing-library/react'
-import { TransactionsTable } from './TransactionsTable'
-import { columns } from './Columns'
+import { screen } from '@testing-library/react'
 import type { Transaction } from '@/types/transactions.types'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import userEvent from '@testing-library/user-event'
 import '@testing-library/jest-dom'
-
-const renderTable = (data = mockTransactions) =>
-  render(
-    <QueryClientProvider client={queryClient}>
-      <TransactionsTable columns={columns} data={data} />
-    </QueryClientProvider>,
-  )
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: false,
-    },
-  },
-})
+import { columns } from './Columns'
+import { TransactionsTable } from './TransactionsTable'
+import { renderWithProviders } from '@/helpers/testHelpers'
 
 export const mockTransactions: Transaction[] = [
   {
@@ -58,7 +43,9 @@ export const mockTransactions: Transaction[] = [
 
 describe('TransactionsTable', () => {
   it('renders rows from provided data', async () => {
-    renderTable()
+    renderWithProviders(
+      <TransactionsTable columns={columns} data={mockTransactions} />,
+    )
 
     const description = await screen.findByText(/coffee/i)
     const formattedAmount = await screen.findByText(/4,50\s?€/)
@@ -70,7 +57,9 @@ describe('TransactionsTable', () => {
   })
 
   it('renders table headers', async () => {
-    renderTable()
+    renderWithProviders(
+      <TransactionsTable columns={columns} data={mockTransactions} />,
+    )
 
     const dateHeader = await screen.findByText(/date/i)
     const descriptionHeader = await screen.findByText(/description/i)
@@ -86,14 +75,16 @@ describe('TransactionsTable', () => {
   })
 
   it("shows 'No results' when data is empty", async () => {
-    renderTable([])
+    renderWithProviders(<TransactionsTable columns={columns} data={[]} />)
 
     const emptyMessage = await screen.findByText(/no results/i)
     expect(emptyMessage).toBeInTheDocument()
   })
 
   it('filters rows based on description input', async () => {
-    renderTable()
+    renderWithProviders(
+      <TransactionsTable columns={columns} data={mockTransactions} />,
+    )
 
     const user = userEvent.setup()
 
@@ -113,7 +104,9 @@ describe('TransactionsTable', () => {
   })
 
   it('sorts rows when clicking on a sortable date column', async () => {
-    renderTable()
+    renderWithProviders(
+      <TransactionsTable columns={columns} data={mockTransactions} />,
+    )
 
     const user = userEvent.setup()
 
@@ -138,7 +131,9 @@ describe('TransactionsTable', () => {
   })
 
   it('sorts rows when clicking on a sortable amount column', async () => {
-    renderTable()
+    renderWithProviders(
+      <TransactionsTable columns={columns} data={mockTransactions} />,
+    )
 
     const user = userEvent.setup()
 
@@ -160,7 +155,9 @@ describe('TransactionsTable', () => {
   })
 
   it('toggles column visibility', async () => {
-    renderTable()
+    renderWithProviders(
+      <TransactionsTable columns={columns} data={mockTransactions} />,
+    )
 
     const user = userEvent.setup()
 
