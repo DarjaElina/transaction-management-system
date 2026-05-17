@@ -10,7 +10,7 @@ const setup = (props = {}) => {
   const selectedCategory = {
     id: '',
     name: '',
-    creatable: false,
+    creatable: true,
   }
 
   const setSelectedCategory = vi.fn()
@@ -66,28 +66,28 @@ describe('TransactionDialog', () => {
     expect(await screen.findByText(/new category/i)).toBeInTheDocument()
   })
 
-  // TODO: Fix that category name is empty string in toast!
+  it('creates category successfully', async () => {
+    const { user, setSelectedCategory } = setup()
 
-  // it('creates category successfully', async () => {
-  //   const { user, setSelectedCategory } = setup()
+    await user.type(
+      await screen.findByPlaceholderText(/select a category or create new/i),
+      'New',
+    )
 
-  //   await user.type(
-  //     await screen.findByPlaceholderText(/select a category or create new/i),
-  //     'New',
-  //   )
+    await user.click(await screen.findByRole('option', { name: /new/i }))
 
-  //   await user.click(await screen.findByRole('option', { name: /new/i }))
+    await user.click(
+      await screen.findByRole('button', { name: /save changes/i }),
+    )
 
-  //   await user.click(
-  //     await screen.findByRole('button', { name: /save changes/i }),
-  //   )
+    expect(setSelectedCategory).toHaveBeenCalledWith({
+      creatable: true,
+      id: 'create:New',
+      name: 'New',
+    })
 
-  //   expect(
-  //     await screen.findByText(/category new created successfully/i),
-  //   ).toBeInTheDocument()
-
-  //   expect(setSelectedCategory).toHaveBeenCalled()
-  // })
+    expect(await screen.findByText(/created successfully/i)).toBeInTheDocument()
+  })
 
   it('shows loading state while creating category', async () => {
     const { user } = setup()
