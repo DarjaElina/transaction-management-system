@@ -123,7 +123,6 @@ export function CategoryList({
           }
 
           if (nextSelectedCategory) {
-            console.log(nextSelectedCategory)
             setSelectedCategory(nextSelectedCategory)
           } else {
             setSelectedCategory({
