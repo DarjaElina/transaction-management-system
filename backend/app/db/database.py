@@ -1,18 +1,15 @@
 from typing import Annotated
 from sqlmodel import Session, create_engine
 from fastapi import Depends
-from app.config import Settings
+from app.config import get_settings
 from functools import lru_cache
 
 
-@lru_cache
-def get_settings() -> Settings:
-    return Settings()
+settings = get_settings()
 
 
 @lru_cache
 def get_engine():
-    settings = get_settings()
     return create_engine(
         settings.database_url,
         echo=True,
