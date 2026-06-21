@@ -34,3 +34,8 @@ register_exception_handlers(app)
 @app.get("/")
 async def root():
     return {"message": "Hello! :-)"}
+
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}

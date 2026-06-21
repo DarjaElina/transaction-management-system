@@ -2,10 +2,11 @@ FROM python:3.11
 
 WORKDIR /backend
 
-COPY ./requirements.txt /backend/requirements.txt
+COPY requirements.txt .
+RUN pip install --no-cache-dir --upgrade -r requirements.txt
 
-RUN pip install --no-cache-dir --upgrade -r /backend/requirements.txt
+COPY . .
 
-COPY ./app /backend/app
+RUN chmod +x scripts/start.sh
 
-CMD ["fastapi", "run", "app/main.py", "--port", "8000"]
+CMD ["scripts/start.sh"]

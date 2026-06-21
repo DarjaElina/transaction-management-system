@@ -1,18 +1,4 @@
 services:
-  app:
-    build:
-      context: .
-      dockerfile: dev.Dockerfile
-    ports:
-      - 8001:8000
-    volumes:
-      - ./app:/backend/app
-    environment:
-      DATABASE_URL: postgresql://postgres:mysecretpassword@postgres:5432/postgres
-    depends_on:
-      postgres:
-        condition: service_healthy
-
   postgres:
     image: postgres
     ports:
@@ -22,9 +8,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_DB: postgres
     volumes:
-      - ./pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+      - pgdata:/var/lib/postgresql
+
+volumes:
+  pgdata:
