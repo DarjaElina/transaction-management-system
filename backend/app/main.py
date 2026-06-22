@@ -26,8 +26,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(transactions.router)
-app.include_router(categories.router)
+app.include_router(transactions.router, prefix="/api")
+app.include_router(categories.router, prefix="/api")
 register_exception_handlers(app)
 
 

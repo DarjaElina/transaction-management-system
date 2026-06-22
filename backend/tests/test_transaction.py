@@ -28,7 +28,7 @@ def category(session):
 
 def test_create_transaction(client: TestClient, category):
     response = client.post(
-        "/transactions/",
+        "/api/transactions/",
         json={
             "date": "2026-02-14T13:49:11.942Z",
             "description": "Test description",
@@ -51,13 +51,13 @@ def test_create_transaction(client: TestClient, category):
 
 
 def test_create_transaction_incomplete(client: TestClient, category):
-    response = client.post("/transactions/", json={"category_id": str(category.id)})
+    response = client.post("/api/transactions/", json={"category_id": str(category.id)})
     assert response.status_code == 422
 
 
 def test_create_transaction_date_invalid(client: TestClient, category):
     response = client.post(
-        "/transactions/",
+        "/api/transactions/",
         json={
             "date": "Invalid date",
             "description": "Test description",
@@ -71,7 +71,7 @@ def test_create_transaction_date_invalid(client: TestClient, category):
 
 def test_amount_cannot_be_any_string(client: TestClient, category):
     response = client.post(
-        "/transactions/",
+        "/api/transactions/",
         json={
             "date": "2026-02-14T13:49:11.942Z",
             "description": "Test description",
@@ -85,7 +85,7 @@ def test_amount_cannot_be_any_string(client: TestClient, category):
 
 def test_amount_can_be_decimal_string(client: TestClient, category):
     response = client.post(
-        "/transactions/",
+        "/api/transactions/",
         json={
             "date": "2026-02-14T13:49:11.942Z",
             "description": "Test description",
@@ -99,7 +99,7 @@ def test_amount_can_be_decimal_string(client: TestClient, category):
 
 def test_amount_max_decimal_places_is_2(client: TestClient, category):
     response = client.post(
-        "/transactions/",
+        "/api/transactions/",
         json={
             "date": "2026-02-14T13:49:11.942Z",
             "description": "Test description",
@@ -113,7 +113,7 @@ def test_amount_max_decimal_places_is_2(client: TestClient, category):
 
 def test_amount_is_converted_to_decimal(client: TestClient, category):
     response = client.post(
-        "/transactions/",
+        "/api/transactions/",
         json={
             "date": "2026-02-14T13:49:11.942Z",
             "description": "Test description",
@@ -130,7 +130,7 @@ def test_amount_is_converted_to_decimal(client: TestClient, category):
 
 def test_amount_is_rounded_to_two_decimals(client: TestClient, category):
     response = client.post(
-        "/transactions/",
+        "/api/transactions/",
         json={
             "date": "2026-02-14T13:49:11.942Z",
             "description": "Test description",
@@ -147,7 +147,7 @@ def test_amount_is_rounded_to_two_decimals(client: TestClient, category):
 
 def test_amount_max_digits_cannot_exceed_19(client: TestClient, category):
     response = client.post(
-        "/transactions/",
+        "/api/transactions/",
         json={
             "date": "2026-02-14T13:49:11.942Z",
             "description": "Test description",
@@ -161,7 +161,7 @@ def test_amount_max_digits_cannot_exceed_19(client: TestClient, category):
 
 def test_amount_cannot_be_negative(client: TestClient, category):
     response = client.post(
-        "/transactions/",
+        "/api/transactions/",
         json={
             "date": "2026-02-14T13:49:11.942Z",
             "description": "Test description",
@@ -175,7 +175,7 @@ def test_amount_cannot_be_negative(client: TestClient, category):
 
 def test_amount_cannot_be_zero(client: TestClient, category):
     response = client.post(
-        "/transactions/",
+        "/api/transactions/",
         json={
             "date": "2026-02-14T13:49:11.942Z",
             "description": "Test description",
@@ -207,7 +207,7 @@ def test_read_transactions(session: Session, client: TestClient, category):
     session.add(transaction_2)
     session.commit()
 
-    response = client.get("/transactions/")
+    response = client.get("/api/transactions/")
     data = response.json()
 
     assert response.status_code == 200
@@ -224,7 +224,7 @@ def test_read_transaction(session: Session, client: TestClient, category):
     transaction = Transaction(
         date=datetime(2025, 5, 17),
         description="Test transaction for 99.99€",
-        category_id=str(category.id),
+        category_id=category.id,
         amount=Decimal("99.99"),
         transaction_type=TransactionType.INCOME,
     )
@@ -232,7 +232,7 @@ def test_read_transaction(session: Session, client: TestClient, category):
     session.add(transaction)
     session.commit()
 
-    response = client.get(f"/transactions/{transaction.id}")
+    response = client.get(f"/api/transactions/{transaction.id}")
     data = response.json()
 
     assert response.status_code == 200
@@ -253,7 +253,8 @@ def test_update_transaction(session: Session, client: TestClient, category):
     session.commit()
 
     response = client.patch(
-        f"/transactions/{transaction.id}", json={"description": "Updated description"}
+        f"/api/transactions/{transaction.id}",
+        json={"description": "Updated description"},
     )
     data = response.json()
 
@@ -273,7 +274,7 @@ def test_delete_transaction(session: Session, client: TestClient, category):
     session.add(transaction)
     session.commit()
 
-    response = client.delete(f"/transactions/{transaction.id}")
+    response = client.delete(f"/api/transactions/{transaction.id}")
 
     transaction_in_db = session.get(Transaction, transaction.id)
 
@@ -284,7 +285,7 @@ def test_delete_transaction(session: Session, client: TestClient, category):
 
 def test_transaction_type_should_be_income_or_expense(client: TestClient, category):
     response = client.post(
-        "/transactions/",
+        "/api/transactions/",
         json={
             "date": "2026-02-14T13:49:11.942Z",
             "description": "Test description",
@@ -298,7 +299,7 @@ def test_transaction_type_should_be_income_or_expense(client: TestClient, catego
 
 def test_transaction_type_cannot_be_null(client: TestClient, category):
     response = client.post(
-        "/transactions/",
+        "/api/transactions/",
         json={
             "date": "2026-02-14T13:49:11.942Z",
             "description": "Test description",
@@ -311,7 +312,7 @@ def test_transaction_type_cannot_be_null(client: TestClient, category):
 
 def test_unknown_attribute_forbidden(client: TestClient, category):
     response = client.post(
-        "/transactions/",
+        "/api/transactions/",
         json={
             "date": "2026-02-14T13:49:11.942Z",
             "description": "Test description",
@@ -325,7 +326,7 @@ def test_unknown_attribute_forbidden(client: TestClient, category):
 
 def test_read_transaction_not_found(client: TestClient):
     fake_id = uuid.uuid4()
-    response = client.get(f"/transactions/{fake_id}")
+    response = client.get(f"/api/transactions/{fake_id}")
 
     assert response.status_code == 404
     assert (
@@ -336,7 +337,7 @@ def test_read_transaction_not_found(client: TestClient):
 
 def test_delete_transaction_not_found(client: TestClient):
     fake_id = uuid.uuid4()
-    response = client.delete(f"/transactions/{fake_id}")
+    response = client.delete(f"/api/transactions/{fake_id}")
 
     assert response.status_code == 404
     assert (
@@ -348,7 +349,7 @@ def test_delete_transaction_not_found(client: TestClient):
 def test_update_transaction_not_found(client: TestClient):
     fake_id = uuid.uuid4()
     response = client.patch(
-        f"/transactions/{fake_id}",
+        f"/api/transactions/{fake_id}",
         json={"description": "Nope"},
     )
 
@@ -363,7 +364,7 @@ def test_create_transaction_future_date_forbidden(client: TestClient, category):
     future_date = (datetime.now(UTC) + timedelta(days=1)).isoformat()
 
     response = client.post(
-        "/transactions/",
+        "/api/transactions/",
         json={
             "date": future_date,
             "description": "Future transaction",
@@ -386,7 +387,7 @@ def test_update_transaction_future_date_forbidden(
     transaction = Transaction(
         date=datetime(2023, 1, 1),
         description="Old",
-        category_id=str(category.id),
+        category_id=category.id,
         amount=Decimal("10.00"),
         transaction_type=TransactionType.EXPENSE,
     )
@@ -396,7 +397,7 @@ def test_update_transaction_future_date_forbidden(
     future_date = (datetime.now(UTC) + timedelta(days=1)).isoformat()
 
     response = client.patch(
-        f"/transactions/{transaction.id}",
+        f"/api/transactions/{transaction.id}",
         json={"date": future_date},
     )
 
@@ -419,7 +420,7 @@ def test_create_transaction_category_type_mismatch(
     session.commit()
 
     response = client.post(
-        "/transactions/",
+        "/api/transactions/",
         json={
             "date": "2025-01-01T10:00:00Z",
             "description": "Invalid",
@@ -470,7 +471,7 @@ def test_filter_transactions_by_category(
 
     session.commit()
 
-    response = client.get(f"/transactions/?category_id={category.id}")
+    response = client.get(f"/api/transactions/?category_id={category.id}")
 
     data = response.json()
 

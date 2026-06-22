@@ -18,7 +18,7 @@ class TransactionBase(SQLModel):
     )
     category_id: uuid.UUID | None = Field(default=None, foreign_key="categories.id")
 
-    __tablename__ = "transactions"
+    __tablename__: str = "transactions"  #  type: ignore
 
 
 class Transaction(TransactionBase, table=True):

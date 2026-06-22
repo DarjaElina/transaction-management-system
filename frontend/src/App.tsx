@@ -14,7 +14,7 @@ function App() {
     queryFn: getTransactons,
   })
 
-  const transactions = result.data
+  const transactions = result.data ?? []
 
   const mappedTransactions = mapTransactions(transactions)
 
@@ -27,13 +27,14 @@ function App() {
           <nav className="w-full flex justify-end">
             <ModeToggle />
           </nav>
+
           <div className="mb-8 flex">
             <h1 className="text-3xl font-semibold">Transactions</h1>
           </div>
 
           <div className="bg-background rounded-xl border p-6">
-            {transactions && (
-              <TransactionsTable columns={columns} data={mappedTransactions} />
+            {result.error && (
+              <p className="text-rose-500">Something went wrong 😿</p>
             )}
 
             {result.isLoading && (
@@ -42,6 +43,10 @@ function App() {
                   <TransactionRowSkeleton key={i} />
                 ))}
               </div>
+            )}
+
+            {!result.isLoading && !result.error && (
+              <TransactionsTable columns={columns} data={mappedTransactions} />
             )}
           </div>
 

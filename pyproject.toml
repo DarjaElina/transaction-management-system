@@ -1,0 +1,11 @@
+[tool.ruff]
+line-length = 88
+target-version = "py313"
+exclude = ["venv", ".git", "__pycache__", "backend/__pycache__"]
+
+[tool.pyright]
+typeCheckingMode = "standard"
+venvPath = "./backend"
+venv = ".venv"
+include = ["backend/app", "backend/tests"]
+exclude = ["**/alembic/**", "**/node_modules", "**/__pycache__", "**/.venv", "**/venv", '**/.*']

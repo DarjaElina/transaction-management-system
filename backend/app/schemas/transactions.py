@@ -1,5 +1,7 @@
-from pydantic import ConfigDict, AwareDatetime
+from pydantic import AwareDatetime, ConfigDict
 from decimal import Decimal
+
+from sqlmodel import SQLModel
 from ..models.transaction import TransactionBase
 from ..core.enums import TransactionType
 from .categories import CategoryPublic
@@ -16,15 +18,16 @@ class TransactionPublicWithCategory(TransactionPublic):
 
 
 class TransactionCreate(TransactionBase):
-    model_config = ConfigDict(extra="forbid")
     date: AwareDatetime
 
+    model_config = ConfigDict(extra="forbid")  # type: ignore
 
-class TransactionUpdate(TransactionBase):
-    model_config = ConfigDict(extra="forbid")
 
+class TransactionUpdate(SQLModel):
     date: AwareDatetime | None = None
     description: str | None = None
     category_id: uuid.UUID | None = None
     amount: Decimal | None = None
     transaction_type: TransactionType | None = None
+
+    model_config = ConfigDict(extra="forbid")  # type: ignore

@@ -1,3 +1,5 @@
+import uuid
+
 from ..models.transaction import Transaction
 from ..schemas.transactions import TransactionCreate
 from ..db.database import SessionDep
@@ -19,7 +21,7 @@ def get_transactions(
     session: SessionDep,
     offset: int,
     limit: int,
-    category_id: int | None,
+    category_id: uuid.UUID | None,
     transaction_type: TransactionType | None,
     description: str | None,
     start_date: datetime | None,
