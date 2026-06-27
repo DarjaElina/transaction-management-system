@@ -2,8 +2,8 @@ from decimal import Decimal
 from datetime import datetime
 from sqlmodel import Field, SQLModel, Column, Enum, Relationship
 from sqlalchemy import DateTime
-from ..core.enums import TransactionType
-from .category import Category
+from app.core.enums import TransactionType
+from app.models.category import Category
 import uuid
 
 
@@ -18,7 +18,7 @@ class TransactionBase(SQLModel):
     )
     category_id: uuid.UUID | None = Field(default=None, foreign_key="categories.id")
 
-    __tablename__ = "transactions"
+    __tablename__: str = "transactions"  #  type: ignore
 
 
 class Transaction(TransactionBase, table=True):

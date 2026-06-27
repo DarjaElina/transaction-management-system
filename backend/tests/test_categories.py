@@ -12,7 +12,7 @@ import uuid
 
 def test_create_category(client: TestClient):
     response = client.post(
-        "/categories/",
+        "/api/categories/",
         json={
             "name": "Software Licenses",
             "description": "Software Licenses expenses",
@@ -31,7 +31,7 @@ def test_create_category(client: TestClient):
 
 def test_create_category_missing_name(client: TestClient):
     response = client.post(
-        "/categories/",
+        "/api/categories/",
         json={
             "allowed_type": "expense",
             "is_active": True,
@@ -43,7 +43,7 @@ def test_create_category_missing_name(client: TestClient):
 
 def test_category_allowed_type_invalid(client: TestClient):
     response = client.post(
-        "/categories/",
+        "/api/categories/",
         json={
             "name": "Invalid",
             "allowed_type": "banana 🍌",
@@ -71,7 +71,7 @@ def test_read_categories(session: Session, client: TestClient):
     session.add(category_2)
     session.commit()
 
-    response = client.get("/categories/")
+    response = client.get("/api/categories/")
     data = response.json()
 
     assert response.status_code == 200
@@ -89,7 +89,7 @@ def test_update_category(session: Session, client: TestClient):
     session.commit()
 
     response = client.patch(
-        f"/categories/{category.id}",
+        f"/api/categories/{category.id}",
         json={"name": "New name"},
     )
 
@@ -109,7 +109,7 @@ def test_delete_category(session: Session, client: TestClient):
     session.add(category)
     session.commit()
 
-    response = client.delete(f"/categories/{category.id}")
+    response = client.delete(f"/api/categories/{category.id}")
 
     category_in_db = session.get(Category, category.id)
 
@@ -119,7 +119,7 @@ def test_delete_category(session: Session, client: TestClient):
 
 def test_unknown_attribute_forbidden(client: TestClient):
     response = client.post(
-        "/categories/",
+        "/api/categories/",
         json={
             "name": "Software Licenses",
             "description": "Software Licenses expenses",
@@ -133,7 +133,7 @@ def test_unknown_attribute_forbidden(client: TestClient):
 
 def test_read_category_not_found(client: TestClient):
     fake_id = str(uuid.uuid4())
-    response = client.get(f"/categories/{fake_id}")
+    response = client.get(f"/api/categories/{fake_id}")
 
     assert response.status_code == 404
     assert (
@@ -143,7 +143,7 @@ def test_read_category_not_found(client: TestClient):
 
 def test_delete_category_not_found(client: TestClient):
     fake_id = str(uuid.uuid4())
-    response = client.delete(f"/categories/{fake_id}")
+    response = client.delete(f"/api/categories/{fake_id}")
 
     assert response.status_code == 404
     assert (
@@ -154,7 +154,7 @@ def test_delete_category_not_found(client: TestClient):
 def test_update_category_not_found(client: TestClient):
     fake_id = str(uuid.uuid4())
     response = client.patch(
-        f"/categories/{fake_id}",
+        f"/api/categories/{fake_id}",
         json={"name": "Does not exist"},
     )
 
@@ -184,7 +184,7 @@ def test_update_category_allowed_type_conflict(session: Session, client: TestCli
     session.commit()
 
     response = client.patch(
-        f"/categories/{category.id}",
+        f"/api/categories/{category.id}",
         json={"allowed_type": "income"},
     )
 
@@ -202,8 +202,8 @@ def test_create_category_duplicate_name(client: TestClient):
         "is_active": True,
     }
 
-    client.post("/categories/", json=category)
-    response = client.post("/categories/", json=category)
+    client.post("/api/categories/", json=category)
+    response = client.post("/api/categories/", json=category)
 
     assert response.status_code == 409
     assert response.json()["error"]["message"] == "Category already exists"
@@ -218,7 +218,7 @@ def test_filter_categories_by_name(session: Session, client: TestClient):
     )
     session.commit()
 
-    response = client.get("/categories/?name=foo")
+    response = client.get("/api/categories/?name=foo")
 
     data = response.json()
 
@@ -235,7 +235,7 @@ def test_filter_categories_by_is_active(session: Session, client: TestClient):
     )
     session.commit()
 
-    response = client.get("/categories/?is_active=true")
+    response = client.get("/api/categories/?is_active=true")
 
     data = response.json()
 
@@ -254,7 +254,7 @@ def test_filter_categories_by_allowed_type(session: Session, client: TestClient)
     )
     session.commit()
 
-    response = client.get("/categories/?allowed_type=expense")
+    response = client.get("/api/categories/?allowed_type=expense")
 
     data = response.json()
 
@@ -273,7 +273,7 @@ def test_categories_pagination(session: Session, client: TestClient):
         )
     session.commit()
 
-    response = client.get("/categories/?offset=0&limit=2")
+    response = client.get("/api/categories/?offset=0&limit=2")
 
     data = response.json()
 

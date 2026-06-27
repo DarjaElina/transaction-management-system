@@ -1,10 +1,10 @@
 from fastapi import FastAPI
 
-from .config import get_settings
-from .routers import transactions, categories
+from app.config import get_settings
+from app.routers import transactions, categories, test
 from fastapi.middleware.cors import CORSMiddleware
 
-from .exception_handlers import register_exception_handlers
+from app.exception_handlers import register_exception_handlers
 
 app = FastAPI()
 
@@ -16,6 +16,8 @@ if settings.environment == "test":
     print(f"Test DB URL: {settings.database_url}")
     print("=====================================")
 
+    app.include_router(test.router, prefix="/api")
+
 origins = ["http://localhost:5173"]
 
 app.add_middleware(
@@ -26,8 +28,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(transactions.router)
-app.include_router(categories.router)
+app.include_router(transactions.router, prefix="/api")
+app.include_router(categories.router, prefix="/api")
 register_exception_handlers(app)
 
 

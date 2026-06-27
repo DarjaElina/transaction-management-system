@@ -22,12 +22,23 @@ jobs:
         with:
           node-version: 24.x
 
-      - name: Install pre-commit
-        run: pip install pre-commit
+      - name: Install frontend dependencies
+        run: npm ci
+        working-directory: frontend
+
+      - name: Install backend Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt -r backend/requirements-dev.txt
 
       - name: Install frontend dependencies
         run: npm ci
         working-directory: frontend
 
-      - name: Run pre-commit
-        run: pre-commit run --all-files
+      - name: Run pre-commit hooks
+        uses: pre-commit/action@v3.0.1
+        env:
+          SKIP: pyright
+
+      - name: Run Pyright Type Checker
+        run: pyright

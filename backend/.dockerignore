@@ -15,6 +15,7 @@ app.egg-info/
 .pytest_cache/
 htmlcov/
 .coverage
+.ruff_cache/
 
 # Virtual environments
 .venv/
@@ -39,3 +40,6 @@ Thumbs.db
 
 # Docker volumes
 pgdata/
+
+# Tests
+tests/

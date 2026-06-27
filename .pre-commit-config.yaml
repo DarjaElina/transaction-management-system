@@ -22,6 +22,15 @@ repos:
       - id: ruff-format
         files: ^backend/
 
+  - repo: local
+    hooks:
+      - id: pyright
+        name: pyright
+        entry: pyright
+        language: system
+        types: [python]
+        pass_filenames: false
+
   # Frontend
   - repo: local
     hooks:

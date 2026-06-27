@@ -1,9 +1,11 @@
-from ..models.transaction import Transaction
-from ..schemas.transactions import TransactionCreate
-from ..db.database import SessionDep
-from ..exceptions import NotFoundError, ValidationError
-from ..core.enums import TransactionType
-from .utils import (
+import uuid
+
+from app.models.transaction import Transaction
+from app.schemas.transactions import TransactionCreate
+from app.db.database import SessionDep
+from app.exceptions import NotFoundError, ValidationError
+from app.core.enums import TransactionType
+from app.services.utils import (
     validate_category_for_transaction,
     apply_sorting,
     filter_equal,
@@ -19,7 +21,7 @@ def get_transactions(
     session: SessionDep,
     offset: int,
     limit: int,
-    category_id: int | None,
+    category_id: uuid.UUID | None,
     transaction_type: TransactionType | None,
     description: str | None,
     start_date: datetime | None,

@@ -1,6 +1,6 @@
 from typing import Annotated
 from fastapi import APIRouter, Query, HTTPException
-from ..schemas.categories import (
+from app.schemas.categories import (
     CategoryPublic,
     CategoryCreate,
     CategoryUpdate,

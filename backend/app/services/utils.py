@@ -1,13 +1,13 @@
 from sqlmodel import select
 from sqlalchemy import asc, desc
-from ..models.transaction import Category
-from ..exceptions import NotFoundError, ValidationError, ConflictError
+from app.models.transaction import Category
+from app.exceptions import NotFoundError, ValidationError, ConflictError
 
 
 def validate_category_for_transaction(category_id, transaction_type, session):
     category = session.get(Category, category_id)
     if not category:
-        raise NotFoundError("Category")
+        raise NotFoundError("Category", category_id)
 
     if category.is_active is not True:
         raise ValidationError("category_id", "Category is inactive")

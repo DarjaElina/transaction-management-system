@@ -4,7 +4,7 @@ from functools import lru_cache
 
 class Settings(BaseSettings):
     app_name: str = "Transaction Management System"
-    database_url: str
+    database_url: str = ""
     environment: str = "development"
 
     model_config = SettingsConfigDict(env_file=".env")

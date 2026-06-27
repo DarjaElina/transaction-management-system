@@ -1,5 +1,5 @@
 from sqlmodel import Field, SQLModel, Column, Relationship
-from ..core.enums import TransactionType
+from app.core.enums import TransactionType
 from sqlalchemy.dialects import postgresql
 from typing import TYPE_CHECKING
 import uuid
@@ -18,7 +18,7 @@ class CategoryBase(SQLModel):
     )
     is_active: bool = Field(default=True)
 
-    __tablename__ = "categories"
+    __tablename__: str = "categories"  #  type: ignore
 
 
 class Category(CategoryBase, table=True):

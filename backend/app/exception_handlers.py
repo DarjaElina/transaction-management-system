@@ -4,15 +4,15 @@ from datetime import datetime, UTC
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 
-from .exceptions import AppException
+from app.exceptions import AppException
 
 
 def create_error_response(
     status_code: int,
     error_code: str,
     message: str,
-    details: Dict[str, Any] = None,
-    request_id: str = None,
+    details: Dict[str, Any] | None = None,
+    request_id: str | None = None,
 ) -> Dict[str, Any]:
     """Create a consistent error response structure"""
     response = {

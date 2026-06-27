@@ -1,10 +1,10 @@
 from sqlalchemy.exc import IntegrityError
-from ..models.category import Category
-from ..schemas.categories import CategoryCreate
-from ..db.database import SessionDep
-from ..exceptions import NotFoundError, ConflictError
-from ..core.enums import TransactionType
-from .utils import (
+from app.models.category import Category
+from app.schemas.categories import CategoryCreate
+from app.db.database import SessionDep
+from app.exceptions import NotFoundError, ConflictError
+from app.core.enums import TransactionType
+from app.services.utils import (
     apply_sorting,
     filter_equal,
     filter_ilike,

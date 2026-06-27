@@ -1,26 +1,37 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from "@playwright/test";
+import { resetDb } from "../helpers/api";
 
-test('has title', async ({ page }) => {
-//   await page.goto('https://playwright.dev/');
+test.describe("Transactions app", () => {
+  test.beforeEach(async ({ page }) => {
+    await resetDb()
+    await page.goto("http://localhost:5173");
+  });
 
-//   // Expect a title "to contain" a substring.
-//   await expect(page).toHaveTitle(/Playwright/);
-// });
+  test("user can create income category", async ({ page }) => {
+    await page.getByRole("button", { name: "Add Transaction" }).click();
 
-// test('get started link', async ({ page }) => {
-//   await page.goto('https://playwright.dev/');
+    await page
+      .getByRole("combobox", { name: "Select a category or create" })
+      .click();
 
-//   // Click the get started link.
-//   await page.getByRole('link', { name: 'Get started' }).click();
+    await page
+      .getByRole("combobox", { name: "Select a category or create" })
+      .fill("New");
 
-//   // Expects page to have a heading with the name of Installation.
-//   await expect(page.getByRole('heading', { name: 'Installation' })).toBeVisible();
+    await page.getByRole("option", { name: 'Create "new"' }).click();
+
+    await page.getByRole("button", { name: "Save changes" }).click();
+
+
+  });
+
+  test("user can create expense category", async ({ page }) => {});
+
+  //   test("user can create an expense transaction", async ({ page }) => {});
+
+  //   test("new transaction appears in the list", async ({ page }) => {});
+
+  //   test("user can edit a transaction", async ({ page }) => {});
+
+  //   test("user can delete a transaction", async ({ page }) => {});
 });
-
-test("front page can be opened", async ({ page }) => {
-  await page.goto("http://localhost:5173")
-
-  const locator = page.getByText("Transactions")
-
-  await expect(locator).toBeVisible()
-})
