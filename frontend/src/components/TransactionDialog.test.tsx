@@ -145,7 +145,7 @@ describe('TransactionDialog', () => {
 
   it('shows error toast', async () => {
     server.use(
-      http.post('http://localhost:8000/transactions', async () => {
+      http.post('http://localhost:8000/api/transactions', async () => {
         await delay(500)
 
         return new HttpResponse(null, {
