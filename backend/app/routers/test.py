@@ -1,6 +1,6 @@
 from fastapi import APIRouter
-from ..services import test_service
-from ..db.database import SessionDep
+from app.services import test_service
+from app.db.database import SessionDep
 
 router = APIRouter(prefix="/test")
 

@@ -4,7 +4,7 @@ from datetime import datetime, UTC
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 
-from .exceptions import AppException
+from app.exceptions import AppException
 
 
 def create_error_response(

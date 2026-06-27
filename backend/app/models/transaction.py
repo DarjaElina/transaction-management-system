@@ -2,8 +2,8 @@ from decimal import Decimal
 from datetime import datetime
 from sqlmodel import Field, SQLModel, Column, Enum, Relationship
 from sqlalchemy import DateTime
-from ..core.enums import TransactionType
-from .category import Category
+from app.core.enums import TransactionType
+from app.models.category import Category
 import uuid
 
 

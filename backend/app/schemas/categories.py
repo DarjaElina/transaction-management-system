@@ -1,7 +1,7 @@
 from pydantic import ConfigDict
 from sqlmodel import SQLModel
-from ..models.category import CategoryBase
-from ..core.enums import TransactionType
+from app.models.category import CategoryBase
+from app.core.enums import TransactionType
 import uuid
 
 

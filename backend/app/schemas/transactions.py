@@ -2,9 +2,9 @@ from pydantic import AwareDatetime, ConfigDict
 from decimal import Decimal
 
 from sqlmodel import SQLModel
-from ..models.transaction import TransactionBase
-from ..core.enums import TransactionType
-from .categories import CategoryPublic
+from app.models.transaction import TransactionBase
+from app.core.enums import TransactionType
+from app.schemas.categories import CategoryPublic
 import uuid
 
 

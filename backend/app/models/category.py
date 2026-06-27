@@ -1,5 +1,5 @@
 from sqlmodel import Field, SQLModel, Column, Relationship
-from ..core.enums import TransactionType
+from app.core.enums import TransactionType
 from sqlalchemy.dialects import postgresql
 from typing import TYPE_CHECKING
 import uuid

@@ -1,7 +1,7 @@
 from sqlmodel import select
 from sqlalchemy import asc, desc
-from ..models.transaction import Category
-from ..exceptions import NotFoundError, ValidationError, ConflictError
+from app.models.transaction import Category
+from app.exceptions import NotFoundError, ValidationError, ConflictError
 
 
 def validate_category_for_transaction(category_id, transaction_type, session):

@@ -1,10 +1,10 @@
 from fastapi import FastAPI
 
-from .config import get_settings
-from .routers import transactions, categories, test
+from app.config import get_settings
+from app.routers import transactions, categories, test
 from fastapi.middleware.cors import CORSMiddleware
 
-from .exception_handlers import register_exception_handlers
+from app.exception_handlers import register_exception_handlers
 
 app = FastAPI()
 

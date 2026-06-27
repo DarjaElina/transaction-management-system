@@ -1,4 +1,4 @@
-from ..db.database import SessionDep
+from app.db.database import SessionDep
 from sqlmodel import text
 
 

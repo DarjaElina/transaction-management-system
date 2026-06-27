@@ -114,7 +114,7 @@ describe('TransactionDialog', () => {
 
   it('shows error toast on create failure', async () => {
     server.use(
-      http.post('http://localhost:8000/categories', async () => {
+      http.post('http://localhost:8000/api/categories', async () => {
         return new HttpResponse(null, {
           status: 500,
         })
