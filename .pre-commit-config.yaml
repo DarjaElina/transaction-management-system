@@ -22,11 +22,14 @@ repos:
       - id: ruff-format
         files: ^backend/
 
-  - repo: https://github.com/RobertCraigie/pyright-python
-    rev: v1.1.410
+  - repo: local
     hooks:
-    - id: pyright
-      files: ^backend/
+      - id: pyright
+        name: pyright
+        entry: pyright
+        language: system
+        types: [python]
+        pass_filenames: false
 
   # Frontend
   - repo: local
