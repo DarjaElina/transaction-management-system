@@ -1,7 +1,7 @@
 import { delay, http, HttpResponse } from 'msw'
 
 export const handlers = [
-  http.get('http://localhost:8000/categories', () => {
+  http.get('http://localhost:8000/api/categories', () => {
     return HttpResponse.json([
       {
         id: '1',
@@ -16,7 +16,7 @@ export const handlers = [
     ])
   }),
 
-  http.post('http://localhost:8000/categories', async ({ request }) => {
+  http.post('http://localhost:8000/api/categories', async ({ request }) => {
     const body = (await request.json()) as Record<string, unknown>
 
     await delay(500)
@@ -28,7 +28,7 @@ export const handlers = [
     })
   }),
 
-  http.post('http://localhost:8000/transactions', async ({ request }) => {
+  http.post('http://localhost:8000/api/transactions', async ({ request }) => {
     const body = (await request.json()) as Record<string, unknown>
 
     await delay(500)

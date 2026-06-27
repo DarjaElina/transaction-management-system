@@ -1,7 +1,9 @@
 import { test, expect } from "@playwright/test";
+import { resetDb } from "../helpers/api";
 
 test.describe("Transactions app", () => {
   test.beforeEach(async ({ page }) => {
+    await resetDb()
     await page.goto("http://localhost:5173");
   });
 
