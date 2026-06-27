@@ -22,8 +22,11 @@ jobs:
         with:
           node-version: 24.x
 
-      - name: Install pre-commit
-        run: pip install pre-commit
+      - name: Install backend dependencies
+        run: |
+          python -m venv backend/.venv
+          source backend/.venv/bin/activate
+          pip install -r backend/requirements-dev.txt
 
       - name: Install frontend dependencies
         run: npm ci
