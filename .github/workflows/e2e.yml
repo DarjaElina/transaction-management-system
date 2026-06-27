@@ -58,7 +58,7 @@ jobs:
 
     - name: Wait for backend
       working-directory: e2e
-      run: npx wait-on http://localhost:8000/health
+      run: npx wait-on http-get://localhost:8000/health
 
     - name: Wait for frontend
       working-directory: e2e
