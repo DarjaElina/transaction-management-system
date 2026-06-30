@@ -31,9 +31,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r backend/requirements.txt -r backend/requirements-dev.txt
 
-      - name: Install frontend dependencies
+      - name: Install e2e dependencies
         run: npm ci
-        working-directory: frontend
+        working-directory: e2e
 
       - name: Run pre-commit hooks
         uses: pre-commit/action@v3.0.1

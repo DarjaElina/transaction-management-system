@@ -1,84 +1,80 @@
-import { test, expect } from "@playwright/test";
-import { resetDb } from "../helpers/resetDb";
+import { test, expect, Page } from '@playwright/test'
+import { resetDb } from '../helpers/resetDb'
+import {
+  createCategory,
+  createTransaction,
+  openTransactionDialog,
+} from '../helpers/ui'
 
-test.describe("Transactions app", () => {
+test.describe('Transactions app', () => {
   test.beforeEach(async ({ page }) => {
     await resetDb()
-    await page.goto("http://localhost:5173");
-  });
+    await page.goto('http://localhost:5173')
+  })
 
-  test("user can create income category", async ({ page }) => {
-    await page.getByRole("button", { name: "Add Transaction" }).click();
+  test('user can create income category', async ({ page }) => {
+    await openTransactionDialog(page)
+    await createCategory(page, 'New')
+  })
 
-    await page
-      .getByRole("combobox", { name: "Select a category or create" })
-      .click();
+  test('user can create expense category', async ({ page }) => {
+    await openTransactionDialog(page)
+    await createCategory(page, 'New', 'Expense')
+  })
 
-    await page
-      .getByRole("combobox", { name: "Select a category or create" })
-      .fill("New");
+  test('user can create a transaction', async ({ page }) => {
+    await createTransaction(page)
+  })
 
-    await page.getByRole("option", { name: 'Create "new"' }).click();
+  test('transaction appear in the list', async ({ page }) => {
+    await createTransaction(page)
 
-    await page.getByRole("button", { name: "Save changes" }).click();
+    await expect(page.getByRole('cell', { name: 'Test expense' })).toBeVisible()
+  })
 
-    await expect(page.getByText("Category new created successfully!")).toBeVisible();
-  });
+  test('user can edit a transaction', async ({ page }) => {
+    await createTransaction(page)
 
-  test("user can create expense category", async ({ page }) => {
-    await page.getByRole("button", { name: "Add Transaction" }).click();
+    await page.getByRole('button', { name: 'Open menu' }).click()
 
-    await page
-      .getByRole("combobox", { name: "Select a category or create" })
-      .click();
+    await page.getByRole('menuitem', { name: 'Edit' }).click()
 
-    await page
-      .getByRole("combobox", { name: "Select a category or create" })
-      .fill("New");
-
-    await page.getByRole("option", { name: 'Create "new"' }).click();
-
-    await page.getByRole('radio', { name: 'Expense' }).click();
-
-    await page.getByRole("button", { name: "Save changes" }).click();
-
-    await expect(page.getByText("Category new created successfully!")).toBeVisible();
-  });
-
-  test("user can create an expense transaction", async ({ page }) => {
-    await page.getByRole("button", { name: "Add Transaction" }).click();
-
-    await page.getByRole("spinbutton", { name: "Amount" }).fill("100");
-    await page.getByRole("textbox", { name: "Description" }).fill("Test expense");
+    await page.getByRole('textbox', { name: 'Description' }).clear()
 
     await page
-      .getByRole("combobox", { name: "Select a category or create" })
-      .click();
+      .getByRole('textbox', { name: 'Description' })
+      .fill('New Transaction Name')
 
-    await page
-      .getByRole("combobox", { name: "Select a category or create" })
-      .fill("new");
+    await page.getByRole('button', { name: 'Save changes' }).click()
 
-    await page.getByRole("option", { name: "new" }).click();
+    await expect(page.getByText('Edit transaction')).toBeHidden()
 
-    await page.getByRole("radio", { name: "Expense" }).click();
+    await expect(
+      page.getByRole('cell', { name: 'New Transaction Name' }),
+    ).toBeVisible()
+  })
 
-    await page.getByRole("button", { name: "Save changes" }).click();
+  test('user can delete a transaction', async ({ page }) => {
+    await createTransaction(page)
 
-    await expect(page.getByText("New category" )).toBeHidden();
+    await page.getByRole('button', { name: 'Open menu' }).click()
 
-    await page.getByRole("button", { name: "Save changes" }).click();
+    await page.getByRole('menuitem', { name: 'Delete' }).click()
 
-    await expect(page.getByText("Saving...")).toBeVisible();
+    await expect(
+      page.getByText(
+        'Are you sure you want to delete this transaction?CancelDelete',
+      ),
+    ).toBeVisible()
 
-    await expect(page.getByText("Create new transaction")).toBeHidden();
-  });
+    await page.getByRole('button', { name: 'Delete' }).click()
 
-    test("user can edit a transaction", async ({ page }) => {});
+    await expect(page.getByText('Test expense')).toBeHidden()
 
-    test("user can delete a transaction", async ({ page }) => {});
+    await expect(page.getByText('Transaction deleted')).toBeVisible()
+  })
 
-    test.afterAll(async () => {
-      await resetDb()
-    });
-});
+  test.afterAll(async () => {
+    await resetDb()
+  })
+})

@@ -13,9 +13,12 @@ import { Button } from '../ui/button'
 import { deleteTransaction } from '@/api/transactions'
 import { toast } from 'sonner'
 import { TransactionDialog } from '../TransactionDialog'
+import { useState } from 'react'
 
 function TransactionActions({ transaction }: { transaction: Transaction }) {
   const queryClient = useQueryClient()
+  const [open, setOpen] = useState(false)
+  const [dialogOpen, setDialogOpen] = useState(false)
 
   const { isPending, mutate } = useMutation({
     mutationFn: deleteTransaction,
@@ -64,7 +67,7 @@ function TransactionActions({ transaction }: { transaction: Transaction }) {
 
   return (
     <>
-      <DropdownMenu>
+      <DropdownMenu open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="h-8 w-8 p-0">
             <span className="sr-only">Open menu</span>
@@ -74,10 +77,28 @@ function TransactionActions({ transaction }: { transaction: Transaction }) {
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
 
-          <TransactionDialog existing={transaction} mode="edit" />
+          <DropdownMenuItem
+            onSelect={(e) => {
+              e.preventDefault()
+              setDialogOpen(true)
+            }}
+          >
+            Edit
+          </DropdownMenuItem>
+
+          <TransactionDialog
+            dialogOpen={dialogOpen}
+            setDialogOpen={setDialogOpen}
+            setDropdownOpen={setOpen}
+            existing={transaction}
+            mode="edit"
+          />
 
           <DropdownMenuItem
-            onClick={() => navigator.clipboard.writeText(transaction.id)}
+            onSelect={() => {
+              toast.success('Transaction id copied to clipboard')
+              navigator.clipboard.writeText(transaction.id)
+            }}
           >
             Copy transaction ID
           </DropdownMenuItem>
@@ -85,7 +106,7 @@ function TransactionActions({ transaction }: { transaction: Transaction }) {
           <DropdownMenuItem
             variant="destructive"
             disabled={isPending}
-            onClick={() => handleDelete(transaction.id)}
+            onSelect={() => handleDelete(transaction.id)}
           >
             Delete
           </DropdownMenuItem>

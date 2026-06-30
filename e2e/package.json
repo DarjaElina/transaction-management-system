@@ -7,11 +7,14 @@
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
-    "test": "npx playwright test"
+    "test": "npx playwright test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "devDependencies": {
     "@playwright/test": "^1.60.0",
     "@types/node": "^25.8.0",
+    "prettier": "3.9.4",
     "wait-on": "^9.0.10"
   }
 }

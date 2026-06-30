@@ -39,6 +39,7 @@ export function TransactionsTable<TData, TValue>({
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = useState({})
+  const [dialogOpen, setDialogOpen] = useState(false)
 
   const table = useReactTable({
     data,
@@ -74,7 +75,11 @@ export function TransactionsTable<TData, TValue>({
         />
         <div className="flex items-center gap-2">
           <DataTableViewOptions table={table} />
-          <TransactionDialog mode="create" />
+          <TransactionDialog
+            mode="create"
+            dialogOpen={dialogOpen}
+            setDialogOpen={setDialogOpen}
+          />
         </div>
       </div>
       <div className="overflow-hidden rounded-md border">

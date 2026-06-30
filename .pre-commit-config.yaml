@@ -47,3 +47,13 @@ repos:
         language: system
         pass_filenames: false
         files: ^frontend/
+
+  # e2e
+  - repo: local
+    hooks:
+      - id: e2e-prettier
+        name: e2e prettier
+        entry: npm --prefix e2e run format
+        language: system
+        pass_filenames: false
+        files: ^e2e/
