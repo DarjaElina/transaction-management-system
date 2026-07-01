@@ -6,6 +6,7 @@ import Transactions from './pages/Transactions'
 import Dashboard from './pages/Dashboard'
 import Layout from './pages/Layout'
 import { ThemeProvider } from './components/ThemeProvider'
+import { Toaster } from 'sonner'
 
 function App() {
   const result = useQuery({
@@ -35,6 +36,7 @@ function App() {
           </Route>
         </Routes>
       </BrowserRouter>
+      <Toaster richColors />
     </ThemeProvider>
   )
 }
