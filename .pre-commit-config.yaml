@@ -31,9 +31,10 @@ repos:
         types: [python]
         pass_filenames: false
 
-  # Frontend
+
   - repo: local
     hooks:
+    # Frontend
       - id: frontend-eslint
         name: frontend eslint
         entry: npm --prefix frontend run lint
@@ -47,3 +48,18 @@ repos:
         language: system
         pass_filenames: false
         files: ^frontend/
+
+      - id: frontend-typecheck
+        name: frontend typecheck
+        entry: npm --prefix frontend run typecheck
+        language: system
+        pass_filenames: false
+        files: ^frontend/
+
+    # e2e
+      - id: e2e-prettier
+        name: e2e prettier
+        entry: npm --prefix e2e run format
+        language: system
+        pass_filenames: false
+        files: ^e2e/

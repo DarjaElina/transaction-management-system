@@ -1,7 +1,6 @@
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -32,10 +31,18 @@ import { Plus } from 'lucide-react'
 interface TransactionDialogProps {
   mode: 'edit' | 'create'
   existing?: Transaction
+  dialogOpen: boolean
+  setDialogOpen: React.Dispatch<React.SetStateAction<boolean>>
+  setDropdownOpen?: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-export function TransactionDialog({ mode, existing }: TransactionDialogProps) {
-  const [dialogOpen, setDialogOpen] = useState(false)
+export function TransactionDialog({
+  mode,
+  existing,
+  dialogOpen,
+  setDialogOpen,
+  setDropdownOpen,
+}: TransactionDialogProps) {
   const contentRef = useRef<HTMLDivElement | null>(null)
   const [container, setContainer] = useState<HTMLDivElement | null>(null)
   const [selectedCategory, setSelectedCategory] = useState<Category>({
@@ -137,6 +144,9 @@ export function TransactionDialog({ mode, existing }: TransactionDialogProps) {
               toast.error(e?.message ?? 'Something went wrong 🥲')
             },
             onSuccess: () => {
+              if (setDropdownOpen) {
+                setDropdownOpen(false)
+              }
               setDialogOpen(false)
               form.reset()
               toast.success('Transaction updated succesfully! 🦄')
@@ -146,6 +156,13 @@ export function TransactionDialog({ mode, existing }: TransactionDialogProps) {
       }
     },
   })
+
+  const handleCancel = () => {
+    if (setDropdownOpen) {
+      setDropdownOpen(false)
+    }
+    setDialogOpen(false)
+  }
 
   useEffect(() => {
     const setExistingCategory = () => {
@@ -165,22 +182,14 @@ export function TransactionDialog({ mode, existing }: TransactionDialogProps) {
 
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-      <DialogTrigger asChild>
-        {mode === 'create' ? (
+      {mode === 'create' && (
+        <DialogTrigger asChild>
           <Button size="sm">
             <Plus />
             Add Transaction
           </Button>
-        ) : (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="justify-start w-full font-normal px-2 py-1.5 cursor-auto"
-          >
-            Edit
-          </Button>
-        )}
-      </DialogTrigger>
+        </DialogTrigger>
+      )}
       <DialogContent ref={contentRef}>
         <DialogHeader>
           <DialogTitle>
@@ -305,9 +314,9 @@ export function TransactionDialog({ mode, existing }: TransactionDialogProps) {
           </FieldGroup>
         </form>
         <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </DialogClose>
+          <Button onClick={handleCancel} variant="outline">
+            Cancel
+          </Button>
           <Button disabled={isPending} type="submit" form="transactions-form">
             {isPending || isEditPending ? 'Saving...' : 'Save changes'}
           </Button>
