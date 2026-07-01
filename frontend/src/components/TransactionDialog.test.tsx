@@ -20,42 +20,15 @@ const mockExistingTransaction: Transaction = {
   },
 }
 
-export const openDialog = async () => {
-  const user = userEvent.setup()
-
-  await user.click(
-    await screen.findByRole('button', { name: /add transaction/i }),
-  )
-}
-
 describe('TransactionDialog', () => {
-  it('opens create dialog', async () => {
-    renderWithProviders(<TransactionDialog mode="create" />)
-
-    const user = userEvent.setup()
-
-    await user.click(
-      screen.getByRole('button', {
-        name: /add transaction/i,
-      }),
-    )
-
-    const title = await screen.findByText(/create new transaction/i)
-
-    expect(title).toBeInTheDocument()
-  })
-
   it('renders existing transaction values in edit mode', async () => {
     renderWithProviders(
-      <TransactionDialog mode="edit" existing={mockExistingTransaction} />,
-    )
-
-    const user = userEvent.setup()
-
-    await user.click(
-      screen.getByRole('button', {
-        name: /edit/i,
-      }),
+      <TransactionDialog
+        mode="edit"
+        existing={mockExistingTransaction}
+        dialogOpen={true}
+        setDialogOpen={vi.fn()}
+      />,
     )
 
     const amount = await screen.findByDisplayValue('12.5')
@@ -66,9 +39,13 @@ describe('TransactionDialog', () => {
   })
 
   it('submits form successfully and calls create mutation', async () => {
-    renderWithProviders(<TransactionDialog mode="create" />)
-
-    await openDialog()
+    renderWithProviders(
+      <TransactionDialog
+        mode="create"
+        dialogOpen={true}
+        setDialogOpen={vi.fn()}
+      />,
+    )
 
     const user = userEvent.setup()
 
@@ -104,9 +81,13 @@ describe('TransactionDialog', () => {
   })
 
   it('shows loading state while submitting', async () => {
-    renderWithProviders(<TransactionDialog mode="create" />)
-
-    await openDialog()
+    renderWithProviders(
+      <TransactionDialog
+        mode="create"
+        dialogOpen={true}
+        setDialogOpen={vi.fn()}
+      />,
+    )
 
     const user = userEvent.setup()
 
@@ -154,9 +135,13 @@ describe('TransactionDialog', () => {
       }),
     )
 
-    renderWithProviders(<TransactionDialog mode="create" />)
-
-    await openDialog()
+    renderWithProviders(
+      <TransactionDialog
+        mode="create"
+        dialogOpen={true}
+        setDialogOpen={vi.fn()}
+      />,
+    )
 
     const user = userEvent.setup()
 

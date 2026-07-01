@@ -9,7 +9,8 @@
   "scripts": {
     "test": "npx playwright test",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "typecheck": "tsc -b --pretty false"
   },
   "devDependencies": {
     "@playwright/test": "^1.60.0",
