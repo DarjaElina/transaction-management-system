@@ -4,7 +4,6 @@ from fastapi import Depends
 from app.config import get_settings
 from functools import lru_cache
 
-
 settings = get_settings()
 
 

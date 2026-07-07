@@ -18,7 +18,7 @@ class CategoryBase(SQLModel):
     )
     is_active: bool = Field(default=True)
 
-    __tablename__: str = "categories"  #  type: ignore
+    __tablename__: str = "categories"  # type: ignore
 
 
 class Category(CategoryBase, table=True):
