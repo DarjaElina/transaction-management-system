@@ -5,6 +5,7 @@ from app.routers import transactions, categories, test
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.exception_handlers import register_exception_handlers
+from app.routers import statistics
 
 app = FastAPI()
 
@@ -30,6 +31,7 @@ app.add_middleware(
 
 app.include_router(transactions.router, prefix="/api")
 app.include_router(categories.router, prefix="/api")
+app.include_router(statistics.router, prefix="/api")
 register_exception_handlers(app)
 
 

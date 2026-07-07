@@ -10,6 +10,7 @@ interface TransactionsProps {
 }
 
 function Transactions({ transactions, error, loading }: TransactionsProps) {
+  console.log('TRANSACTIONS ARE', transactions)
   return (
     <div>
       <div className="mb-8 flex">
