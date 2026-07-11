@@ -5,6 +5,7 @@ import {
   subDays,
   startOfDay,
   endOfDay,
+  startOfWeek,
 } from 'date-fns'
 import type { DateRange, DateRangeOption } from '@/types/statistics.types'
 
@@ -29,14 +30,14 @@ export const getDateRange = (option: DateRangeOption): DateRange => {
     case 'last_90_days':
       return {
         period: 'week',
-        start: startOfDay(subDays(now, 90)),
+        start: startOfWeek(subDays(now, 90), { weekStartsOn: 1 }),
         end: endOfDay(now),
       }
 
     case 'this_year':
       return {
         period: 'month',
-        start: startOfDay(startOfYear(now)),
+        start: startOfYear(now),
         end: endOfDay(now),
       }
 
@@ -52,7 +53,7 @@ export const getDateRange = (option: DateRangeOption): DateRange => {
     case 'all_time':
       return {
         period: 'year',
-        start: startOfYear(new Date(2025, 0, 1)),
+        start: new Date(2025, 0, 1),
         end: endOfDay(now),
       }
   }

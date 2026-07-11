@@ -19,7 +19,6 @@ interface DatePickerProps {
 }
 
 export function DatePicker({ date, setDate, id, isInvalid }: DatePickerProps) {
-  console.log('DATE IS', date)
   return (
     <Popover>
       <PopoverTrigger asChild>
