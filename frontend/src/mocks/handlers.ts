@@ -42,4 +42,19 @@ export const handlers = [
       { status: 200 },
     )
   }),
+
+  http.get('http://localhost:8000/api/statistics/income-expense', () => {
+    return HttpResponse.json([
+      {
+        label: '2026-07-08T00:00:00',
+        income: '1000.00',
+        expense: '50.00',
+      },
+      {
+        label: '2026-07-09T00:00:00',
+        income: '0',
+        expense: '20.00',
+      },
+    ])
+  }),
 ]
