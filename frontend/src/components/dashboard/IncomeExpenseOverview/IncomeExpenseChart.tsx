@@ -33,19 +33,16 @@ function IncomeExpenseChart() {
 
   const { period, start, end } = getDateRange(dateRangeOption)
 
+  const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+
   const {
     data = [],
     isLoading,
     error,
   } = useQuery({
     queryKey: ['income-expense', dateRangeOption],
-    queryFn: () => getIncomeExpenseOverview(start, end, period),
+    queryFn: () => getIncomeExpenseOverview(start, end, period, userTimezone),
   })
-
-  console.log('START ON FRONTEND', start)
-  console.log('END ON BACKEND', end)
-
-  console.log('DATA FROM BACKEND IS', data)
 
   return (
     <Card className="md:col-span-2">

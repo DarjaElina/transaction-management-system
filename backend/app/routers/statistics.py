@@ -11,10 +11,9 @@ router = APIRouter(prefix="/statistics")
 
 @router.get("/income-expense", response_model=list[IncomeExpenseOverview])
 def get_income_expense_overview(
-    session: SessionDep,
-    start: datetime,
-    end: datetime,
-    period: str,
+    session: SessionDep, start: datetime, end: datetime, period: str, user_timezone: str
 ):
-    stats = statistics_service.get_income_expense_overview(session, start, end, period)
+    stats = statistics_service.get_income_expense_overview(
+        session, start, end, period, user_timezone
+    )
     return stats
