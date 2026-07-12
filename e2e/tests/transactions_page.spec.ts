@@ -1,4 +1,4 @@
-import { test, expect, Page } from '@playwright/test'
+import { test, expect } from '@playwright/test'
 import { resetDb } from '../helpers/resetDb'
 import {
   createCategory,
@@ -6,7 +6,7 @@ import {
   openTransactionDialog,
 } from '../helpers/ui'
 
-test.describe('Transactions app', () => {
+test.describe('Transactions page', () => {
   test.beforeEach(async ({ page }) => {
     await resetDb()
     await page.goto('http://localhost:5173')

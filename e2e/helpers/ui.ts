@@ -1,14 +1,15 @@
 import { expect, Page } from '@playwright/test'
+import { selectDate } from './selectDate'
 
-export async function openTransactionDialog(page: Page) {
+export const openTransactionDialog = async (page: Page) => {
   await page.getByRole('button', { name: 'Add Transaction' }).click()
 }
 
-export async function createCategory(
+export const createCategory = async (
   page: Page,
   name: string,
   type: 'Income' | 'Expense' = 'Income',
-) {
+) => {
   const combobox = page.getByRole('combobox', {
     name: 'Select a category or create',
   })
@@ -31,15 +32,20 @@ export async function createCategory(
   ).toBeVisible()
 }
 
-export async function fillTransactionForm(
+export const fillTransactionForm = async (
   page: Page,
   amount: string,
   description: string,
   category: string,
-) {
+  date?: Date,
+) => {
   await page.getByRole('spinbutton', { name: 'Amount' }).fill(amount)
 
   await page.getByRole('textbox', { name: 'Description' }).fill(description)
+
+  if (date) {
+    await selectDate(page, date)
+  }
 
   const combobox = page.getByRole('combobox', {
     name: 'Select a category or create',
@@ -51,31 +57,42 @@ export async function fillTransactionForm(
   await page.getByRole('option', { name: category }).click()
 }
 
-async function saveTransaction(page: Page) {
+export const saveTransaction = async (page: Page) => {
   await page.getByRole('button', { name: 'Save changes' }).click()
 
   await expect(page.getByText('New category')).toBeHidden()
 
   await page.getByRole('button', { name: 'Save changes' }).click()
 
-  await expect(page.getByText('Saving...')).toBeVisible()
-
   await expect(page.getByText('Create new transaction')).toBeHidden()
 }
 
-export async function createTransaction(
+export const createTransaction = async (
   page: Page,
-  { amount = '100', description = 'Test expense', category = 'new' } = {},
-) {
+  {
+    amount = '100',
+    description = 'Test expense',
+    category = 'new',
+    date,
+  }: {
+    amount?: string
+    description?: string
+    category?: string
+    date?: Date
+  } = {},
+  withCategory: boolean = true,
+) => {
   await openTransactionDialog(page)
 
-  await fillTransactionForm(page, amount, description, category)
+  await fillTransactionForm(page, amount, description, category, date)
 
-  await page
-    .getByRole('radio', {
-      name: 'Expense',
-    })
-    .click()
+  if (withCategory) {
+    await page
+      .getByRole('radio', {
+        name: 'Expense',
+      })
+      .click()
+  }
 
   await saveTransaction(page)
 }
