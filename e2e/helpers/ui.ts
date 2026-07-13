@@ -66,14 +66,14 @@ export const fillTransactionForm = async (
 
     await page.getByRole('button', { name: 'Save changes' }).click()
 
-    await expect(page.getByText('New category')).toBeHidden()
+    await expect(page.getByText('New category')).not.toBeVisible()
   }
 }
 
 export const saveTransaction = async (page: Page) => {
   await page.getByRole('button', { name: 'Save changes' }).click()
 
-  await expect(page.getByText('Create new transaction')).toBeHidden()
+  await expect(page.getByText('Create new transaction')).not.toBeVisible()
 }
 
 export const createTransaction = async (

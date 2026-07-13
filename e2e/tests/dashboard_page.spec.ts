@@ -16,7 +16,7 @@ test.describe('Dashboard statistics', () => {
   })
 
   test('sends selected period and timezone to backend', async ({ page }) => {
-    await page.goto('http://localhost:5173/dashboard')
+    await page.goto('/dashboard')
 
     await page.getByRole('combobox').click()
 
@@ -36,7 +36,7 @@ test.describe('Dashboard statistics', () => {
   test('filters statistics according to selected date range', async ({
     page,
   }) => {
-    await page.goto('http://localhost:5173')
+    await page.goto('/')
 
     await createTransaction(page, {
       amount: '10',
@@ -53,7 +53,7 @@ test.describe('Dashboard statistics', () => {
       false,
     )
 
-    await page.goto('http://localhost:5173/dashboard')
+    await page.goto('/dashboard')
 
     await page.getByRole('combobox').click()
 
@@ -81,7 +81,7 @@ test.describe('Dashboard statistics', () => {
   test('new transactions are reflected in dashboard statistics', async ({
     page,
   }) => {
-    await page.goto('http://localhost:5173')
+    await page.goto('/')
 
     await createTransaction(page, {
       amount: '15',
@@ -90,7 +90,7 @@ test.describe('Dashboard statistics', () => {
 
     const [response] = await Promise.all([
       waitForStatisticsResponse(page),
-      page.goto('http://localhost:5173/dashboard'),
+      page.goto('/dashboard'),
     ])
 
     const body = await response.json()
@@ -102,7 +102,7 @@ test.describe('Dashboard statistics', () => {
   test('editing transaction date updates dashboard statistics', async ({
     page,
   }) => {
-    await page.goto('http://localhost:5173')
+    await page.goto('/')
 
     await createTransaction(page, {
       amount: '25',
@@ -117,9 +117,9 @@ test.describe('Dashboard statistics', () => {
 
     await page.getByRole('button', { name: 'Save changes' }).click()
 
-    await expect(page.getByText('Edit transaction')).toBeHidden()
+    await expect(page.getByText('Edit transaction')).not.toBeVisible()
 
-    await page.goto('http://localhost:5173/dashboard')
+    await page.goto('/dashboard')
 
     await page.getByRole('combobox').click()
 
@@ -147,7 +147,7 @@ test.describe('Dashboard statistics', () => {
   test('deleting transaction updates dashboard statistics', async ({
     page,
   }) => {
-    await page.goto('http://localhost:5173')
+    await page.goto('/')
 
     await createTransaction(page, {
       amount: '25',
@@ -161,7 +161,7 @@ test.describe('Dashboard statistics', () => {
 
     await expect(page.getByText('Transaction deleted')).toBeVisible()
 
-    await page.goto('http://localhost:5173/dashboard')
+    await page.goto('/dashboard')
 
     const [response] = await Promise.all([
       waitForStatisticsResponse(page),
