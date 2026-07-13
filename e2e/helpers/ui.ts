@@ -1,5 +1,5 @@
 import { expect, Page } from '@playwright/test'
-import { selectDate } from './selectDate'
+import { selectDate } from './common'
 
 export const openTransactionDialog = async (page: Page) => {
   await page.getByRole('button', { name: 'Add Transaction' }).click()
@@ -38,6 +38,7 @@ export const fillTransactionForm = async (
   description: string,
   category: string,
   date?: Date,
+  withNewCategory: boolean = true,
 ) => {
   await page.getByRole('spinbutton', { name: 'Amount' }).fill(amount)
 
@@ -55,13 +56,21 @@ export const fillTransactionForm = async (
   await combobox.fill(category)
 
   await page.getByRole('option', { name: category }).click()
+
+  if (withNewCategory) {
+    await page
+      .getByRole('radio', {
+        name: 'Expense',
+      })
+      .click()
+
+    await page.getByRole('button', { name: 'Save changes' }).click()
+
+    await expect(page.getByText('New category')).toBeHidden()
+  }
 }
 
 export const saveTransaction = async (page: Page) => {
-  await page.getByRole('button', { name: 'Save changes' }).click()
-
-  await expect(page.getByText('New category')).toBeHidden()
-
   await page.getByRole('button', { name: 'Save changes' }).click()
 
   await expect(page.getByText('Create new transaction')).toBeHidden()
@@ -80,19 +89,18 @@ export const createTransaction = async (
     category?: string
     date?: Date
   } = {},
-  withCategory: boolean = true,
+  withNewCategory: boolean = true,
 ) => {
   await openTransactionDialog(page)
 
-  await fillTransactionForm(page, amount, description, category, date)
-
-  if (withCategory) {
-    await page
-      .getByRole('radio', {
-        name: 'Expense',
-      })
-      .click()
-  }
+  await fillTransactionForm(
+    page,
+    amount,
+    description,
+    category,
+    date,
+    withNewCategory,
+  )
 
   await saveTransaction(page)
 }

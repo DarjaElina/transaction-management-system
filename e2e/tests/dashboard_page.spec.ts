@@ -1,33 +1,10 @@
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 import { subMonths } from 'date-fns'
 
 import { resetDb } from '../helpers/resetDb'
 import { createTransaction } from '../helpers/ui'
-import { selectDate } from '../helpers/selectDate'
-
-function totalExpense(data: Array<{ expense: string }>) {
-  return data.reduce((sum, item) => sum + Number(item.expense), 0)
-}
-
-async function waitForStatisticsResponse(page: Page, period?: string) {
-  return page.waitForResponse((response) => {
-    const url = new URL(response.url())
-
-    if (url.pathname !== '/api/statistics/income-expense') {
-      return false
-    }
-
-    if (response.request().method() !== 'GET') {
-      return false
-    }
-
-    if (period) {
-      return url.searchParams.get('period') === period
-    }
-
-    return true
-  })
-}
+import { waitForStatisticsResponse } from '../helpers/api'
+import { selectDate, totalExpense } from '../helpers/common'
 
 test.describe('Dashboard statistics', () => {
   test.beforeEach(async ({ page }) => {

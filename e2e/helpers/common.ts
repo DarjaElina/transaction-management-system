@@ -1,5 +1,10 @@
-import { differenceInCalendarMonths, format } from 'date-fns'
 import { Page } from '@playwright/test'
+import { differenceInCalendarMonths, format } from 'date-fns'
+import { IncomeExpenseOverview } from '../types/statistics.types'
+
+export const totalExpense = (data: IncomeExpenseOverview[]) => {
+  return data.reduce((sum, item) => sum + Number(item.expense), 0)
+}
 
 export const selectDate = async (page: Page, target: Date) => {
   await page.getByRole('button', { name: 'Date' }).click()
