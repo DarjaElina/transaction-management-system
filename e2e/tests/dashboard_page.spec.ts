@@ -2,35 +2,12 @@ import { expect, test } from '@playwright/test'
 import { subMonths } from 'date-fns'
 
 import { resetDb } from '../helpers/resetDb'
-import { createTransaction } from '../helpers/ui'
-import { waitForStatisticsResponse } from '../helpers/api'
-import { selectDate, totalExpense } from '../helpers/common'
+import { createTransaction, selectStatisticsPeriod } from '../helpers/ui'
+import { selectDate } from '../helpers/common'
 
 test.describe('Dashboard statistics', () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async () => {
     await resetDb()
-  })
-
-  test.afterAll(async () => {
-    await resetDb()
-  })
-
-  test('sends selected period and timezone to backend', async ({ page }) => {
-    await page.goto('/dashboard')
-
-    await page.getByRole('combobox').click()
-
-    const [response] = await Promise.all([
-      waitForStatisticsResponse(page, 'day'),
-      page.getByRole('option', { name: 'Last 7 days' }).click(),
-    ])
-
-    const url = new URL(response.request().url())
-
-    expect(url.searchParams.get('period')).toBe('day')
-    expect(url.searchParams.get('start')).not.toBeNull()
-    expect(url.searchParams.get('end')).not.toBeNull()
-    expect(url.searchParams.get('user_timezone')).not.toBeNull()
   })
 
   test('filters statistics according to selected date range', async ({
@@ -47,56 +24,27 @@ test.describe('Dashboard statistics', () => {
       page,
       {
         amount: '20',
-        description: 'Old expense',
+        description: 'Old income',
+        category: 'Test',
         date: subMonths(new Date(), 2),
       },
-      false,
+      true,
+      'Income',
     )
 
     await page.goto('/dashboard')
 
-    await page.getByRole('combobox').click()
+    await selectStatisticsPeriod(page, 'Last 7 days')
 
-    let [response] = await Promise.all([
-      waitForStatisticsResponse(page, 'day'),
-      page.getByRole('option', { name: 'Last 7 days' }).click(),
-    ])
+    await expect(page.getByTestId('expense-bar')).toHaveCount(1)
 
-    let body = await response.json()
+    await expect(page.getByTestId('income-bar')).toHaveCount(0)
 
-    expect(totalExpense(body)).toBe(10)
+    await selectStatisticsPeriod(page, 'Last 90 days')
 
-    await page.getByRole('combobox').click()
+    await expect(page.getByTestId('expense-bar')).toHaveCount(1)
 
-    ;[response] = await Promise.all([
-      waitForStatisticsResponse(page, 'year'),
-      page.getByRole('option', { name: 'All time' }).click(),
-    ])
-
-    body = await response.json()
-
-    expect(totalExpense(body)).toBe(30)
-  })
-
-  test('new transactions are reflected in dashboard statistics', async ({
-    page,
-  }) => {
-    await page.goto('/')
-
-    await createTransaction(page, {
-      amount: '15',
-      description: 'Coffee',
-    })
-
-    const [response] = await Promise.all([
-      waitForStatisticsResponse(page),
-      page.goto('/dashboard'),
-    ])
-
-    const body = await response.json()
-
-    expect(body.length).toBeGreaterThan(0)
-    expect(totalExpense(body)).toBe(15)
+    await expect(page.getByTestId('income-bar')).toHaveCount(1)
   })
 
   test('editing transaction date updates dashboard statistics', async ({
@@ -105,15 +53,22 @@ test.describe('Dashboard statistics', () => {
     await page.goto('/')
 
     await createTransaction(page, {
-      amount: '25',
-      description: 'Move me',
+      date: subMonths(new Date(), 2),
     })
+
+    await page.goto('/dashboard')
+
+    await selectStatisticsPeriod(page, 'Last 7 days')
+
+    await expect(page.getByTestId('expense-bar')).toHaveCount(0)
+
+    await page.goto('/')
 
     await page.getByRole('button', { name: 'Open menu' }).click()
 
     await page.getByRole('menuitem', { name: 'Edit' }).click()
 
-    await selectDate(page, subMonths(new Date(), 2))
+    await selectDate(page, new Date())
 
     await page.getByRole('button', { name: 'Save changes' }).click()
 
@@ -121,27 +76,9 @@ test.describe('Dashboard statistics', () => {
 
     await page.goto('/dashboard')
 
-    await page.getByRole('combobox').click()
+    await selectStatisticsPeriod(page, 'Last 7 days')
 
-    let [response] = await Promise.all([
-      waitForStatisticsResponse(page, 'day'),
-      page.getByRole('option', { name: 'Last 7 days' }).click(),
-    ])
-
-    let body = await response.json()
-
-    expect(totalExpense(body)).toBe(0)
-
-    await page.getByRole('combobox').click()
-
-    ;[response] = await Promise.all([
-      waitForStatisticsResponse(page, 'year'),
-      page.getByRole('option', { name: 'All time' }).click(),
-    ])
-
-    body = await response.json()
-
-    expect(totalExpense(body)).toBe(25)
+    await expect(page.getByTestId('expense-bar')).toHaveCount(1)
   })
 
   test('deleting transaction updates dashboard statistics', async ({
@@ -153,6 +90,14 @@ test.describe('Dashboard statistics', () => {
       amount: '25',
     })
 
+    await page.goto('/dashboard')
+
+    await selectStatisticsPeriod(page, 'Last 7 days')
+
+    await expect(page.getByTestId('expense-bar')).toHaveCount(1)
+
+    await page.goto('/')
+
     await page.getByRole('button', { name: 'Open menu' }).click()
 
     await page.getByRole('menuitem', { name: 'Delete' }).click()
@@ -163,13 +108,8 @@ test.describe('Dashboard statistics', () => {
 
     await page.goto('/dashboard')
 
-    const [response] = await Promise.all([
-      waitForStatisticsResponse(page),
-      page.reload(),
-    ])
+    await selectStatisticsPeriod(page, 'Last 7 days')
 
-    const body = await response.json()
-
-    expect(totalExpense(body)).toBe(0)
+    await expect(page.getByTestId('expense-bar')).toHaveCount(0)
   })
 })

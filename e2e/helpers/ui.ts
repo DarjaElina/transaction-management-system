@@ -1,5 +1,6 @@
 import { expect, Page } from '@playwright/test'
 import { selectDate } from './common'
+import { StatisticsPeriod } from '../types/statistics.types'
 
 export const openTransactionDialog = async (page: Page) => {
   await page.getByRole('button', { name: 'Add Transaction' }).click()
@@ -39,6 +40,7 @@ export const fillTransactionForm = async (
   category: string,
   date?: Date,
   withNewCategory: boolean = true,
+  categoryType: 'Income' | 'Expense' = 'Expense',
 ) => {
   await page.getByRole('spinbutton', { name: 'Amount' }).fill(amount)
 
@@ -60,7 +62,7 @@ export const fillTransactionForm = async (
   if (withNewCategory) {
     await page
       .getByRole('radio', {
-        name: 'Expense',
+        name: categoryType,
       })
       .click()
 
@@ -90,6 +92,7 @@ export const createTransaction = async (
     date?: Date
   } = {},
   withNewCategory: boolean = true,
+  categoryType: 'Income' | 'Expense' = 'Expense',
 ) => {
   await openTransactionDialog(page)
 
@@ -100,7 +103,17 @@ export const createTransaction = async (
     category,
     date,
     withNewCategory,
+    categoryType,
   )
 
   await saveTransaction(page)
+}
+
+export const selectStatisticsPeriod = async (
+  page: Page,
+  period: StatisticsPeriod,
+) => {
+  await page.getByRole('combobox').click()
+
+  await page.getByText(period).click()
 }
