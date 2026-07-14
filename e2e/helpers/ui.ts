@@ -1,14 +1,16 @@
 import { expect, Page } from '@playwright/test'
+import { selectDate } from './common'
+import { StatisticsPeriod } from '../types/statistics.types'
 
-export async function openTransactionDialog(page: Page) {
+export const openTransactionDialog = async (page: Page) => {
   await page.getByRole('button', { name: 'Add Transaction' }).click()
 }
 
-export async function createCategory(
+export const createCategory = async (
   page: Page,
   name: string,
   type: 'Income' | 'Expense' = 'Income',
-) {
+) => {
   const combobox = page.getByRole('combobox', {
     name: 'Select a category or create',
   })
@@ -31,15 +33,22 @@ export async function createCategory(
   ).toBeVisible()
 }
 
-export async function fillTransactionForm(
+export const fillTransactionForm = async (
   page: Page,
   amount: string,
   description: string,
   category: string,
-) {
+  date?: Date,
+  withNewCategory: boolean = true,
+  categoryType: 'Income' | 'Expense' = 'Expense',
+) => {
   await page.getByRole('spinbutton', { name: 'Amount' }).fill(amount)
 
   await page.getByRole('textbox', { name: 'Description' }).fill(description)
+
+  if (date) {
+    await selectDate(page, date)
+  }
 
   const combobox = page.getByRole('combobox', {
     name: 'Select a category or create',
@@ -49,33 +58,62 @@ export async function fillTransactionForm(
   await combobox.fill(category)
 
   await page.getByRole('option', { name: category }).click()
+
+  if (withNewCategory) {
+    await page
+      .getByRole('radio', {
+        name: categoryType,
+      })
+      .click()
+
+    await page.getByRole('button', { name: 'Save changes' }).click()
+
+    await expect(page.getByText('New category')).not.toBeVisible()
+  }
 }
 
-async function saveTransaction(page: Page) {
+export const saveTransaction = async (page: Page) => {
   await page.getByRole('button', { name: 'Save changes' }).click()
 
-  await expect(page.getByText('New category')).toBeHidden()
-
-  await page.getByRole('button', { name: 'Save changes' }).click()
-
-  await expect(page.getByText('Saving...')).toBeVisible()
-
-  await expect(page.getByText('Create new transaction')).toBeHidden()
+  await expect(page.getByText('Create new transaction')).not.toBeVisible()
 }
 
-export async function createTransaction(
+export const createTransaction = async (
   page: Page,
-  { amount = '100', description = 'Test expense', category = 'new' } = {},
-) {
+  {
+    amount = '100',
+    description = 'Test expense',
+    category = 'new',
+    date,
+  }: {
+    amount?: string
+    description?: string
+    category?: string
+    date?: Date
+  } = {},
+  withNewCategory: boolean = true,
+  categoryType: 'Income' | 'Expense' = 'Expense',
+) => {
   await openTransactionDialog(page)
 
-  await fillTransactionForm(page, amount, description, category)
-
-  await page
-    .getByRole('radio', {
-      name: 'Expense',
-    })
-    .click()
+  await fillTransactionForm(
+    page,
+    amount,
+    description,
+    category,
+    date,
+    withNewCategory,
+    categoryType,
+  )
 
   await saveTransaction(page)
+}
+
+export const selectStatisticsPeriod = async (
+  page: Page,
+  period: StatisticsPeriod,
+) => {
+  await page.getByRole('combobox').click()
+
+  await page.getByText(period).click()
 }

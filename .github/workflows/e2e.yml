@@ -26,6 +26,7 @@ jobs:
             changed:
               - frontend/**
               - backend/**
+              - e2e/**
               - docker-compose*.yml
               - .github/workflows/frontend-test.yml
 

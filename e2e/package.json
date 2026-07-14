@@ -17,5 +17,8 @@
     "@types/node": "^25.8.0",
     "prettier": "3.9.4",
     "wait-on": "^9.0.10"
+  },
+  "dependencies": {
+    "date-fns": "^4.4.0"
   }
 }

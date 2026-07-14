@@ -1,4 +1,4 @@
-import { test, expect, Page } from '@playwright/test'
+import { test, expect } from '@playwright/test'
 import { resetDb } from '../helpers/resetDb'
 import {
   createCategory,
@@ -6,10 +6,10 @@ import {
   openTransactionDialog,
 } from '../helpers/ui'
 
-test.describe('Transactions app', () => {
+test.describe('Transactions page', () => {
   test.beforeEach(async ({ page }) => {
     await resetDb()
-    await page.goto('http://localhost:5173')
+    await page.goto('/')
   })
 
   test('user can create income category', async ({ page }) => {
@@ -47,7 +47,7 @@ test.describe('Transactions app', () => {
 
     await page.getByRole('button', { name: 'Save changes' }).click()
 
-    await expect(page.getByText('Edit transaction')).toBeHidden()
+    await expect(page.getByText('Edit transaction')).not.toBeVisible()
 
     await expect(
       page.getByRole('cell', { name: 'New Transaction Name' }),
@@ -69,12 +69,8 @@ test.describe('Transactions app', () => {
 
     await page.getByRole('button', { name: 'Delete' }).click()
 
-    await expect(page.getByText('Test expense')).toBeHidden()
+    await expect(page.getByText('Test expense')).not.toBeVisible()
 
     await expect(page.getByText('Transaction deleted')).toBeVisible()
-  })
-
-  test.afterAll(async () => {
-    await resetDb()
   })
 })

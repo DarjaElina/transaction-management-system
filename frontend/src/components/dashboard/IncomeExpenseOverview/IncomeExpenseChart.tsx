@@ -82,8 +82,18 @@ function IncomeExpenseChart() {
                 }
               />
               <ChartLegend content={<ChartLegendContent />} />
-              <Bar dataKey="income" fill="var(--color-income)" radius={4} />
-              <Bar dataKey="expense" fill="var(--color-expense)" radius={4} />
+              <Bar
+                data-testid="income-bar"
+                dataKey="income"
+                fill="var(--color-income)"
+                radius={4}
+              />
+              <Bar
+                data-testid="expense-bar"
+                dataKey="expense"
+                fill="var(--color-expense)"
+                radius={4}
+              />
             </BarChart>
           </ChartContainer>
         )}
