@@ -13,17 +13,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card'
 import { useState } from 'react'
 import type { DateRangeOption } from '@/types/statistics.types'
 import DateRangeSelect from './DateRangeSelect'
-import { getDateRange } from '@/helpers/getDateRange'
 import { formatChartLabel } from '@/helpers/formatChartLabel'
+import { getDateRange } from '@/helpers/getDateRange'
 
 const chartConfig = {
   income: {
     label: 'Income',
-    color: '#24a328',
+    color: 'var(--color-emerald-500)',
   },
   expense: {
     label: 'Expense',
-    color: '#f35a3c',
+    color: 'var(--color-rose-500)',
   },
 } satisfies ChartConfig
 

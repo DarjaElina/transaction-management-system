@@ -1,7 +1,7 @@
 import { screen, waitFor } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
-import { renderWithProviders } from '@/helpers/testHelpers'
+import { renderWithProviders } from '@/helpers/tests.helpers'
 import IncomeExpenseChart from './IncomeExpenseChart'
 import { server } from '@/mocks/server'
 import { http, HttpResponse } from 'msw'

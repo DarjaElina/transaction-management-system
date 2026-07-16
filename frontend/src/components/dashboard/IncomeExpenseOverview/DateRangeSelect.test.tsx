@@ -1,7 +1,7 @@
 import { screen } from '@testing-library/react'
 import DateRangeSelect from './DateRangeSelect'
 import userEvent from '@testing-library/user-event'
-import { renderWithProviders } from '@/helpers/testHelpers'
+import { renderWithProviders } from '@/helpers/tests.helpers'
 
 const onChange = vi.fn()
 
