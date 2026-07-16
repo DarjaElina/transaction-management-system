@@ -17,6 +17,12 @@ def create_categories(session: SessionDep):
         Category(name="Transport", allowed_type=TransactionType.EXPENSE),
         Category(name="Entertainment", allowed_type=TransactionType.EXPENSE),
         Category(name="Freelance", allowed_type=TransactionType.INCOME),
+        Category(name="Shopping", allowed_type=TransactionType.EXPENSE),
+        Category(name="Health", allowed_type=TransactionType.EXPENSE),
+        Category(name="Education", allowed_type=TransactionType.EXPENSE),
+        Category(name="Subscriptions", allowed_type=TransactionType.EXPENSE),
+        Category(name="Travel", allowed_type=TransactionType.EXPENSE),
+        Category(name="Home", allowed_type=TransactionType.EXPENSE),
     ]
 
     session.add_all(categories)
@@ -35,6 +41,12 @@ def create_transactions(session: SessionDep, categories):
     transport = next(c for c in categories if c.name == "Transport")
     fun = next(c for c in categories if c.name == "Entertainment")
     freelance = next(c for c in categories if c.name == "Freelance")
+    shopping = next(c for c in categories if c.name == "Shopping")
+    health = next(c for c in categories if c.name == "Health")
+    education = next(c for c in categories if c.name == "Education")
+    subscriptions = next(c for c in categories if c.name == "Subscriptions")
+    travel = next(c for c in categories if c.name == "Travel")
+    home = next(c for c in categories if c.name == "Home")
 
     transactions = [
         Transaction(
@@ -298,6 +310,55 @@ def create_transactions(session: SessionDep, categories):
             transaction_type=TransactionType.INCOME,
             category_id=freelance.id,
             date=datetime(2026, 7, 4),
+        ),
+        Transaction(
+            amount=Decimal("650"),
+            description="New laptop",
+            transaction_type=TransactionType.EXPENSE,
+            category_id=shopping.id,
+            date=datetime(2026, 7, 5),
+        ),
+        Transaction(
+            amount=Decimal("250"),
+            description="Doctor appointment",
+            transaction_type=TransactionType.EXPENSE,
+            category_id=health.id,
+            date=datetime(2026, 7, 6),
+        ),
+        Transaction(
+            amount=Decimal("400"),
+            description="Online course",
+            transaction_type=TransactionType.EXPENSE,
+            category_id=education.id,
+            date=datetime(2026, 7, 7),
+        ),
+        Transaction(
+            amount=Decimal("35"),
+            description="Netflix",
+            transaction_type=TransactionType.EXPENSE,
+            category_id=subscriptions.id,
+            date=datetime(2026, 7, 8),
+        ),
+        Transaction(
+            amount=Decimal("40"),
+            description="Spotify",
+            transaction_type=TransactionType.EXPENSE,
+            category_id=subscriptions.id,
+            date=datetime(2026, 7, 9),
+        ),
+        Transaction(
+            amount=Decimal("1200"),
+            description="Holiday trip",
+            transaction_type=TransactionType.EXPENSE,
+            category_id=travel.id,
+            date=datetime(2026, 7, 10),
+        ),
+        Transaction(
+            amount=Decimal("80"),
+            description="Home decorations",
+            transaction_type=TransactionType.EXPENSE,
+            category_id=home.id,
+            date=datetime(2026, 7, 11),
         ),
     ]
 
