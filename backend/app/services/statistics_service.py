@@ -1,7 +1,11 @@
 from datetime import datetime
+
+from sqlalchemy import VARCHAR
 from app.db.database import SessionDep
 from sqlmodel import func, case, between, select, type_coerce, TIMESTAMP
 from app.models.transaction import Transaction
+from app.models.category import Category
+from app.core.enums import TransactionType
 
 interval_dict = {"day": "1 day", "week": "1 week", "month": "1 month", "year": "1 year"}
 
@@ -10,10 +14,12 @@ def get_income_expense_overview(
     session: SessionDep, start: datetime, end: datetime, period: str, user_timezone: str
 ):
     income_case = case(
-        (Transaction.transaction_type == "income", Transaction.amount), else_=0
+        (Transaction.transaction_type == TransactionType.INCOME, Transaction.amount),
+        else_=0,
     )
     expense_case = case(
-        (Transaction.transaction_type == "expense", Transaction.amount), else_=0
+        (Transaction.transaction_type == TransactionType.EXPENSE, Transaction.amount),
+        else_=0,
     )
 
     tz_aware_date = type_coerce(Transaction.date, TIMESTAMP).op("AT TIME ZONE")(
@@ -50,6 +56,27 @@ def get_income_expense_overview(
         periods_cte,
         isouter=True,
         onclause=empty_periods_cte.c.period == periods_cte.c.date,
+    )
+
+    result = session.exec(stmt).all()
+
+    return result
+
+
+def get_spending_by_category(session: SessionDep, start: datetime, end: datetime):
+    print(start)
+    print(end)
+    stmt = (
+        select(
+            type_coerce(Category.name, VARCHAR).label("category"),
+            func.sum(Transaction.amount).label("amount"),
+        )
+        .join(Transaction)
+        .where(
+            Transaction.transaction_type == TransactionType.EXPENSE,
+            between(Transaction.date, start, end),
+        )
+        .group_by(Category.name)
     )
 
     result = session.exec(stmt).all()
