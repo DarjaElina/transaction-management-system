@@ -1,3 +1,5 @@
+import type { ChartConfig } from '@/components/ui/chart'
+
 export type TimePeriod = 'year' | 'month' | 'week' | 'day'
 
 export type DateRangeOption =
@@ -19,3 +21,21 @@ export type IncomeExpenseOverviewItem = {
   income: number
   expense: number
 }
+
+export type SpendingByCategory = {
+  category: string
+  amount: string
+}
+
+export type SpendingChartData = {
+  category: string
+  amount: number
+  fill: string
+}
+
+export type LimitSpendingChartOptions = {
+  maxItems: number
+  otherLabel?: string
+}
+
+export type SpendingChartConfigType = ChartConfig

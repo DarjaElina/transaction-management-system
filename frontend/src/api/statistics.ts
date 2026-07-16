@@ -17,3 +17,13 @@ export const getIncomeExpenseOverview = async (
   })
   return data
 }
+
+export const getSpendingByCategory = async (start: Date, end: Date) => {
+  const { data } = await api.get('/statistics/spending-by-category', {
+    params: {
+      start,
+      end,
+    },
+  })
+  return data
+}
