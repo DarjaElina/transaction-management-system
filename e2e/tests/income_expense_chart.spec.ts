@@ -5,7 +5,7 @@ import { resetDb } from '../helpers/resetDb'
 import { createTransaction, selectStatisticsPeriod } from '../helpers/ui'
 import { selectDate } from '../helpers/common'
 
-test.describe('Dashboard statistics', () => {
+test.describe('Income expense overview chart', () => {
   test.beforeEach(async () => {
     await resetDb()
   })
@@ -34,13 +34,13 @@ test.describe('Dashboard statistics', () => {
 
     await page.goto('/dashboard')
 
-    await selectStatisticsPeriod(page, 'Last 7 days')
+    await selectStatisticsPeriod(page, 'Last 7 days', 'income-expense')
 
     await expect(page.getByTestId('expense-bar')).toHaveCount(1)
 
     await expect(page.getByTestId('income-bar')).toHaveCount(0)
 
-    await selectStatisticsPeriod(page, 'Last 90 days')
+    await selectStatisticsPeriod(page, 'Last 90 days', 'income-expense')
 
     await expect(page.getByTestId('expense-bar')).toHaveCount(1)
 
@@ -58,7 +58,7 @@ test.describe('Dashboard statistics', () => {
 
     await page.goto('/dashboard')
 
-    await selectStatisticsPeriod(page, 'Last 7 days')
+    await selectStatisticsPeriod(page, 'Last 7 days', 'income-expense')
 
     await expect(page.getByTestId('expense-bar')).toHaveCount(0)
 
@@ -76,7 +76,7 @@ test.describe('Dashboard statistics', () => {
 
     await page.goto('/dashboard')
 
-    await selectStatisticsPeriod(page, 'Last 7 days')
+    await selectStatisticsPeriod(page, 'Last 7 days', 'income-expense')
 
     await expect(page.getByTestId('expense-bar')).toHaveCount(1)
   })
@@ -92,7 +92,7 @@ test.describe('Dashboard statistics', () => {
 
     await page.goto('/dashboard')
 
-    await selectStatisticsPeriod(page, 'Last 7 days')
+    await selectStatisticsPeriod(page, 'Last 7 days', 'income-expense')
 
     await expect(page.getByTestId('expense-bar')).toHaveCount(1)
 
@@ -108,7 +108,7 @@ test.describe('Dashboard statistics', () => {
 
     await page.goto('/dashboard')
 
-    await selectStatisticsPeriod(page, 'Last 7 days')
+    await selectStatisticsPeriod(page, 'Last 7 days', 'income-expense')
 
     await expect(page.getByTestId('expense-bar')).toHaveCount(0)
   })

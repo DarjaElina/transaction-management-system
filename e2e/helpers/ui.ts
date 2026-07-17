@@ -112,8 +112,14 @@ export const createTransaction = async (
 export const selectStatisticsPeriod = async (
   page: Page,
   period: StatisticsPeriod,
+  chart: 'income-expense' | 'spending-category',
 ) => {
-  await page.getByRole('combobox').first().click()
+  const container =
+    chart === 'income-expense'
+      ? page.getByTestId('income-expense-chart')
+      : page.getByTestId('spending-category-chart')
+
+  await container.getByRole('combobox').click()
 
   await page.getByText(period).click()
 }

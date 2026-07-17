@@ -2,10 +2,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, type RenderOptions } from '@testing-library/react'
 import { Toaster } from 'sonner'
 
-export function renderWithProviders(
+export const renderWithProviders = (
   ui: React.ReactNode,
   options?: RenderOptions,
-) {
+) => {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {

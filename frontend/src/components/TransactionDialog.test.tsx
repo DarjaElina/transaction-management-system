@@ -7,6 +7,7 @@ import { renderWithProviders } from '@/helpers/tests.helpers'
 import type { Transaction } from '@/types/transactions.types'
 import { server } from '@/mocks/server'
 import { delay, http, HttpResponse } from 'msw'
+import { API_URL } from '@/mocks/config'
 
 const mockExistingTransaction: Transaction = {
   id: '1',
@@ -126,7 +127,7 @@ describe('TransactionDialog', () => {
 
   it('shows error toast', async () => {
     server.use(
-      http.post('http://localhost:8000/api/transactions', async () => {
+      http.post(`${API_URL}/transactions`, async () => {
         await delay(500)
 
         return new HttpResponse(null, {

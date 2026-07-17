@@ -45,7 +45,7 @@ function IncomeExpenseChart() {
   })
 
   return (
-    <Card className="md:col-span-2">
+    <Card data-testid="income-expense-chart" className="md:col-span-2">
       <CardHeader>
         <CardTitle>Income vs Expense</CardTitle>
         <div className="flex gap-2">
@@ -57,9 +57,9 @@ function IncomeExpenseChart() {
       </CardHeader>
 
       <CardContent>
-        {isLoading && <p>Loading data...</p>}
-        {error && <p>Error loading data.</p>}
-        {!isLoading && !error && (
+        {isLoading && <p className="text-muted-foreground">Loading...</p>}
+        {error && <p className="text-destructive">Something went wrong 😿</p>}
+        {!isLoading && !error && data.length > 0 && (
           <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
             <BarChart accessibilityLayer data={data}>
               <CartesianGrid vertical={false} />
