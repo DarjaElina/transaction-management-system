@@ -113,7 +113,7 @@ export const selectStatisticsPeriod = async (
   page: Page,
   period: StatisticsPeriod,
 ) => {
-  await page.getByRole('combobox').click()
+  await page.getByRole('combobox').first().click()
 
   await page.getByText(period).click()
 }
