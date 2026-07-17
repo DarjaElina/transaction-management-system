@@ -5,6 +5,7 @@ import { http, HttpResponse } from 'msw'
 import { CategoryList } from './CategoryList'
 import { renderWithProviders } from '@/helpers/tests.helpers'
 import { server } from '@/mocks/server'
+import { API_URL } from '@/mocks/config'
 
 const setup = (props = {}) => {
   const selectedCategory = {
@@ -114,7 +115,7 @@ describe('TransactionDialog', () => {
 
   it('shows error toast on create failure', async () => {
     server.use(
-      http.post('http://localhost:8000/api/categories', async () => {
+      http.post(`${API_URL}/categories`, async () => {
         return new HttpResponse(null, {
           status: 500,
         })

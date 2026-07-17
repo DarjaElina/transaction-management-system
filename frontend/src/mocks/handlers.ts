@@ -1,7 +1,8 @@
 import { delay, http, HttpResponse } from 'msw'
+import { API_URL } from './config'
 
 export const handlers = [
-  http.get('http://localhost:8000/api/categories', () => {
+  http.get(`${API_URL}/categories`, () => {
     return HttpResponse.json([
       {
         id: '1',
@@ -16,7 +17,7 @@ export const handlers = [
     ])
   }),
 
-  http.post('http://localhost:8000/api/categories', async ({ request }) => {
+  http.post(`${API_URL}/categories`, async ({ request }) => {
     const body = (await request.json()) as Record<string, unknown>
 
     await delay(500)
@@ -28,7 +29,7 @@ export const handlers = [
     })
   }),
 
-  http.post('http://localhost:8000/api/transactions', async ({ request }) => {
+  http.post(`${API_URL}/transactions`, async ({ request }) => {
     const body = (await request.json()) as Record<string, unknown>
 
     await delay(500)
@@ -43,17 +44,15 @@ export const handlers = [
     )
   }),
 
-  http.get('http://localhost:8000/api/statistics/income-expense', () => {
+  http.get(`${API_URL}/statistics/spending-by-category`, () => {
     return HttpResponse.json([
       {
-        label: '2026-07-08T00:00:00',
-        income: '1000.00',
-        expense: '50.00',
+        category: 'Food',
+        amount: '50.00',
       },
       {
-        label: '2026-07-09T00:00:00',
-        income: '0',
-        expense: '20.00',
+        category: 'Transport',
+        amount: '20.00',
       },
     ])
   }),

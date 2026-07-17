@@ -45,7 +45,7 @@ export function CategoryPieChart() {
   const chartConfig = createSpendingChartConfig(chartData)
 
   return (
-    <Card className="flex flex-col">
+    <Card data-testid="spending-category-chart" className="flex flex-col">
       <CardHeader className="items-center pb-0">
         <CardTitle>Spending by Category</CardTitle>
         <div className="flex gap-2">
@@ -59,7 +59,7 @@ export function CategoryPieChart() {
       <CardContent className="flex-1 pb-0">
         {isLoading && <p className="text-muted-foreground">Loading...</p>}
         {error && <p className="text-destructive">Something went wrong 😿</p>}
-        {chartData.length === 0 && (
+        {!isLoading && !error && chartData.length === 0 && (
           <p className="text-muted-foreground">
             No expenses for selected period.
           </p>
