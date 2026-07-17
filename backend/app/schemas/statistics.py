@@ -7,3 +7,8 @@ class IncomeExpenseOverview(BaseModel):
     label: datetime | None
     income: Decimal | None
     expense: Decimal | None
+
+
+class SpendingByCategory(BaseModel):
+    category: str | None
+    amount: Decimal | None

@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event'
 import '@testing-library/jest-dom'
 import { columns } from './Columns'
 import { TransactionsTable } from './TransactionsTable'
-import { renderWithProviders } from '@/helpers/testHelpers'
+import { renderWithProviders } from '@/helpers/tests.helpers'
 
 export const mockTransactions: Transaction[] = [
   {

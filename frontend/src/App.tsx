@@ -1,12 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
 import { getTransactons } from './api/transactions'
 import { BrowserRouter, Route, Routes } from 'react-router'
-import { mapTransactions } from './helpers'
 import Transactions from './pages/Transactions'
 import Dashboard from './pages/Dashboard'
 import Layout from './pages/Layout'
 import { ThemeProvider } from './components/ThemeProvider'
 import { Toaster } from 'sonner'
+import { mapTransactions } from './helpers'
 
 function App() {
   const result = useQuery({

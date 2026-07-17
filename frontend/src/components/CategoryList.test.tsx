@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 
 import { CategoryList } from './CategoryList'
-import { renderWithProviders } from '@/helpers/testHelpers'
+import { renderWithProviders } from '@/helpers/tests.helpers'
 import { server } from '@/mocks/server'
 
 const setup = (props = {}) => {

@@ -1,4 +1,5 @@
 import IncomeExpenseChart from '@/components/dashboard/IncomeExpenseOverview/IncomeExpenseChart'
+import { CategoryPieChart } from '@/components/dashboard/SpendingByCategory/CategoryPieChart'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 function Dashboard() {
@@ -21,14 +22,7 @@ function Dashboard() {
 
         <IncomeExpenseChart />
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Spending by Category</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">Pie chart placeholder</p>
-          </CardContent>
-        </Card>
+        <CategoryPieChart />
 
         <Card>
           <CardHeader>

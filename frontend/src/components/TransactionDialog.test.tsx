@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 
 import { TransactionDialog } from './TransactionDialog'
-import { renderWithProviders } from '@/helpers/testHelpers'
+import { renderWithProviders } from '@/helpers/tests.helpers'
 import type { Transaction } from '@/types/transactions.types'
 import { server } from '@/mocks/server'
 import { delay, http, HttpResponse } from 'msw'
