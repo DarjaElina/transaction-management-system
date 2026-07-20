@@ -53,7 +53,7 @@ export const getDateRange = (option: DateRangeOption): DateRange => {
     case 'all_time':
       return {
         period: 'year',
-        start: new Date(2025, 0, 1),
+        start: new Date(2024, 0, 1),
         end: endOfDay(now),
       }
   }
