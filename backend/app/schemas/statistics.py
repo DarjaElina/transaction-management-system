@@ -12,3 +12,14 @@ class IncomeExpenseOverview(BaseModel):
 class SpendingByCategory(BaseModel):
     category: str | None
     amount: Decimal | None
+
+
+class Change(BaseModel):
+    current: Decimal | None
+    previous: Decimal | None
+    change: Decimal | None
+
+
+class MonthlyOverview(BaseModel):
+    income: Change
+    expense: Change

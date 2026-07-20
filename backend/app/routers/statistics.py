@@ -27,3 +27,9 @@ def get_spending_by_category(
 ):
     stats = statistics_service.get_spending_by_category(session, start, end)
     return stats
+
+
+@router.get("/monthly-overview")
+def get_monthly_overview(session: SessionDep, user_timezone: str):
+    stats = statistics_service.get_monthly_overview(session, user_timezone)
+    return stats
