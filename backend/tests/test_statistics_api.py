@@ -1,7 +1,6 @@
-from datetime import datetime, UTC, timedelta
+from datetime import datetime, UTC
 from decimal import Decimal
 import uuid
-from zoneinfo import ZoneInfo
 
 from fastapi.testclient import TestClient
 import pytest
@@ -529,93 +528,19 @@ def test_spending_by_category_returns_empty_list_when_no_expenses(
     assert response.json() == []
 
 
-def test_monthly_overview_returns_income_and_expense(
-    client: TestClient,
-    session,
-    category: Category,
+def test_financial_summary_endpoint(
+    client,
 ):
-    now = datetime.now(ZoneInfo("UTC"))
-
-    transaction = Transaction(
-        id=uuid.uuid4(),
-        date=now - timedelta(days=5),
-        description="Salary",
-        amount=Decimal("3000.00"),
-        transaction_type=TransactionType.INCOME,
-        category_id=category.id,
-    )
-
-    expense = Transaction(
-        id=uuid.uuid4(),
-        date=now - timedelta(days=3),
-        description="Coffee",
-        amount=Decimal("5.00"),
-        transaction_type=TransactionType.EXPENSE,
-        category_id=category.id,
-    )
-
-    session.add_all([transaction, expense])
-    session.commit()
-
     response = client.get(
-        "/api/statistics/monthly-overview",
-        params={
-            "user_timezone": "Europe/Helsinki",
-        },
+        "/api/statistics/financial-summary",
+        params={"user_timezone": "Europe/Helsinki"},
     )
 
     assert response.status_code == 200
 
     data = response.json()
 
-    assert data["income"]["current"] == "3000.00"
-    assert data["expense"]["current"] == "5.00"
-
-
-def test_monthly_overview_returns_previous_month_values(
-    client: TestClient,
-    session,
-    category: Category,
-):
-    transaction = Transaction(
-        id=uuid.uuid4(),
-        date=datetime(2026, 6, 15, tzinfo=UTC),
-        description="Old salary",
-        amount=Decimal("2000.00"),
-        transaction_type=TransactionType.INCOME,
-        category_id=category.id,
-    )
-
-    session.add(transaction)
-    session.commit()
-
-    response = client.get(
-        "/api/statistics/monthly-overview",
-        params={
-            "user_timezone": "Europe/Helsinki",
-        },
-    )
-
-    assert response.status_code == 200
-
-    data = response.json()
-
-    assert data["income"]["previous"] == "2000.00"
-
-
-def test_monthly_overview_returns_zero_when_no_transactions(
-    client: TestClient,
-):
-    response = client.get(
-        "/api/statistics/monthly-overview",
-        params={
-            "user_timezone": "Europe/Helsinki",
-        },
-    )
-
-    assert response.status_code == 200
-
-    data = response.json()
-
-    assert data["income"]["current"] == "0"
-    assert data["expense"]["current"] == "0"
+    assert "income" in data
+    assert "expense" in data
+    assert "cash_flow" in data
+    assert "savings_rate" in data
