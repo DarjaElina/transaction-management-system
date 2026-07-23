@@ -19,8 +19,6 @@ from decimal import Decimal
 
 def get_transactions(
     session: SessionDep,
-    offset: int,
-    limit: int,
     category_id: uuid.UUID | None,
     transaction_type: TransactionType | None,
     description: str | None,
@@ -41,7 +39,7 @@ def get_transactions(
     query = filter_gte(query, Transaction.amount, min_amount)
     query = filter_lte(query, Transaction.amount, max_amount)
 
-    return session.exec(query.offset(offset).limit(limit)).all()
+    return session.exec(query).all()
 
 
 def get_transaction(session: SessionDep, transaction_id):
