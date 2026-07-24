@@ -62,7 +62,7 @@ export function TransactionsTable<TData, TValue>({
 
   return (
     <div>
-      <div className="flex items-center justify-between py-4">
+      <div className="flex items-center justify-between py-4 gap-2">
         <Input
           placeholder="Filter by description..."
           value={
