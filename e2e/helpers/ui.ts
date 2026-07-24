@@ -1,6 +1,6 @@
 import { expect, Page } from '@playwright/test'
 import { selectDate } from './common'
-import { StatisticsPeriod } from '../types/statistics.types'
+import { CategoryType, StatisticsPeriod } from '../types/statistics.types'
 
 export const openTransactionDialog = async (page: Page) => {
   await page.getByRole('button', { name: 'Add Transaction' }).click()
@@ -92,7 +92,7 @@ export const createTransaction = async (
     date?: Date
   } = {},
   withNewCategory: boolean = true,
-  categoryType: 'Income' | 'Expense' = 'Expense',
+  categoryType: CategoryType = 'Expense',
 ) => {
   await openTransactionDialog(page)
 
@@ -116,8 +116,8 @@ export const selectStatisticsPeriod = async (
 ) => {
   const container =
     chart === 'income-expense'
-      ? page.getByTestId('income-expense-chart')
-      : page.getByTestId('spending-category-chart')
+      ? page.getByTestId('income-expense-container')
+      : page.getByTestId('spending-category-container')
 
   await container.getByRole('combobox').click()
 
