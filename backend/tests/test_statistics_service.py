@@ -1,12 +1,11 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from decimal import Decimal
 import uuid
-from zoneinfo import ZoneInfo
 
 import pytest
 
 from app.models.transaction import Transaction
-from app.services.statistics_service import get_monthly_overview
+from app.services.statistics_service import get_financial_summary, get_monthly_totals
 from app.models.category import Category
 from app.core.enums import TransactionType
 
@@ -26,88 +25,147 @@ def category(session):
     return category
 
 
-def test_monthly_overview_returns_previous_and_current_month(
+def create_transaction(
     session,
-    category: Category,
-):
-    session.add_all(
-        [
-            Transaction(
-                id=uuid.uuid4(),
-                date=datetime(2026, 6, 15, tzinfo=ZoneInfo("UTC")),
-                description="June salary",
-                amount=Decimal("1000"),
-                transaction_type=TransactionType.INCOME,
-                category_id=category.id,
-            ),
-            Transaction(
-                id=uuid.uuid4(),
-                date=datetime(2026, 7, 10, tzinfo=ZoneInfo("UTC")),
-                description="July coffee",
-                amount=Decimal("100"),
-                transaction_type=TransactionType.EXPENSE,
-                category_id=category.id,
-            ),
-        ]
-    )
-
-    session.commit()
-
-    result = get_monthly_overview(
-        session=session,
-        user_timezone="Europe/Helsinki",
-        now=datetime(2026, 7, 20, 10, tzinfo=ZoneInfo("UTC")),
-    )
-
-    assert result.income.previous == Decimal("1000")
-    assert result.expense.current == Decimal("100")
-
-
-def test_monthly_overview_uses_user_timezone_for_month_boundary(
-    session,
-    category: Category,
+    category,
+    amount,
+    transaction_type,
+    date,
 ):
     transaction = Transaction(
         id=uuid.uuid4(),
-        date=datetime(2025, 12, 31, 23, 30, tzinfo=ZoneInfo("UTC")),
-        description="New year Helsinki transaction",
-        amount=Decimal("50"),
-        transaction_type=TransactionType.EXPENSE,
+        date=date,
+        description="Test transaction",
+        amount=Decimal(amount),
+        transaction_type=transaction_type,
         category_id=category.id,
     )
 
     session.add(transaction)
     session.commit()
 
-    result = get_monthly_overview(
-        session=session,
-        user_timezone="Europe/Helsinki",
-        now=datetime(2026, 1, 1, 0, 30, tzinfo=ZoneInfo("UTC")),
-    )
-
-    assert result.expense.current == Decimal("50")
+    return transaction
 
 
-def test_monthly_overview_handles_negative_timezone_offset(
+def test_get_monthly_totals_returns_previous_and_current_month(
     session,
-    category: Category,
+    category,
 ):
-    transaction = Transaction(
-        id=uuid.uuid4(),
-        date=datetime(2026, 1, 1, 1, 0, tzinfo=ZoneInfo("UTC")),
-        description="NY transaction",
-        amount=Decimal("70"),
-        transaction_type=TransactionType.EXPENSE,
-        category_id=category.id,
+    create_transaction(
+        session,
+        category,
+        "1000",
+        TransactionType.INCOME,
+        datetime(2026, 6, 15, tzinfo=UTC),
     )
 
-    session.add(transaction)
-    session.commit()
-
-    result = get_monthly_overview(
-        session=session,
-        user_timezone="America/New_York",
-        now=datetime(2026, 1, 1, 5, 0, tzinfo=ZoneInfo("UTC")),
+    create_transaction(
+        session,
+        category,
+        "200",
+        TransactionType.EXPENSE,
+        datetime(2026, 7, 10, tzinfo=UTC),
     )
 
-    assert result.expense.previous == Decimal("70")
+    result = get_monthly_totals(
+        session,
+        "Europe/Helsinki",
+        datetime(2026, 7, 20, tzinfo=UTC),
+    )
+
+    previous, current = result
+
+    assert previous.income == Decimal("1000")
+    assert previous.expense == Decimal("0")
+
+    assert current.income == Decimal("0")
+    assert current.expense == Decimal("200")
+
+
+def test_get_monthly_totals_returns_zero_for_empty_month(
+    session,
+):
+    result = get_monthly_totals(
+        session,
+        "Europe/Helsinki",
+        datetime(2026, 7, 20, tzinfo=UTC),
+    )
+
+    previous, current = result
+
+    assert previous.income == 0
+    assert previous.expense == 0
+
+    assert current.income == 0
+    assert current.expense == 0
+
+
+def test_get_monthly_totals_respects_timezone(
+    session,
+    category,
+):
+    create_transaction(
+        session,
+        category,
+        "50",
+        TransactionType.EXPENSE,
+        datetime(2025, 12, 31, 23, 30, tzinfo=UTC),
+    )
+
+    result = get_monthly_totals(
+        session,
+        "Europe/Helsinki",
+        datetime(2026, 1, 1, 0, 30, tzinfo=UTC),
+    )
+
+    previous, current = result
+
+    assert current.expense == Decimal("50")
+
+
+def test_financial_summary_calculates_cash_flow_and_savings(
+    session,
+    category,
+):
+    create_transaction(
+        session,
+        category,
+        "3000",
+        TransactionType.INCOME,
+        datetime(2026, 6, 15, tzinfo=UTC),
+    )
+
+    create_transaction(
+        session,
+        category,
+        "1000",
+        TransactionType.EXPENSE,
+        datetime(2026, 6, 20, tzinfo=UTC),
+    )
+
+    create_transaction(
+        session,
+        category,
+        "4000",
+        TransactionType.INCOME,
+        datetime(2026, 7, 10, tzinfo=UTC),
+    )
+
+    create_transaction(
+        session,
+        category,
+        "1500",
+        TransactionType.EXPENSE,
+        datetime(2026, 7, 11, tzinfo=UTC),
+    )
+
+    result = get_financial_summary(
+        session,
+        "Europe/Helsinki",
+        datetime(2026, 7, 20, tzinfo=UTC),
+    )
+
+    assert result.income.current == Decimal("4000")
+    assert result.expense.current == Decimal("1500")
+
+    assert result.cash_flow.current == Decimal("2500")

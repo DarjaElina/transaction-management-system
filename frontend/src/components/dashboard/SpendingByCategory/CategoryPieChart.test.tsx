@@ -1,15 +1,15 @@
 import { screen } from '@testing-library/react'
 import { renderWithProviders } from '@/helpers/tests.helpers'
-import { CategoryPieChart } from './CategoryPieChart'
 import { server } from '@/mocks/server'
 import { http, HttpResponse } from 'msw'
 import { API_URL } from '@/mocks/config'
+import CategoryPieChart from './CategoryPieChart'
 
 describe('CategoryPieChart', () => {
   it('shows loading state', () => {
     renderWithProviders(<CategoryPieChart />)
 
-    expect(screen.getByText(/loading/i)).toBeInTheDocument()
+    expect(screen.getByTestId(/pieChartLoading/i)).toBeInTheDocument()
   })
 
   it('renders total spending', async () => {

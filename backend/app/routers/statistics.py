@@ -4,7 +4,11 @@ from fastapi import APIRouter
 
 from app.db.database import SessionDep
 from app.services import statistics_service
-from app.schemas.statistics import IncomeExpenseOverview, SpendingByCategory
+from app.schemas.statistics import (
+    FinancialSummary,
+    IncomeExpenseOverview,
+    SpendingByCategory,
+)
 
 router = APIRouter(prefix="/statistics")
 
@@ -29,7 +33,7 @@ def get_spending_by_category(
     return stats
 
 
-@router.get("/monthly-overview")
-def get_monthly_overview(session: SessionDep, user_timezone: str):
-    stats = statistics_service.get_monthly_overview(session, user_timezone)
+@router.get("/financial-summary", response_model=FinancialSummary)
+def get_financial_summary(session: SessionDep, user_timezone: str):
+    stats = statistics_service.get_financial_summary(session, user_timezone)
     return stats

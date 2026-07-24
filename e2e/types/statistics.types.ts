@@ -11,3 +11,5 @@ export type StatisticsPeriod =
   | 'This year'
   | 'Last year'
   | 'All time'
+
+export type CategoryType = 'Income' | 'Expense'

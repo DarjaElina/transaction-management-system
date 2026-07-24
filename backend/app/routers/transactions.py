@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Query, HTTPException
+from fastapi import APIRouter, HTTPException
 from datetime import datetime
 from decimal import Decimal
-from typing import Annotated, Literal
+from typing import Literal
 from app.db.database import SessionDep
 from app.schemas.transactions import (
     TransactionPublic,
@@ -21,8 +21,6 @@ router = APIRouter(prefix="/transactions")
 @router.get("/", response_model=list[TransactionPublicWithCategory])
 def read_transactions(
     session: SessionDep,
-    offset: int = 0,
-    limit: Annotated[int, Query(ge=0, le=100)] = 20,
     category_id: uuid.UUID | None = None,
     transaction_type: TransactionType | None = None,
     description: str | None = None,
@@ -35,8 +33,6 @@ def read_transactions(
 ):
     return transaction_service.get_transactions(
         session=session,
-        offset=offset,
-        limit=limit,
         category_id=category_id,
         transaction_type=transaction_type,
         description=description,

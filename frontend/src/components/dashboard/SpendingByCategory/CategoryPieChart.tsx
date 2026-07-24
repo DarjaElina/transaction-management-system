@@ -1,7 +1,13 @@
 import { Label, Pie, PieChart } from 'recharts'
 import { useQuery } from '@tanstack/react-query'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 
 import {
   ChartContainer,
@@ -21,8 +27,9 @@ import {
   toSpendingChartData,
 } from '@/helpers/statistics.helpers'
 import { getDateRange } from '@/helpers/getDateRange'
+import PieChartSkeleton from './PieChartSkeleton'
 
-export function CategoryPieChart() {
+function CategoryPieChart() {
   const [dateRangeOption, setDateRangeOption] =
     useState<DateRangeOption>('all_time')
   const {
@@ -45,19 +52,20 @@ export function CategoryPieChart() {
   const chartConfig = createSpendingChartConfig(chartData)
 
   return (
-    <Card data-testid="spending-category-chart" className="flex flex-col">
+    <Card data-testid="spending-category-container" className="xl:col-span-2">
       <CardHeader className="items-center pb-0">
         <CardTitle>Spending by Category</CardTitle>
-        <div className="flex gap-2">
-          <DateRangeSelect
-            value={dateRangeOption}
-            onChange={setDateRangeOption}
-          />
-        </div>
+        <CardDescription>
+          See where your money goes across different categories
+        </CardDescription>
+        <DateRangeSelect
+          value={dateRangeOption}
+          onChange={setDateRangeOption}
+        />
       </CardHeader>
 
       <CardContent className="flex-1 pb-0">
-        {isLoading && <p className="text-muted-foreground">Loading...</p>}
+        {isLoading && <PieChartSkeleton />}
         {error && <p className="text-destructive">Something went wrong 😿</p>}
         {!isLoading && !error && chartData.length === 0 && (
           <p className="text-muted-foreground">
@@ -71,6 +79,7 @@ export function CategoryPieChart() {
             mx-auto
             aspect-square
             pb-0
+            max-h-[350px]
             [&_.recharts-pie-label-text]:fill-foreground
           "
           >
@@ -81,7 +90,7 @@ export function CategoryPieChart() {
                 data={chartData}
                 dataKey="amount"
                 nameKey="category"
-                innerRadius={60}
+                innerRadius={80}
                 strokeWidth={5}
               >
                 <Label
@@ -125,3 +134,5 @@ export function CategoryPieChart() {
     </Card>
   )
 }
+
+export default CategoryPieChart

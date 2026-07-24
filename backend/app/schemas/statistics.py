@@ -15,11 +15,19 @@ class SpendingByCategory(BaseModel):
 
 
 class Change(BaseModel):
-    current: Decimal | None
-    previous: Decimal | None
+    current: Decimal
+    previous: Decimal
     change: Decimal | None
 
 
-class MonthlyOverview(BaseModel):
+class FinancialSummary(BaseModel):
     income: Change
     expense: Change
+    cash_flow: Change
+    savings_rate: Change
+
+
+class MonthlyTotals(BaseModel):
+    month: datetime
+    income: Decimal
+    expense: Decimal

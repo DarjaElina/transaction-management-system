@@ -8,13 +8,24 @@ import {
   type ChartConfig,
 } from '@/components/ui/chart'
 import { useQuery } from '@tanstack/react-query'
-import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts'
-import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card'
+import { CartesianGrid, Line, LineChart, XAxis } from 'recharts'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '../../ui/card'
 import { useState } from 'react'
 import type { DateRangeOption } from '@/types/statistics.types'
 import DateRangeSelect from './DateRangeSelect'
 import { formatChartLabel } from '@/helpers/formatChartLabel'
 import { getDateRange } from '@/helpers/getDateRange'
+import {
+  getIncomeExpenseTotals,
+  userTimezone,
+} from '@/helpers/statistics.helpers'
+import LineChartSkeleton from './LineChartSkeleton'
 
 const chartConfig = {
   income: {
@@ -29,11 +40,9 @@ const chartConfig = {
 
 function IncomeExpenseChart() {
   const [dateRangeOption, setDateRangeOption] =
-    useState<DateRangeOption>('all_time')
+    useState<DateRangeOption>('last_30_days')
 
   const { period, start, end } = getDateRange(dateRangeOption)
-
-  const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
 
   const {
     data = [],
@@ -44,35 +53,58 @@ function IncomeExpenseChart() {
     queryFn: () => getIncomeExpenseOverview(start, end, period, userTimezone),
   })
 
+  const { income, expense } = getIncomeExpenseTotals(data)
+
   return (
-    <Card data-testid="income-expense-chart" className="md:col-span-2">
+    <Card className="xl:col-span-4" data-testid="income-expense-container">
       <CardHeader>
-        <CardTitle>Income vs Expense</CardTitle>
-        <div className="flex gap-2">
-          <DateRangeSelect
-            value={dateRangeOption}
-            onChange={setDateRangeOption}
-          />
-        </div>
+        <CardTitle>Financial Trend</CardTitle>
+
+        <CardDescription>Income and expenses over time</CardDescription>
+
+        <DateRangeSelect
+          value={dateRangeOption}
+          onChange={setDateRangeOption}
+        />
       </CardHeader>
 
       <CardContent>
-        {isLoading && <p className="text-muted-foreground">Loading...</p>}
+        {isLoading && <LineChartSkeleton />}
+
         {error && <p className="text-destructive">Something went wrong 😿</p>}
+
         {!isLoading && !error && data.length > 0 && (
-          <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
-            <BarChart accessibilityLayer data={data}>
+          <ChartContainer
+            config={chartConfig}
+            className="h-[300px] w-full"
+            data-testid="income-expense-chart"
+            data-total-income={income}
+            data-total-expense={expense}
+          >
+            <LineChart
+              accessibilityLayer
+              data={data}
+              margin={{
+                left: 20,
+                right: 20,
+                top: 20,
+                bottom: 20,
+              }}
+            >
               <CartesianGrid vertical={false} />
+
               <XAxis
                 dataKey="label"
                 tickLine={false}
-                tickMargin={10}
                 axisLine={false}
+                tickMargin={10}
                 tickFormatter={(value) =>
                   formatChartLabel(value, dateRangeOption)
                 }
               />
+
               <ChartTooltip
+                cursor={false}
                 content={
                   <ChartTooltipContent
                     labelFormatter={(value) =>
@@ -81,20 +113,25 @@ function IncomeExpenseChart() {
                   />
                 }
               />
+
               <ChartLegend content={<ChartLegendContent />} />
-              <Bar
-                data-testid="income-bar"
+
+              <Line
                 dataKey="income"
-                fill="var(--color-income)"
-                radius={4}
+                type="monotone"
+                stroke="var(--color-income)"
+                strokeWidth={3}
+                dot={false}
               />
-              <Bar
-                data-testid="expense-bar"
+
+              <Line
                 dataKey="expense"
-                fill="var(--color-expense)"
-                radius={4}
+                type="monotone"
+                stroke="var(--color-expense)"
+                strokeWidth={3}
+                dot={false}
               />
-            </BarChart>
+            </LineChart>
           </ChartContainer>
         )}
       </CardContent>

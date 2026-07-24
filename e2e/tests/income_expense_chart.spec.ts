@@ -36,15 +36,15 @@ test.describe('Income expense overview chart', () => {
 
     await selectStatisticsPeriod(page, 'Last 7 days', 'income-expense')
 
-    await expect(page.getByTestId('expense-bar')).toHaveCount(1)
+    const chart = page.getByTestId('income-expense-chart')
 
-    await expect(page.getByTestId('income-bar')).toHaveCount(0)
+    await expect(chart).toHaveAttribute('data-total-expense', '10')
+    await expect(chart).toHaveAttribute('data-total-income', '0')
 
     await selectStatisticsPeriod(page, 'Last 90 days', 'income-expense')
 
-    await expect(page.getByTestId('expense-bar')).toHaveCount(1)
-
-    await expect(page.getByTestId('income-bar')).toHaveCount(1)
+    await expect(chart).toHaveAttribute('data-total-expense', '10')
+    await expect(chart).toHaveAttribute('data-total-income', '20')
   })
 
   test('editing transaction date updates dashboard statistics', async ({
@@ -54,31 +54,28 @@ test.describe('Income expense overview chart', () => {
 
     await createTransaction(page, {
       date: subMonths(new Date(), 2),
+      amount: '10',
     })
 
     await page.goto('/dashboard')
 
     await selectStatisticsPeriod(page, 'Last 7 days', 'income-expense')
 
-    await expect(page.getByTestId('expense-bar')).toHaveCount(0)
+    const chart = page.getByTestId('income-expense-chart')
+    await expect(chart).toHaveAttribute('data-total-expense', '0')
 
     await page.goto('/')
 
     await page.getByRole('button', { name: 'Open menu' }).click()
-
     await page.getByRole('menuitem', { name: 'Edit' }).click()
-
     await selectDate(page, new Date())
-
     await page.getByRole('button', { name: 'Save changes' }).click()
-
     await expect(page.getByText('Edit transaction')).not.toBeVisible()
 
     await page.goto('/dashboard')
 
     await selectStatisticsPeriod(page, 'Last 7 days', 'income-expense')
-
-    await expect(page.getByTestId('expense-bar')).toHaveCount(1)
+    await expect(chart).toHaveAttribute('data-total-expense', '10')
   })
 
   test('deleting transaction updates dashboard statistics', async ({
@@ -94,22 +91,19 @@ test.describe('Income expense overview chart', () => {
 
     await selectStatisticsPeriod(page, 'Last 7 days', 'income-expense')
 
-    await expect(page.getByTestId('expense-bar')).toHaveCount(1)
+    const chart = page.getByTestId('income-expense-chart')
+    await expect(chart).toHaveAttribute('data-total-expense', '25')
 
     await page.goto('/')
 
     await page.getByRole('button', { name: 'Open menu' }).click()
-
     await page.getByRole('menuitem', { name: 'Delete' }).click()
-
     await page.getByRole('button', { name: 'Delete' }).click()
-
     await expect(page.getByText('Transaction deleted')).toBeVisible()
 
     await page.goto('/dashboard')
 
     await selectStatisticsPeriod(page, 'Last 7 days', 'income-expense')
-
-    await expect(page.getByTestId('expense-bar')).toHaveCount(0)
+    await expect(chart).toHaveAttribute('data-total-expense', '0')
   })
 })

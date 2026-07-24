@@ -27,3 +27,12 @@ export const getSpendingByCategory = async (start: Date, end: Date) => {
   })
   return data
 }
+
+export const getFinancialSummary = async (user_timezone: string) => {
+  const { data } = await api.get('/statistics/financial-summary', {
+    params: {
+      user_timezone,
+    },
+  })
+  return data
+}
