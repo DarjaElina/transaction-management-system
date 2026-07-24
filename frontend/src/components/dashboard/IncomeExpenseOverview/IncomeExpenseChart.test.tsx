@@ -11,7 +11,7 @@ describe('IncomeExpenseChart', () => {
   it('shows loading state', () => {
     renderWithProviders(<IncomeExpenseChart />)
 
-    expect(screen.getByText(/loading/i)).toBeInTheDocument()
+    expect(screen.getByTestId(/lineChartLoading/i)).toBeInTheDocument()
   })
 
   it('shows error state when request fails', async () => {

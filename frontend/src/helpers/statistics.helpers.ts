@@ -1,6 +1,7 @@
 import type { ChartConfig } from '@/components/ui/chart'
 
 import type {
+  IncomeExpenseOverviewItem,
   LimitSpendingChartOptions,
   SpendingByCategory,
   SpendingChartData,
@@ -66,6 +67,29 @@ export const createSpendingChartConfig = (
       amount: {
         label: 'Amount',
       },
+    },
+  )
+}
+
+export const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+
+export const formatMoney = (value: string) => {
+  const number = Number(value)
+
+  return number < 0
+    ? `-€${Math.abs(number).toLocaleString()}`
+    : `€${number.toLocaleString()}`
+}
+
+export const getIncomeExpenseTotals = (data: IncomeExpenseOverviewItem[]) => {
+  return data.reduce(
+    (acc, item) => ({
+      income: acc.income + Number(item.income),
+      expense: acc.expense + Number(item.expense),
+    }),
+    {
+      income: 0,
+      expense: 0,
     },
   )
 }
