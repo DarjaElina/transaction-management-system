@@ -6,6 +6,8 @@ from app.core.enums import TransactionType
 from app.models.category import Category
 import uuid
 
+from app.models.user import User
+
 
 class TransactionBase(SQLModel):
     date: datetime = Field(
@@ -16,7 +18,10 @@ class TransactionBase(SQLModel):
     transaction_type: TransactionType = Field(
         sa_column=Column(Enum(TransactionType), nullable=False)
     )
-    category_id: uuid.UUID | None = Field(default=None, foreign_key="categories.id")
+    category_id: uuid.UUID = Field(
+        default=None, foreign_key="categories.id", nullable=False
+    )
+    user_id: uuid.UUID = Field(default=None, foreign_key="users.id", nullable=False)
 
     __tablename__: str = "transactions"  # type: ignore
 
@@ -24,3 +29,4 @@ class TransactionBase(SQLModel):
 class Transaction(TransactionBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     category: Category = Relationship(back_populates="transactions")
+    user: User = Relationship(back_populates="transactions")
