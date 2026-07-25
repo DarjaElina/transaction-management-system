@@ -1,11 +1,11 @@
 from fastapi import FastAPI
 
 from app.config import get_settings
-from app.routers import transactions, categories, test
+from app.routers import transactions, categories, statistics, test, users
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.exception_handlers import register_exception_handlers
-from app.routers import statistics
+from app.routers import auth
 
 app = FastAPI()
 
@@ -32,6 +32,8 @@ app.add_middleware(
 app.include_router(transactions.router, prefix="/api")
 app.include_router(categories.router, prefix="/api")
 app.include_router(statistics.router, prefix="/api")
+app.include_router(users.router, prefix="/api")
+app.include_router(auth.router, prefix="/api")
 register_exception_handlers(app)
 
 
