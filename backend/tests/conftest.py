@@ -1,3 +1,5 @@
+import uuid
+
 import pytest
 from sqlmodel import Session, SQLModel, create_engine
 from fastapi.testclient import TestClient
@@ -5,6 +7,8 @@ from fastapi.testclient import TestClient
 from app.main import app
 from app.db.database import get_session
 from app.config import get_settings
+from app.models.user import User
+from app.services.user_service import get_current_active_user
 
 
 @pytest.fixture(scope="session")
@@ -34,12 +38,34 @@ def session(engine):
     connection.close()
 
 
+@pytest.fixture
+def user(session):
+    user = User(
+        id=uuid.uuid4(),
+        email="test@test.com",
+        first_name="John",
+        last_name="Doe",
+        password_hash="hash",
+        disabled=False,
+    )
+
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+
+    return user
+
+
 @pytest.fixture(name="client")
-def client_fixture(session: Session):
+def client_fixture(session: Session, user: User):
     def get_session_override():
         return session
 
+    def get_current_active_user_override():
+        return user
+
     app.dependency_overrides[get_session] = get_session_override
+    app.dependency_overrides[get_current_active_user] = get_current_active_user_override
 
     client = TestClient(app)
     yield client

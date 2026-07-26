@@ -3,21 +3,24 @@ from decimal import Decimal
 import uuid
 
 import pytest
+from sqlmodel import Session
 
 from app.models.transaction import Transaction
 from app.services.statistics_service import get_financial_summary, get_monthly_totals
 from app.models.category import Category
+from app.models.user import User
 from app.core.enums import TransactionType
 
 
 @pytest.fixture
-def category(session):
+def category(session: Session, user: User):
     category = Category(
         id=uuid.uuid4(),
         name="Software Licenses",
         description="Test category",
         allowed_type=TransactionType.EXPENSE,
         is_active=True,
+        user_id=user.id,
     )
     session.add(category)
     session.commit()
@@ -26,11 +29,12 @@ def category(session):
 
 
 def create_transaction(
-    session,
-    category,
-    amount,
-    transaction_type,
-    date,
+    session: Session,
+    category: Category,
+    amount: str,
+    transaction_type: TransactionType,
+    date: datetime,
+    user: User,
 ):
     transaction = Transaction(
         id=uuid.uuid4(),
@@ -39,6 +43,7 @@ def create_transaction(
         amount=Decimal(amount),
         transaction_type=transaction_type,
         category_id=category.id,
+        user_id=user.id,
     )
 
     session.add(transaction)
@@ -48,8 +53,7 @@ def create_transaction(
 
 
 def test_get_monthly_totals_returns_previous_and_current_month(
-    session,
-    category,
+    session: Session, category: Category, user: User
 ):
     create_transaction(
         session,
@@ -57,6 +61,7 @@ def test_get_monthly_totals_returns_previous_and_current_month(
         "1000",
         TransactionType.INCOME,
         datetime(2026, 6, 15, tzinfo=UTC),
+        user,
     )
 
     create_transaction(
@@ -65,6 +70,7 @@ def test_get_monthly_totals_returns_previous_and_current_month(
         "200",
         TransactionType.EXPENSE,
         datetime(2026, 7, 10, tzinfo=UTC),
+        user,
     )
 
     result = get_monthly_totals(
@@ -83,7 +89,7 @@ def test_get_monthly_totals_returns_previous_and_current_month(
 
 
 def test_get_monthly_totals_returns_zero_for_empty_month(
-    session,
+    session: Session,
 ):
     result = get_monthly_totals(
         session,
@@ -101,8 +107,7 @@ def test_get_monthly_totals_returns_zero_for_empty_month(
 
 
 def test_get_monthly_totals_respects_timezone(
-    session,
-    category,
+    session: Session, category: Category, user: User
 ):
     create_transaction(
         session,
@@ -110,6 +115,7 @@ def test_get_monthly_totals_respects_timezone(
         "50",
         TransactionType.EXPENSE,
         datetime(2025, 12, 31, 23, 30, tzinfo=UTC),
+        user,
     )
 
     result = get_monthly_totals(
@@ -124,8 +130,7 @@ def test_get_monthly_totals_respects_timezone(
 
 
 def test_financial_summary_calculates_cash_flow_and_savings(
-    session,
-    category,
+    session: Session, category: Category, user: User
 ):
     create_transaction(
         session,
@@ -133,6 +138,7 @@ def test_financial_summary_calculates_cash_flow_and_savings(
         "3000",
         TransactionType.INCOME,
         datetime(2026, 6, 15, tzinfo=UTC),
+        user,
     )
 
     create_transaction(
@@ -141,6 +147,7 @@ def test_financial_summary_calculates_cash_flow_and_savings(
         "1000",
         TransactionType.EXPENSE,
         datetime(2026, 6, 20, tzinfo=UTC),
+        user,
     )
 
     create_transaction(
@@ -149,6 +156,7 @@ def test_financial_summary_calculates_cash_flow_and_savings(
         "4000",
         TransactionType.INCOME,
         datetime(2026, 7, 10, tzinfo=UTC),
+        user,
     )
 
     create_transaction(
@@ -157,6 +165,7 @@ def test_financial_summary_calculates_cash_flow_and_savings(
         "1500",
         TransactionType.EXPENSE,
         datetime(2026, 7, 11, tzinfo=UTC),
+        user,
     )
 
     result = get_financial_summary(

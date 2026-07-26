@@ -1,3 +1,4 @@
+import uuid
 from fastapi.testclient import TestClient
 from sqlmodel import Session
 from datetime import datetime
@@ -6,8 +7,7 @@ from decimal import Decimal
 from app.core.enums import TransactionType
 from app.models.transaction import Transaction
 from app.models.category import Category
-
-import uuid
+from app.models.user import User
 
 
 def test_create_category(client: TestClient):
@@ -54,17 +54,19 @@ def test_category_allowed_type_invalid(client: TestClient):
     assert response.status_code == 422
 
 
-def test_read_categories(session: Session, client: TestClient):
+def test_read_categories(session: Session, client: TestClient, user: User):
     category_1 = Category(
         name="Food",
         allowed_type=TransactionType.EXPENSE,
         is_active=True,
+        user_id=user.id,
     )
 
     category_2 = Category(
         name="Salary",
         allowed_type=TransactionType.INCOME,
         is_active=True,
+        user_id=user.id,
     )
 
     session.add(category_1)
@@ -78,11 +80,12 @@ def test_read_categories(session: Session, client: TestClient):
     assert len(data) == 2
 
 
-def test_update_category(session: Session, client: TestClient):
+def test_update_category(session: Session, client: TestClient, user: User):
     category = Category(
         name="Old name",
         allowed_type=TransactionType.EXPENSE,
         is_active=True,
+        user_id=user.id,
     )
 
     session.add(category)
@@ -99,11 +102,12 @@ def test_update_category(session: Session, client: TestClient):
     assert data["name"] == "new name"
 
 
-def test_delete_category(session: Session, client: TestClient):
+def test_delete_category(session: Session, client: TestClient, user: User):
     category = Category(
         name="To delete",
         allowed_type=TransactionType.EXPENSE,
         is_active=True,
+        user_id=user.id,
     )
 
     session.add(category)
@@ -164,11 +168,14 @@ def test_update_category_not_found(client: TestClient):
     )
 
 
-def test_update_category_allowed_type_conflict(session: Session, client: TestClient):
+def test_update_category_allowed_type_conflict(
+    session: Session, client: TestClient, user: User
+):
     category = Category(
         name="Food",
         allowed_type=TransactionType.EXPENSE,
         is_active=True,
+        user_id=user.id,
     )
     session.add(category)
     session.commit()
@@ -179,6 +186,7 @@ def test_update_category_allowed_type_conflict(session: Session, client: TestCli
         category_id=category.id,
         amount=Decimal("10.00"),
         transaction_type=TransactionType.EXPENSE,
+        user_id=user.id,
     )
     session.add(transaction)
     session.commit()
@@ -195,7 +203,7 @@ def test_update_category_allowed_type_conflict(session: Session, client: TestCli
     )
 
 
-def test_create_category_duplicate_name(client: TestClient):
+def test_create_category_duplicate_name(client: TestClient, user: User):
     category = {
         "name": "Food",
         "allowed_type": "expense",
@@ -209,12 +217,22 @@ def test_create_category_duplicate_name(client: TestClient):
     assert response.json()["error"]["message"] == "Category already exists"
 
 
-def test_filter_categories_by_name(session: Session, client: TestClient):
+def test_filter_categories_by_name(session: Session, client: TestClient, user: User):
     session.add(
-        Category(name="Food", allowed_type=TransactionType.EXPENSE, is_active=True)
+        Category(
+            name="Food",
+            allowed_type=TransactionType.EXPENSE,
+            is_active=True,
+            user_id=user.id,
+        )
     )
     session.add(
-        Category(name="Salary", allowed_type=TransactionType.INCOME, is_active=True)
+        Category(
+            name="Salary",
+            allowed_type=TransactionType.INCOME,
+            is_active=True,
+            user_id=user.id,
+        )
     )
     session.commit()
 
@@ -226,12 +244,24 @@ def test_filter_categories_by_name(session: Session, client: TestClient):
     assert data[0]["name"] == "Food"
 
 
-def test_filter_categories_by_is_active(session: Session, client: TestClient):
+def test_filter_categories_by_is_active(
+    session: Session, client: TestClient, user: User
+):
     session.add(
-        Category(name="Active", allowed_type=TransactionType.EXPENSE, is_active=True)
+        Category(
+            name="Active",
+            allowed_type=TransactionType.EXPENSE,
+            is_active=True,
+            user_id=user.id,
+        )
     )
     session.add(
-        Category(name="Inactive", allowed_type=TransactionType.EXPENSE, is_active=False)
+        Category(
+            name="Inactive",
+            allowed_type=TransactionType.EXPENSE,
+            is_active=False,
+            user_id=user.id,
+        )
     )
     session.commit()
 
@@ -243,14 +273,24 @@ def test_filter_categories_by_is_active(session: Session, client: TestClient):
     assert data[0]["name"] == "Active"
 
 
-def test_filter_categories_by_allowed_type(session: Session, client: TestClient):
+def test_filter_categories_by_allowed_type(
+    session: Session, client: TestClient, user: User
+):
     session.add(
         Category(
-            name="ExpenseCat", allowed_type=TransactionType.EXPENSE, is_active=True
+            name="ExpenseCat",
+            allowed_type=TransactionType.EXPENSE,
+            is_active=True,
+            user_id=user.id,
         )
     )
     session.add(
-        Category(name="IncomeCat", allowed_type=TransactionType.INCOME, is_active=True)
+        Category(
+            name="IncomeCat",
+            allowed_type=TransactionType.INCOME,
+            is_active=True,
+            user_id=user.id,
+        )
     )
     session.commit()
 
@@ -262,13 +302,14 @@ def test_filter_categories_by_allowed_type(session: Session, client: TestClient)
     assert data[0]["allowed_type"] == "expense"
 
 
-def test_categories_pagination(session: Session, client: TestClient):
+def test_categories_pagination(session: Session, client: TestClient, user: User):
     for i in range(5):
         session.add(
             Category(
                 name=f"Cat{i}",
                 allowed_type=TransactionType.EXPENSE,
                 is_active=True,
+                user_id=user.id,
             )
         )
     session.commit()

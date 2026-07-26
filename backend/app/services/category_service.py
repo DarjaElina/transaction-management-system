@@ -11,10 +11,12 @@ from app.services.utils import (
     filter_ilike,
     validate_and_normalize_category_name,
 )
+from app.models.user import User
 
 
 def get_categories(
     session: Session,
+    user: User,
     offset: int,
     limit: int,
     name: str | None,
@@ -22,7 +24,7 @@ def get_categories(
     allowed_type: TransactionType | None,
     sort_by: str,
     order: str,
-):
+):  # TODO: check rights
     query = apply_sorting(Category, sort_by, order)
 
     query = filter_ilike(query, Category.name, name)
@@ -32,21 +34,25 @@ def get_categories(
     return session.exec(query.offset(offset).limit(limit)).all()
 
 
-def get_category(session: Session, category_id):
+def get_category(
+    session: Session,
+    category_id,
+    user: User,
+):
     category = session.get(Category, category_id)
-
+    # TODO: check rights
     if not category:
         raise NotFoundError("Category", category_id)
 
     return category
 
 
-def create_category(category: CategoryCreate, session: Session):
+def create_category(category: CategoryCreate, session: Session, user: User):
     db_name = validate_and_normalize_category_name(category.name, session)
 
     category.name = db_name
 
-    db_category = Category.model_validate(category)
+    db_category = Category.model_validate(category, update={"user_id": user.id})
     session.add(db_category)
     try:
         session.commit()
@@ -57,9 +63,13 @@ def create_category(category: CategoryCreate, session: Session):
     return db_category
 
 
-def delete_category(session: Session, category_id):
+def delete_category(
+    session: Session,
+    category_id,
+    user: User,
+):
     category = session.get(Category, category_id)
-
+    # TODO: check rights
     if not category:
         raise NotFoundError("Category", category_id)
 
@@ -67,9 +77,14 @@ def delete_category(session: Session, category_id):
     session.commit()
 
 
-def update_category(session: SessionDep, category, category_id):
+def update_category(
+    session: SessionDep,
+    category,
+    category_id,
+    user: User,
+):
     category_db = session.get(Category, category_id)
-
+    # TODO: check rights
     if not category_db:
         raise NotFoundError("Category", category_id)
 

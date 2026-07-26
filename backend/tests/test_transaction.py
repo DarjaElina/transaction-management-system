@@ -1,4 +1,6 @@
 import pytest
+import uuid
+
 from sqlmodel import Session
 from fastapi.testclient import TestClient
 from datetime import datetime, UTC, timedelta
@@ -6,27 +8,29 @@ from decimal import Decimal
 
 from app.models.transaction import Transaction
 from app.models.category import Category
+from app.models.user import User
 from app.core.enums import TransactionType
-
-import uuid
 
 
 @pytest.fixture
-def category(session):
+def category(session: Session, user: User):
     category = Category(
         id=uuid.uuid4(),
         name="Software Licenses",
         description="Test category",
         allowed_type=TransactionType.EXPENSE,
         is_active=True,
+        user_id=user.id,
     )
+
     session.add(category)
     session.commit()
     session.refresh(category)
+
     return category
 
 
-def test_create_transaction(client: TestClient, category):
+def test_create_transaction(client: TestClient, category: Category):
     response = client.post(
         "/api/transactions/",
         json={
@@ -50,12 +54,12 @@ def test_create_transaction(client: TestClient, category):
     assert Decimal(data["amount"]) == Decimal("99.99")
 
 
-def test_create_transaction_incomplete(client: TestClient, category):
+def test_create_transaction_incomplete(client: TestClient, category: Category):
     response = client.post("/api/transactions/", json={"category_id": str(category.id)})
     assert response.status_code == 422
 
 
-def test_create_transaction_date_invalid(client: TestClient, category):
+def test_create_transaction_date_invalid(client: TestClient, category: Category):
     response = client.post(
         "/api/transactions/",
         json={
@@ -69,7 +73,7 @@ def test_create_transaction_date_invalid(client: TestClient, category):
     assert response.status_code == 422
 
 
-def test_amount_cannot_be_any_string(client: TestClient, category):
+def test_amount_cannot_be_any_string(client: TestClient, category: Category):
     response = client.post(
         "/api/transactions/",
         json={
@@ -83,7 +87,7 @@ def test_amount_cannot_be_any_string(client: TestClient, category):
     assert response.status_code == 422
 
 
-def test_amount_can_be_decimal_string(client: TestClient, category):
+def test_amount_can_be_decimal_string(client: TestClient, category: Category):
     response = client.post(
         "/api/transactions/",
         json={
@@ -97,7 +101,7 @@ def test_amount_can_be_decimal_string(client: TestClient, category):
     assert response.status_code == 200
 
 
-def test_amount_max_decimal_places_is_2(client: TestClient, category):
+def test_amount_max_decimal_places_is_2(client: TestClient, category: Category):
     response = client.post(
         "/api/transactions/",
         json={
@@ -111,7 +115,7 @@ def test_amount_max_decimal_places_is_2(client: TestClient, category):
     assert response.status_code == 422
 
 
-def test_amount_is_converted_to_decimal(client: TestClient, category):
+def test_amount_is_converted_to_decimal(client: TestClient, category: Category):
     response = client.post(
         "/api/transactions/",
         json={
@@ -128,7 +132,7 @@ def test_amount_is_converted_to_decimal(client: TestClient, category):
     assert Decimal(data["amount"]) == Decimal("99.00")
 
 
-def test_amount_is_rounded_to_two_decimals(client: TestClient, category):
+def test_amount_is_rounded_to_two_decimals(client: TestClient, category: Category):
     response = client.post(
         "/api/transactions/",
         json={
@@ -145,7 +149,7 @@ def test_amount_is_rounded_to_two_decimals(client: TestClient, category):
     assert Decimal(data["amount"]) == Decimal("10.10")
 
 
-def test_amount_max_digits_cannot_exceed_19(client: TestClient, category):
+def test_amount_max_digits_cannot_exceed_19(client: TestClient, category: Category):
     response = client.post(
         "/api/transactions/",
         json={
@@ -159,7 +163,7 @@ def test_amount_max_digits_cannot_exceed_19(client: TestClient, category):
     assert response.status_code == 422
 
 
-def test_amount_cannot_be_negative(client: TestClient, category):
+def test_amount_cannot_be_negative(client: TestClient, category: Category):
     response = client.post(
         "/api/transactions/",
         json={
@@ -173,7 +177,7 @@ def test_amount_cannot_be_negative(client: TestClient, category):
     assert response.status_code == 422
 
 
-def test_amount_cannot_be_zero(client: TestClient, category):
+def test_amount_cannot_be_zero(client: TestClient, category: Category):
     response = client.post(
         "/api/transactions/",
         json={
@@ -187,13 +191,17 @@ def test_amount_cannot_be_zero(client: TestClient, category):
     assert response.status_code == 422
 
 
-def test_read_transactions(session: Session, client: TestClient, category):
+def test_read_transactions(
+    session: Session, client: TestClient, category: Category, user: User
+):
     transaction_1 = Transaction(
         date=datetime(2025, 5, 17),
         description="Test transaction for 99.99€",
         category=category,
         amount=Decimal("99.99"),
         transaction_type=TransactionType.EXPENSE,
+        category_id=category.id,
+        user_id=user.id,
     )
     transaction_2 = Transaction(
         date=datetime(2025, 5, 18),
@@ -201,6 +209,8 @@ def test_read_transactions(session: Session, client: TestClient, category):
         category=category,
         amount=Decimal("10.50"),
         transaction_type=TransactionType.EXPENSE,
+        category_id=category.id,
+        user_id=user.id,
     )
 
     session.add(transaction_1)
@@ -220,13 +230,16 @@ def test_read_transactions(session: Session, client: TestClient, category):
     assert Decimal(data[1]["amount"]) == Decimal(str(transaction_1.amount))
 
 
-def test_read_transaction(session: Session, client: TestClient, category):
+def test_read_transaction(
+    session: Session, client: TestClient, category: Category, user: User
+):
     transaction = Transaction(
         date=datetime(2025, 5, 17),
         description="Test transaction for 99.99€",
         category_id=category.id,
         amount=Decimal("99.99"),
         transaction_type=TransactionType.INCOME,
+        user_id=user.id,
     )
 
     session.add(transaction)
@@ -241,13 +254,16 @@ def test_read_transaction(session: Session, client: TestClient, category):
     assert Decimal(data["amount"]) == Decimal(str(transaction.amount))
 
 
-def test_update_transaction(session: Session, client: TestClient, category):
+def test_update_transaction(
+    session: Session, client: TestClient, category: Category, user: User
+):
     transaction = Transaction(
         date=datetime(2025, 5, 17),
         description="Test transaction for 99.99€",
         category_id=category.id,
         amount=Decimal("99.99"),
         transaction_type=TransactionType.INCOME,
+        user_id=user.id,
     )
     session.add(transaction)
     session.commit()
@@ -263,13 +279,16 @@ def test_update_transaction(session: Session, client: TestClient, category):
     assert data["description"] == "Updated description"
 
 
-def test_delete_transaction(session: Session, client: TestClient, category):
+def test_delete_transaction(
+    session: Session, client: TestClient, category: Category, user: User
+):
     transaction = Transaction(
         date=datetime(2025, 5, 17),
         description="Test transaction for 99.99€",
         category_id=category.id,
         amount=Decimal("99.99"),
         transaction_type=TransactionType.INCOME,
+        user_id=user.id,
     )
     session.add(transaction)
     session.commit()
@@ -283,7 +302,9 @@ def test_delete_transaction(session: Session, client: TestClient, category):
     assert transaction_in_db is None
 
 
-def test_transaction_type_should_be_income_or_expense(client: TestClient, category):
+def test_transaction_type_should_be_income_or_expense(
+    client: TestClient, category: Category
+):
     response = client.post(
         "/api/transactions/",
         json={
@@ -297,7 +318,7 @@ def test_transaction_type_should_be_income_or_expense(client: TestClient, catego
     assert response.status_code == 422
 
 
-def test_transaction_type_cannot_be_null(client: TestClient, category):
+def test_transaction_type_cannot_be_null(client: TestClient, category: Category):
     response = client.post(
         "/api/transactions/",
         json={
@@ -310,7 +331,7 @@ def test_transaction_type_cannot_be_null(client: TestClient, category):
     assert response.status_code == 422
 
 
-def test_unknown_attribute_forbidden(client: TestClient, category):
+def test_unknown_attribute_forbidden(client: TestClient, category: Category):
     response = client.post(
         "/api/transactions/",
         json={
@@ -360,7 +381,9 @@ def test_update_transaction_not_found(client: TestClient):
     )
 
 
-def test_create_transaction_future_date_forbidden(client: TestClient, category):
+def test_create_transaction_future_date_forbidden(
+    client: TestClient, category: Category
+):
     future_date = (datetime.now(UTC) + timedelta(days=1)).isoformat()
 
     response = client.post(
@@ -382,7 +405,7 @@ def test_create_transaction_future_date_forbidden(client: TestClient, category):
 
 
 def test_update_transaction_future_date_forbidden(
-    session: Session, client: TestClient, category
+    session: Session, client: TestClient, category: Category, user: User
 ):
     transaction = Transaction(
         date=datetime(2023, 1, 1),
@@ -390,6 +413,7 @@ def test_update_transaction_future_date_forbidden(
         category_id=category.id,
         amount=Decimal("10.00"),
         transaction_type=TransactionType.EXPENSE,
+        user_id=user.id,
     )
     session.add(transaction)
     session.commit()
@@ -409,12 +433,13 @@ def test_update_transaction_future_date_forbidden(
 
 
 def test_create_transaction_category_type_mismatch(
-    client: TestClient, session: Session
+    client: TestClient, session: Session, user: User
 ):
     category = Category(
         name="ExpenseOnly",
         allowed_type=TransactionType.EXPENSE,
         is_active=True,
+        user_id=user.id,
     )
     session.add(category)
     session.commit()
@@ -438,13 +463,14 @@ def test_create_transaction_category_type_mismatch(
 
 
 def test_filter_transactions_by_category(
-    session: Session, client: TestClient, category
+    session: Session, client: TestClient, category: Category, user: User
 ):
     other_category = Category(
         name="Other",
         allowed_type=TransactionType.EXPENSE,
         is_active=True,
         id=uuid.uuid4(),
+        user_id=user.id,
     )
     session.add(other_category)
     session.commit()
@@ -456,6 +482,7 @@ def test_filter_transactions_by_category(
             category_id=category.id,
             amount=Decimal("10.00"),
             transaction_type=TransactionType.EXPENSE,
+            user_id=user.id,
         )
     )
 
@@ -466,6 +493,7 @@ def test_filter_transactions_by_category(
             category_id=other_category.id,
             amount=Decimal("20.00"),
             transaction_type=TransactionType.EXPENSE,
+            user_id=user.id,
         )
     )
 

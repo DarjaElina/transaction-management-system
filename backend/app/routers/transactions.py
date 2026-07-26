@@ -21,7 +21,7 @@ router = APIRouter(prefix="/transactions")
 @router.get("/", response_model=list[TransactionPublicWithCategory])
 def read_transactions(
     session: SessionDep,
-    current_user: CurrentUser,
+    user: CurrentUser,
     category_id: uuid.UUID | None = None,
     transaction_type: TransactionType | None = None,
     description: str | None = None,
@@ -34,7 +34,7 @@ def read_transactions(
 ):
     return transaction_service.get_transactions(
         session=session,
-        current_user=current_user,
+        user=user,
         category_id=category_id,
         transaction_type=transaction_type,
         description=description,
@@ -48,12 +48,8 @@ def read_transactions(
 
 
 @router.get("/{transaction_id}", response_model=TransactionPublic)
-def read_transaction(
-    transaction_id: uuid.UUID, session: SessionDep, current_user: CurrentUser
-):
-    transaction = transaction_service.get_transaction(
-        session, transaction_id, current_user
-    )
+def read_transaction(transaction_id: uuid.UUID, session: SessionDep, user: CurrentUser):
+    transaction = transaction_service.get_transaction(session, transaction_id, user)
     if not transaction:
         raise HTTPException(status_code=404, detail="Transaction not found")
     return transaction
@@ -61,19 +57,17 @@ def read_transaction(
 
 @router.post("/", response_model=TransactionPublicWithCategory)
 def create_transaction(
-    transaction: TransactionCreate, session: SessionDep, current_user: CurrentUser
+    transaction: TransactionCreate, session: SessionDep, user: CurrentUser
 ):
-    db_transaction = transaction_service.create_transaction(
-        transaction, session, current_user
-    )
+    db_transaction = transaction_service.create_transaction(transaction, session, user)
     return db_transaction
 
 
 @router.delete("/{transaction_id}")
 def delete_transaction(
-    transaction_id: uuid.UUID, session: SessionDep, current_user: CurrentUser
+    transaction_id: uuid.UUID, session: SessionDep, user: CurrentUser
 ):
-    transaction_service.delete_transaction(session, transaction_id, current_user)
+    transaction_service.delete_transaction(session, transaction_id, user)
     return {"ok": True}
 
 
@@ -82,9 +76,9 @@ def update_transaction(
     transaction_id: uuid.UUID,
     transaction: TransactionUpdate,
     session: SessionDep,
-    current_user: CurrentUser,
+    user: CurrentUser,
 ):
     db_transaction = transaction_service.update_transaction(
-        session, transaction, transaction_id, current_user
+        session, transaction, transaction_id, user
     )
     return db_transaction

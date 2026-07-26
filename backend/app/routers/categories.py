@@ -5,6 +5,7 @@ from app.schemas.categories import (
     CategoryCreate,
     CategoryUpdate,
 )
+from app.dependencies import CurrentUser
 from ..db.database import SessionDep
 
 from ..services import category_service
@@ -19,6 +20,7 @@ router = APIRouter(prefix="/categories")
 @router.get("/", response_model=list[CategoryPublic])
 def read_categories(
     session: SessionDep,
+    user: CurrentUser,
     offset: int = 0,
     limit: Annotated[int, Query(ge=0, le=100)] = 20,
     name: str | None = None,
@@ -29,6 +31,7 @@ def read_categories(
 ):
     return category_service.get_categories(
         session=session,
+        user=user,
         offset=offset,
         limit=limit,
         name=name,
@@ -40,28 +43,31 @@ def read_categories(
 
 
 @router.get("/{category_id}", response_model=CategoryPublic)
-def read_category(category_id: uuid.UUID, session: SessionDep):
-    category = category_service.get_category(session, category_id)
+def read_category(category_id: uuid.UUID, session: SessionDep, user: CurrentUser):
+    category = category_service.get_category(session, category_id, user)
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
     return category
 
 
 @router.post("/", response_model=CategoryPublic)
-def create_category(category: CategoryCreate, session: SessionDep):
-    db_category = category_service.create_category(category, session)
+def create_category(category: CategoryCreate, session: SessionDep, user: CurrentUser):
+    db_category = category_service.create_category(category, session, user)
     return db_category
 
 
 @router.delete("/{category_id}")
-def delete_category(category_id: uuid.UUID, session: SessionDep):
-    category_service.delete_category(session, category_id)
+def delete_category(category_id: uuid.UUID, session: SessionDep, user: CurrentUser):
+    category_service.delete_category(session, category_id, user)
     return {"ok": True}
 
 
 @router.patch("/{category_id}", response_model=CategoryPublic)
 def update_category(
-    category_id: uuid.UUID, category: CategoryUpdate, session: SessionDep
+    category_id: uuid.UUID,
+    category: CategoryUpdate,
+    session: SessionDep,
+    user: CurrentUser,
 ):
-    db_category = category_service.update_category(session, category, category_id)
+    db_category = category_service.update_category(session, category, category_id, user)
     return db_category

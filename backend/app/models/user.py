@@ -5,6 +5,7 @@ from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
     from .transaction import Transaction
+    from .category import Category
 
 
 class UserBase(SQLModel):
@@ -20,3 +21,4 @@ class User(UserBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     password_hash: str
     transactions: list["Transaction"] = Relationship(back_populates="user")
+    categories: list["Category"] = Relationship(back_populates="user")
