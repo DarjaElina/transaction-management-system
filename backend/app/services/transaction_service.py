@@ -1,8 +1,9 @@
 import uuid
 
+from sqlmodel import Session
+
 from app.models.transaction import Transaction
 from app.schemas.transactions import TransactionCreate
-from app.db.database import SessionDep
 from app.exceptions import NotFoundError, ValidationError
 from app.core.enums import TransactionType
 from app.services.utils import (
@@ -16,9 +17,12 @@ from app.services.utils import (
 from datetime import datetime, UTC
 from decimal import Decimal
 
+from app.models.user import User
+
 
 def get_transactions(
-    session: SessionDep,
+    session: Session,
+    current_user: User,
     category_id: uuid.UUID | None,
     transaction_type: TransactionType | None,
     description: str | None,
@@ -42,7 +46,7 @@ def get_transactions(
     return session.exec(query).all()
 
 
-def get_transaction(session: SessionDep, transaction_id):
+def get_transaction(session: Session, transaction_id, current_user: User):
     transaction = session.get(Transaction, transaction_id)
 
     if not transaction:
@@ -51,7 +55,9 @@ def get_transaction(session: SessionDep, transaction_id):
     return transaction
 
 
-def create_transaction(transaction: TransactionCreate, session: SessionDep):
+def create_transaction(
+    transaction: TransactionCreate, session: Session, current_user: User
+):
     validate_category_for_transaction(
         transaction.category_id, transaction.transaction_type, session
     )
@@ -66,7 +72,7 @@ def create_transaction(transaction: TransactionCreate, session: SessionDep):
     return db_transaction
 
 
-def delete_transaction(session: SessionDep, transaction_id):
+def delete_transaction(session: Session, transaction_id, current_user: User):
     transaction = session.get(Transaction, transaction_id)
 
     if not transaction:
@@ -76,7 +82,9 @@ def delete_transaction(session: SessionDep, transaction_id):
     session.commit()
 
 
-def update_transaction(session: SessionDep, transaction, transaction_id):
+def update_transaction(
+    session: Session, transaction, transaction_id, current_user: User
+):
     transaction_db = session.get(Transaction, transaction_id)
 
     if not transaction_db:

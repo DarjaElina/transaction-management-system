@@ -1,15 +1,45 @@
-from typing import Annotated
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 
-from fastapi import Depends, HTTPException
-from fastapi.security import OAuth2PasswordRequestForm
-from sqlmodel import select
+from fastapi import HTTPException, status
+import jwt
+from pwdlib import PasswordHash
+from sqlmodel import Session, select
 
-from app.db.database import SessionDep
 from app.models.user import User
 from app.schemas.auth import Token
+from app.config import get_settings
+
+settings = get_settings()
+
+SECRET_KEY = settings.secret_key
+ALGORITHM = settings.jwt_algorithm
+ACCESS_TOKEN_EXPIRE_MINUTES = settings.access_token_expire_minutes
+
+password_hash = PasswordHash.recommended()
+
+DUMMY_HASH = password_hash.hash("dummypassword")
 
 
-def get_user(session: SessionDep, email: str):
+def verify_password(plain_password, hashed_password):
+    return password_hash.verify(plain_password, hashed_password)
+
+
+def get_password_hash(password):
+    return password_hash.hash(password)
+
+
+def authenticate_user(session: Session, email: str, password: str):
+    user = get_user(session, email)
+    if not user:
+        verify_password(password, DUMMY_HASH)
+        return False
+    if not verify_password(password, user.password_hash):
+        return False
+    return user
+
+
+def get_user(session: Session, email: str):
     stmt = select(User).where(User.email == email)
     result = session.exec(stmt)
     user = result.first()
@@ -17,28 +47,28 @@ def get_user(session: SessionDep, email: str):
     return user
 
 
-def fake_hash_password(password: str):
-    return "fakehashed" + password
+def create_access_token(data: dict, expires_delta: timedelta | None = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.now(ZoneInfo("UTC")) + expires_delta
+    else:
+        expire = datetime.now(ZoneInfo("UTC")) + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
 
 
-def fake_decode_token(session: SessionDep, token: str):
-    # This doesn't provide any security at all
-    # Check the next version
-    user = get_user(session, token)
-    return user
-
-
-async def login(
-    session: SessionDep, form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
-):
-    user = get_user(session, form_data.username)
+async def login(session: Session, email: str, password: str) -> Token:
+    user = authenticate_user(session, email, password)
 
     if not user:
-        raise HTTPException(status_code=400, detail="Incorrect username or password")
-
-    password_hash = fake_hash_password(form_data.password)
-
-    if not password_hash == user.password_hash:
-        raise HTTPException(status_code=400, detail="Incorrect username or password")
-
-    return Token(access_token=user.email, token_type="bearer")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user.email}, expires_delta=access_token_expires
+    )
+    return Token(access_token=access_token, token_type="bearer")

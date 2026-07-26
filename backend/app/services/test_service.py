@@ -1,8 +1,7 @@
-from app.db.database import SessionDep
-from sqlmodel import text
+from sqlmodel import Session, text
 
 
-def reset_database(session: SessionDep):
+def reset_database(session: Session):
     session.execute(
         text("""
         TRUNCATE TABLE

@@ -1,4 +1,5 @@
 from sqlalchemy.exc import IntegrityError
+from sqlmodel import Session
 from app.models.category import Category
 from app.schemas.categories import CategoryCreate
 from app.db.database import SessionDep
@@ -13,7 +14,7 @@ from app.services.utils import (
 
 
 def get_categories(
-    session: SessionDep,
+    session: Session,
     offset: int,
     limit: int,
     name: str | None,
@@ -31,7 +32,7 @@ def get_categories(
     return session.exec(query.offset(offset).limit(limit)).all()
 
 
-def get_category(session: SessionDep, category_id):
+def get_category(session: Session, category_id):
     category = session.get(Category, category_id)
 
     if not category:
@@ -40,7 +41,7 @@ def get_category(session: SessionDep, category_id):
     return category
 
 
-def create_category(category: CategoryCreate, session: SessionDep):
+def create_category(category: CategoryCreate, session: Session):
     db_name = validate_and_normalize_category_name(category.name, session)
 
     category.name = db_name
@@ -56,7 +57,7 @@ def create_category(category: CategoryCreate, session: SessionDep):
     return db_category
 
 
-def delete_category(session: SessionDep, category_id):
+def delete_category(session: Session, category_id):
     category = session.get(Category, category_id)
 
     if not category:

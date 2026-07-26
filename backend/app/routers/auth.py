@@ -7,7 +7,6 @@ from app.services import auth_service
 from app.db.database import SessionDep
 from app.schemas.auth import Token
 
-
 router = APIRouter(prefix="/auth")
 
 
@@ -15,5 +14,7 @@ router = APIRouter(prefix="/auth")
 async def login(
     session: SessionDep, form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
 ):
-    token = await auth_service.login(session, form_data)
+    token = await auth_service.login(
+        session, email=form_data.username, password=form_data.password
+    )
     return token

@@ -9,7 +9,7 @@ from app.schemas.transactions import (
     TransactionCreate,
     TransactionUpdate,
 )
-
+from app.dependencies import CurrentUser
 from ..services import transaction_service
 
 from ..core.enums import TransactionType
@@ -21,6 +21,7 @@ router = APIRouter(prefix="/transactions")
 @router.get("/", response_model=list[TransactionPublicWithCategory])
 def read_transactions(
     session: SessionDep,
+    current_user: CurrentUser,
     category_id: uuid.UUID | None = None,
     transaction_type: TransactionType | None = None,
     description: str | None = None,
@@ -33,6 +34,7 @@ def read_transactions(
 ):
     return transaction_service.get_transactions(
         session=session,
+        current_user=current_user,
         category_id=category_id,
         transaction_type=transaction_type,
         description=description,
@@ -46,30 +48,43 @@ def read_transactions(
 
 
 @router.get("/{transaction_id}", response_model=TransactionPublic)
-def read_transaction(transaction_id: uuid.UUID, session: SessionDep):
-    transaction = transaction_service.get_transaction(session, transaction_id)
+def read_transaction(
+    transaction_id: uuid.UUID, session: SessionDep, current_user: CurrentUser
+):
+    transaction = transaction_service.get_transaction(
+        session, transaction_id, current_user
+    )
     if not transaction:
         raise HTTPException(status_code=404, detail="Transaction not found")
     return transaction
 
 
 @router.post("/", response_model=TransactionPublicWithCategory)
-def create_transaction(transaction: TransactionCreate, session: SessionDep):
-    db_transaction = transaction_service.create_transaction(transaction, session)
+def create_transaction(
+    transaction: TransactionCreate, session: SessionDep, current_user: CurrentUser
+):
+    db_transaction = transaction_service.create_transaction(
+        transaction, session, current_user
+    )
     return db_transaction
 
 
 @router.delete("/{transaction_id}")
-def delete_transaction(transaction_id: uuid.UUID, session: SessionDep):
-    transaction_service.delete_transaction(session, transaction_id)
+def delete_transaction(
+    transaction_id: uuid.UUID, session: SessionDep, current_user: CurrentUser
+):
+    transaction_service.delete_transaction(session, transaction_id, current_user)
     return {"ok": True}
 
 
 @router.patch("/{transaction_id}", response_model=TransactionPublicWithCategory)
 def update_transaction(
-    transaction_id: uuid.UUID, transaction: TransactionUpdate, session: SessionDep
+    transaction_id: uuid.UUID,
+    transaction: TransactionUpdate,
+    session: SessionDep,
+    current_user: CurrentUser,
 ):
     db_transaction = transaction_service.update_transaction(
-        session, transaction, transaction_id
+        session, transaction, transaction_id, current_user
     )
     return db_transaction

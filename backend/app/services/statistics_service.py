@@ -3,8 +3,7 @@ from decimal import Decimal
 from zoneinfo import ZoneInfo
 
 from sqlalchemy import VARCHAR
-from app.db.database import SessionDep
-from sqlmodel import func, case, between, select, text, type_coerce, TIMESTAMP
+from sqlmodel import Session, func, case, between, select, text, type_coerce, TIMESTAMP
 from app.models.transaction import Transaction
 from app.models.category import Category
 from app.core.enums import TransactionType
@@ -15,7 +14,7 @@ interval_dict = {"day": "1 day", "week": "1 week", "month": "1 month", "year": "
 
 
 def get_income_expense_overview(
-    session: SessionDep, start: datetime, end: datetime, period: str, user_timezone: str
+    session: Session, start: datetime, end: datetime, period: str, user_timezone: str
 ):
     income_case = case(
         (Transaction.transaction_type == TransactionType.INCOME, Transaction.amount),
@@ -78,7 +77,7 @@ def get_income_expense_overview(
     return result
 
 
-def get_spending_by_category(session: SessionDep, start: datetime, end: datetime):
+def get_spending_by_category(session: Session, start: datetime, end: datetime):
     stmt = (
         select(
             type_coerce(Category.name, VARCHAR).label("category"),
@@ -105,7 +104,7 @@ def get_change(prev: Decimal, curr: Decimal):
 
 
 def get_monthly_totals(
-    session: SessionDep,
+    session: Session,
     user_timezone: str,
     now: datetime | None = None,
 ):
@@ -194,7 +193,7 @@ def get_monthly_totals(
 
 
 def get_financial_summary(
-    session: SessionDep,
+    session: Session,
     user_timezone: str,
     now: datetime | None = None,
 ):
