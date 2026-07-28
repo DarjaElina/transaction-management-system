@@ -1,38 +1,31 @@
-import { useQuery } from '@tanstack/react-query'
-import { getTransactons } from './api/transactions'
 import { BrowserRouter, Route, Routes } from 'react-router'
 import Transactions from './pages/Transactions'
 import Dashboard from './pages/Dashboard'
-import Layout from './pages/Layout'
 import { ThemeProvider } from './components/ThemeProvider'
 import { Toaster } from 'sonner'
-import { mapTransactions } from './helpers'
+import ProtectedLayout from './layouts/ProtectedLayout/ProtectedLayout'
+import PublicLayout from './layouts/PublicLayout/PublicLayout'
+import RootLayout from './layouts/RootLayout'
+import Login from './pages/Login'
+import Signup from './pages/Signup'
+import Landing from './pages/Landing/Landing'
 
 function App() {
-  const result = useQuery({
-    queryKey: ['transactions'],
-    queryFn: getTransactons,
-  })
-
-  const transactions = result.data ?? []
-  const mappedTransactions = mapTransactions(transactions)
-
   return (
     <ThemeProvider>
       <BrowserRouter>
         <Routes>
-          <Route element={<Layout />}>
-            <Route
-              index
-              element={
-                <Transactions
-                  transactions={mappedTransactions}
-                  loading={result.isLoading}
-                  error={result.error}
-                />
-              }
-            />
-            <Route path="dashboard" element={<Dashboard />} />
+          <Route element={<RootLayout />}>
+            <Route element={<PublicLayout />}>
+              <Route path="/" element={<Landing />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+            </Route>
+
+            <Route element={<ProtectedLayout />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/transactions" element={<Transactions />} />
+            </Route>
           </Route>
         </Routes>
       </BrowserRouter>

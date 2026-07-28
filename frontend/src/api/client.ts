@@ -5,4 +5,5 @@ const API_URL: string =
 
 export const api = axios.create({
   baseURL: API_URL,
+  withCredentials: true,
 })
