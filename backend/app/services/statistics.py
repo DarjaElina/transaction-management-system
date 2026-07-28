@@ -8,7 +8,7 @@ from app.models.transaction import Transaction
 from app.models.category import Category
 from app.core.enums import TransactionType
 from app.schemas.statistics import FinancialSummary, MonthlyTotals
-from app.services.helpers import calculate_cash_flow, calculate_savings_rate, to_change
+from app.services.utils import calculate_cash_flow, calculate_savings_rate, to_change
 
 interval_dict = {"day": "1 day", "week": "1 week", "month": "1 month", "year": "1 year"}
 

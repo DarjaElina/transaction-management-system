@@ -10,7 +10,7 @@ from app.schemas.transactions import (
     TransactionUpdate,
 )
 from app.dependencies import CurrentUser
-from ..services import transaction_service
+from app.services import transactions
 
 from ..core.enums import TransactionType
 import uuid
@@ -32,7 +32,7 @@ def read_transactions(
     sort_by: Literal["date", "amount"] = "date",
     order: Literal["asc", "desc"] = "desc",
 ):
-    return transaction_service.get_transactions(
+    return transactions.get_transactions(
         session=session,
         user=user,
         category_id=category_id,
@@ -49,7 +49,7 @@ def read_transactions(
 
 @router.get("/{transaction_id}", response_model=TransactionPublic)
 def read_transaction(transaction_id: uuid.UUID, session: SessionDep, user: CurrentUser):
-    transaction = transaction_service.get_transaction(session, transaction_id, user)
+    transaction = transactions.get_transaction(session, transaction_id, user)
     if not transaction:
         raise HTTPException(status_code=404, detail="Transaction not found")
     return transaction
@@ -59,7 +59,7 @@ def read_transaction(transaction_id: uuid.UUID, session: SessionDep, user: Curre
 def create_transaction(
     transaction: TransactionCreate, session: SessionDep, user: CurrentUser
 ):
-    db_transaction = transaction_service.create_transaction(transaction, session, user)
+    db_transaction = transactions.create_transaction(transaction, session, user)
     return db_transaction
 
 
@@ -67,7 +67,7 @@ def create_transaction(
 def delete_transaction(
     transaction_id: uuid.UUID, session: SessionDep, user: CurrentUser
 ):
-    transaction_service.delete_transaction(session, transaction_id, user)
+    transactions.delete_transaction(session, transaction_id, user)
     return {"ok": True}
 
 
@@ -78,7 +78,7 @@ def update_transaction(
     session: SessionDep,
     user: CurrentUser,
 ):
-    db_transaction = transaction_service.update_transaction(
+    db_transaction = transactions.update_transaction(
         session, transaction, transaction_id, user
     )
     return db_transaction

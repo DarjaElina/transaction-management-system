@@ -6,7 +6,7 @@ import pytest
 from sqlmodel import Session
 
 from app.models.transaction import Transaction
-from app.services.statistics_service import get_financial_summary, get_monthly_totals
+from backend.app.services.statistics import get_financial_summary, get_monthly_totals
 from app.models.category import Category
 from app.models.user import User
 from app.core.enums import TransactionType

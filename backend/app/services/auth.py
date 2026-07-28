@@ -1,14 +1,16 @@
+import jwt
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 from fastapi import HTTPException, status
-import jwt
 from pwdlib import PasswordHash
 from sqlmodel import Session, select
+from sqlalchemy.exc import IntegrityError
 
 from app.models.user import User
-from app.schemas.auth import Token
 from app.config import get_settings
+from app.schemas.users import UserCreate
+from app.exceptions import ConflictError
 
 settings = get_settings()
 
@@ -58,17 +60,64 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     return encoded_jwt
 
 
-async def login(session: Session, email: str, password: str) -> Token:
+def verify_access_token(token: str) -> str:
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+    try:
+        payload = jwt.decode(
+            token,
+            SECRET_KEY,
+            algorithms=[ALGORITHM],
+        )
+
+        email = payload.get("sub")
+
+        if email is None:
+            raise credentials_exception
+
+        return email
+
+    except jwt.InvalidTokenError:
+        raise credentials_exception
+
+
+async def login(session: Session, email: str, password: str) -> str:
     user = authenticate_user(session, email, password)
 
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
+            detail="Incorrect email or password",
         )
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+
     access_token = create_access_token(
-        data={"sub": user.email}, expires_delta=access_token_expires
+        data={"sub": user.email},
+        expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
     )
-    return Token(access_token=access_token, token_type="bearer")
+
+    return access_token
+
+
+async def signup(session: Session, user: UserCreate):
+    user_data = user.model_dump(exclude={"password"})
+
+    db_user = User(
+        **user_data,
+        password_hash=get_password_hash(user.password),
+    )
+
+    session.add(db_user)
+
+    try:
+        session.commit()
+    except IntegrityError:
+        session.rollback()
+        raise ConflictError("email")
+
+    session.refresh(db_user)
+
+    return db_user

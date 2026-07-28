@@ -8,7 +8,7 @@ from app.schemas.categories import (
 from app.dependencies import CurrentUser
 from ..db.database import SessionDep
 
-from ..services import category_service
+from app.services import categories
 from ..core.enums import TransactionType
 from typing import Literal
 
@@ -29,7 +29,7 @@ def read_categories(
     sort_by: Literal["name"] = "name",
     order: Literal["asc", "desc"] = "desc",
 ):
-    return category_service.get_categories(
+    return categories.get_categories(
         session=session,
         user=user,
         offset=offset,
@@ -44,7 +44,7 @@ def read_categories(
 
 @router.get("/{category_id}", response_model=CategoryPublic)
 def read_category(category_id: uuid.UUID, session: SessionDep, user: CurrentUser):
-    category = category_service.get_category(session, category_id, user)
+    category = categories.get_category(session, category_id, user)
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
     return category
@@ -52,13 +52,13 @@ def read_category(category_id: uuid.UUID, session: SessionDep, user: CurrentUser
 
 @router.post("/", response_model=CategoryPublic)
 def create_category(category: CategoryCreate, session: SessionDep, user: CurrentUser):
-    db_category = category_service.create_category(category, session, user)
+    db_category = categories.create_category(category, session, user)
     return db_category
 
 
 @router.delete("/{category_id}")
 def delete_category(category_id: uuid.UUID, session: SessionDep, user: CurrentUser):
-    category_service.delete_category(session, category_id, user)
+    categories.delete_category(session, category_id, user)
     return {"ok": True}
 
 
@@ -69,5 +69,5 @@ def update_category(
     session: SessionDep,
     user: CurrentUser,
 ):
-    db_category = category_service.update_category(session, category, category_id, user)
+    db_category = categories.update_category(session, category, category_id, user)
     return db_category

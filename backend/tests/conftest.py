@@ -8,7 +8,7 @@ from app.main import app
 from app.db.database import get_session
 from app.config import get_settings
 from app.models.user import User
-from app.services.user_service import get_current_active_user
+from backend.app.services.users import get_current_active_user
 
 
 @pytest.fixture(scope="session")

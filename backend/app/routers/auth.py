@@ -1,20 +1,52 @@
-from typing import Annotated
+from fastapi import APIRouter, Response
 
-from fastapi import APIRouter, Depends
-from fastapi.security import OAuth2PasswordRequestForm
-
-from app.services import auth_service
+from app.services import auth
 from app.db.database import SessionDep
-from app.schemas.auth import Token
+from app.schemas.users import UserCreate, UserPublic
+from app.schemas.auth import LoginRequest
 
 router = APIRouter(prefix="/auth")
 
 
-@router.post("/token", response_model=Token)
-async def login(
-    session: SessionDep, form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
+@router.post("/signup", response_model=UserPublic)
+async def signup(
+    user: UserCreate,
+    session: SessionDep,
 ):
-    token = await auth_service.login(
-        session, email=form_data.username, password=form_data.password
+    return await auth.signup(session, user)
+
+
+@router.post("/login")
+async def login(
+    response: Response,
+    session: SessionDep,
+    data: LoginRequest,
+):
+    access_token = await auth.login(
+        session,
+        email=data.email,
+        password=data.password,
     )
-    return token
+
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        secure=False,
+        samesite="lax",
+        max_age=auth.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+    )
+
+    return {"message": "Successfully logged in"}
+
+
+@router.post("/logout")
+async def logout(response: Response):
+    response.delete_cookie(
+        key="access_token",
+        httponly=True,
+        secure=False,
+        samesite="lax",
+    )
+
+    return {"message": "Successfully logged out"}
