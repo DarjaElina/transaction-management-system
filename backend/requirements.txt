@@ -49,3 +49,4 @@ watchfiles==1.2.0
 websockets==16.0
 pyjwt==2.13.0
 pwdlib[argon2]
+redis==7.2.2

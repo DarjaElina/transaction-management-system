@@ -3,10 +3,10 @@ from typing import Annotated
 
 from app.models.user import User
 from app.db.database import SessionDep
-from app.services.auth import get_user, verify_access_token
+from app.services.auth import get_user, verify_token
 
 
-async def get_access_token(
+def get_access_token(
     access_token: str | None = Cookie(default=None),
 ):
     if access_token is None:
@@ -18,15 +18,15 @@ async def get_access_token(
     return access_token
 
 
-async def get_current_user(
+def get_current_user(
     session: SessionDep,
     access_token: Annotated[str, Depends(get_access_token)],
 ):
-    token_data = verify_access_token(access_token)
+    email, _ = verify_token(access_token)
 
     user = get_user(
         session,
-        email=token_data,
+        email=email,
     )
 
     if user is None:
@@ -38,7 +38,7 @@ async def get_current_user(
     return user
 
 
-async def get_current_active_user(
+def get_current_active_user(
     current_user: Annotated[User, Depends(get_current_user)],
 ):
     if current_user.disabled:
