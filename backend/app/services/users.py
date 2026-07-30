@@ -22,7 +22,7 @@ def get_current_user(
     session: SessionDep,
     access_token: Annotated[str, Depends(get_access_token)],
 ):
-    email, _ = verify_token(access_token)
+    email, _, _ = verify_token(access_token)
 
     user = get_user(
         session,

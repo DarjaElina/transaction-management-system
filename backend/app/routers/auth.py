@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Cookie, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Cookie, Depends, Response
 
 from app.services import auth
 from app.db.database import SessionDep
@@ -27,7 +27,7 @@ def login(
     session: SessionDep,
     data: LoginRequest,
 ):
-    access_token, refresh_token, session_id = auth.login(
+    access_token, refresh_token = auth.login(
         session,
         email=data.email,
         password=data.password,
@@ -51,47 +51,22 @@ def login(
         max_age=settings.refresh_token_expire_days * 86400,
     )
 
-    response.set_cookie(
-        key="session_id",
-        value=session_id,
-        httponly=True,
-        secure=False,
-        samesite="lax",
-        max_age=settings.refresh_token_expire_days * 86400,
-    )
-
     return {"message": "Successfully logged in"}
 
 
 @router.post("/logout")
-def logout(response: Response, session_id: str | None = Cookie(default=None)):
-    if not session_id:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-        )
-
-    auth.logout(session_id)
-
+def logout(response: Response, refresh_token: str | None = Cookie(default=None)):
     response.delete_cookie(
         key="access_token",
-        httponly=True,
-        secure=False,
-        samesite="lax",
     )
 
     response.delete_cookie(
         key="refresh_token",
-        httponly=True,
-        secure=False,
-        samesite="lax",
     )
 
-    response.delete_cookie(
-        key="session_id",
-        httponly=True,
-        secure=False,
-        samesite="lax",
-    )
+    session_id = auth.get_session_id_from_refresh_token(refresh_token)
+
+    auth.logout(session_id)
 
     return {"message": "Successfully logged out"}
 

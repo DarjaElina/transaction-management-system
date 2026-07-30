@@ -57,7 +57,7 @@ def create_token(data: dict, expires_delta: timedelta | None = None):
         expire = datetime.now(ZoneInfo("UTC")) + expires_delta
     else:
         expire = datetime.now(ZoneInfo("UTC")) + timedelta(minutes=15)
-    to_encode.update({"exp": expire})
+    to_encode.update({"exp": expire, "iat": datetime.now(ZoneInfo("UTC"))})
     encoded_jwt = jwt.encode(
         to_encode,
         settings.secret_key.get_secret_value(),
@@ -66,7 +66,7 @@ def create_token(data: dict, expires_delta: timedelta | None = None):
     return encoded_jwt
 
 
-def verify_token(token: str) -> tuple[str, str | None]:
+def verify_token(token: str):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -81,11 +81,12 @@ def verify_token(token: str) -> tuple[str, str | None]:
 
         email = payload.get("sub")
         session_id = payload.get("session_id")
+        type = payload.get("type")
 
         if email is None:
             raise credentials_exception
 
-        return email, session_id
+        return email, session_id, type
 
     except jwt.InvalidTokenError:
         raise credentials_exception
@@ -116,7 +117,7 @@ def login(session: Session, email: str, password: str):
         expires_delta=timedelta(days=settings.refresh_token_expire_days),
     )
 
-    return access_token, refresh_token, session_id
+    return access_token, refresh_token
 
 
 def signup(session: Session, user: UserCreate):
@@ -152,8 +153,14 @@ def get_refresh_token(
     return refresh_token
 
 
-def refresh(session: SessionDep, refresh_token: str) -> tuple[str, str]:
-    email, session_id = verify_token(refresh_token)
+def refresh(session: SessionDep, refresh_token: str):
+    email, session_id, type = verify_token(refresh_token)
+    if not type or type != "refresh":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+        )
+
     user = get_user(
         session,
         email=email,
@@ -229,3 +236,13 @@ def delete_redis_session(session_id: str):
 
 def logout(session_id: str):
     delete_redis_session(session_id)
+
+
+def get_session_id_from_refresh_token(token):
+    payload = jwt.decode(
+        token,
+        settings.secret_key.get_secret_value(),
+        algorithms=[settings.jwt_algorithm],
+    )
+
+    return payload["session_id"]
