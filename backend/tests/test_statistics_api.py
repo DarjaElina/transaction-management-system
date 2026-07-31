@@ -540,3 +540,150 @@ def test_financial_summary_endpoint(
     assert "expense" in data
     assert "cash_flow" in data
     assert "savings_rate" in data
+
+
+def test_income_expense_overview_ignores_other_users_transactions(
+    client: TestClient,
+    session: Session,
+    category: Category,
+    user: User,
+    create_user,
+):
+    another_user = create_user("user1@test.com")
+
+    session.add_all(
+        [
+            Transaction(
+                id=uuid.uuid4(),
+                date=datetime(2026, 7, 7, 12, tzinfo=UTC),
+                description="Mine",
+                amount=Decimal("10.00"),
+                transaction_type=TransactionType.EXPENSE,
+                category_id=category.id,
+                user_id=user.id,
+            ),
+            Transaction(
+                id=uuid.uuid4(),
+                date=datetime(2026, 7, 7, 12, tzinfo=UTC),
+                description="Not mine",
+                amount=Decimal("999.00"),
+                transaction_type=TransactionType.EXPENSE,
+                category_id=category.id,
+                user_id=another_user.id,
+            ),
+        ]
+    )
+
+    session.commit()
+
+    response = client.get(
+        "/api/statistics/income-expense",
+        params={
+            "start": "2026-07-01T00:00:00Z",
+            "end": "2026-07-10T23:59:59Z",
+            "period": "day",
+            "user_timezone": "UTC",
+        },
+    )
+
+    data = response.json()
+
+    july_7 = next(item for item in data if item["label"].startswith("2026-07-07"))
+
+    assert Decimal(july_7["expense"]) == Decimal("10.00")
+
+
+def test_spending_by_category_ignores_other_users_transactions(
+    client: TestClient,
+    session: Session,
+    category: Category,
+    user: User,
+    create_user,
+):
+    another_user = create_user("user1@test.com")
+
+    session.add_all(
+        [
+            Transaction(
+                id=uuid.uuid4(),
+                date=datetime(2026, 7, 5, tzinfo=UTC),
+                description="Mine",
+                amount=Decimal("15.00"),
+                transaction_type=TransactionType.EXPENSE,
+                category_id=category.id,
+                user_id=user.id,
+            ),
+            Transaction(
+                id=uuid.uuid4(),
+                date=datetime(2026, 7, 5, tzinfo=UTC),
+                description="Other",
+                amount=Decimal("500.00"),
+                transaction_type=TransactionType.EXPENSE,
+                category_id=category.id,
+                user_id=another_user.id,
+            ),
+        ]
+    )
+
+    session.commit()
+
+    response = client.get(
+        "/api/statistics/spending-by-category",
+        params={
+            "start": "2026-07-01T00:00:00Z",
+            "end": "2026-07-31T23:59:59Z",
+        },
+    )
+
+    data = response.json()
+
+    assert len(data) == 1
+    assert Decimal(data[0]["amount"]) == Decimal("15.00")
+
+
+def test_financial_summary_ignores_other_users_transactions(
+    client: TestClient,
+    session: Session,
+    category: Category,
+    user: User,
+    create_user,
+):
+    another_user = create_user("user1@test.com")
+
+    session.add_all(
+        [
+            Transaction(
+                id=uuid.uuid4(),
+                date=datetime.now(UTC),
+                description="Mine",
+                amount=Decimal("100.00"),
+                transaction_type=TransactionType.INCOME,
+                category_id=category.id,
+                user_id=user.id,
+            ),
+            Transaction(
+                id=uuid.uuid4(),
+                date=datetime.now(UTC),
+                description="Other",
+                amount=Decimal("99999.00"),
+                transaction_type=TransactionType.INCOME,
+                category_id=category.id,
+                user_id=another_user.id,
+            ),
+        ]
+    )
+
+    session.commit()
+
+    response = client.get(
+        "/api/statistics/financial-summary",
+        params={
+            "user_timezone": "UTC",
+        },
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert "income" in data

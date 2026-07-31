@@ -1,5 +1,4 @@
-from typing import Annotated
-from fastapi import APIRouter, Query, HTTPException
+from fastapi import APIRouter, HTTPException
 from app.schemas.categories import (
     CategoryPublic,
     CategoryCreate,
@@ -21,8 +20,6 @@ router = APIRouter(prefix="/categories")
 def read_categories(
     session: SessionDep,
     user: CurrentUser,
-    offset: int = 0,
-    limit: Annotated[int, Query(ge=0, le=100)] = 20,
     name: str | None = None,
     is_active: bool | None = None,
     allowed_type: TransactionType | None = None,
@@ -32,8 +29,6 @@ def read_categories(
     return categories.get_categories(
         session=session,
         user=user,
-        offset=offset,
-        limit=limit,
         name=name,
         is_active=is_active,
         allowed_type=allowed_type,

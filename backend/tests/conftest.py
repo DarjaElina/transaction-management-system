@@ -58,6 +58,27 @@ def user(session):
 
 
 @pytest.fixture
+def create_user(session):
+    def _create_user(email: str):
+        user = User(
+            id=uuid.uuid4(),
+            email=email,
+            first_name="John",
+            last_name="Doe",
+            password_hash="hash",
+            disabled=False,
+        )
+
+        session.add(user)
+        session.commit()
+        session.refresh(user)
+
+        return user
+
+    return _create_user
+
+
+@pytest.fixture
 def redis_client():
     return fakeredis.FakeRedis()
 

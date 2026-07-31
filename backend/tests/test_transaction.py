@@ -505,3 +505,112 @@ def test_filter_transactions_by_category(
 
     assert len(data) == 1
     assert data[0]["description"] == "Cat1"
+
+
+def test_cannot_access_other_user_transaction(
+    client: TestClient, session: Session, create_user, category: Category
+):
+    another_user = create_user("user1@test.com")
+
+    transaction = Transaction(
+        date=datetime(2025, 1, 1),
+        description="Secret transaction",
+        amount=Decimal("20.00"),
+        transaction_type=TransactionType.EXPENSE,
+        category_id=category.id,
+        user_id=another_user.id,
+    )
+
+    session.add(transaction)
+    session.commit()
+    session.refresh(transaction)
+
+    response = client.get(f"/api/transactions/{transaction.id}")
+
+    assert response.status_code == 404
+
+
+def test_cannot_update_other_user_transaction(
+    client: TestClient, session: Session, create_user, category: Category
+):
+    another_user = create_user("user1@test.com")
+
+    transaction = Transaction(
+        date=datetime(2025, 1, 1),
+        description="Original",
+        amount=Decimal("20.00"),
+        transaction_type=TransactionType.EXPENSE,
+        category_id=category.id,
+        user_id=another_user.id,
+    )
+
+    session.add(transaction)
+    session.commit()
+    session.refresh(transaction)
+
+    response = client.patch(
+        f"/api/transactions/{transaction.id}",
+        json={
+            "description": "Hacked",
+        },
+    )
+
+    assert response.status_code == 404
+
+    session.refresh(transaction)
+
+    assert transaction.description == "Original"
+
+
+def test_cannot_delete_other_user_transaction(
+    client: TestClient, session: Session, create_user, category: Category
+):
+    another_user = create_user("user1@test.com")
+
+    transaction = Transaction(
+        date=datetime(2025, 1, 1),
+        description="Secret",
+        amount=Decimal("20.00"),
+        transaction_type=TransactionType.EXPENSE,
+        category_id=category.id,
+        user_id=another_user.id,
+    )
+
+    session.add(transaction)
+    session.commit()
+    session.refresh(transaction)
+
+    response = client.delete(f"/api/transactions/{transaction.id}")
+
+    assert response.status_code == 404
+
+    assert session.get(Transaction, transaction.id) is not None
+
+
+def test_cannot_create_transaction_with_other_user_category(
+    client: TestClient, session: Session, create_user
+):
+    another_user = create_user("user1@test.com")
+
+    foreign_category = Category(
+        name="Food",
+        allowed_type=TransactionType.EXPENSE,
+        user_id=another_user.id,
+    )
+
+    session.add(foreign_category)
+    session.commit()
+    session.refresh(foreign_category)
+
+    response = client.post(
+        "/api/transactions",
+        json={
+            "date": "2026-07-31T18:11:31.083Z",
+            "description": "Sneaky transaction 😈",
+            "amount": 20.00,
+            "transaction_type": "expense",
+            "category_id": str(foreign_category.id),
+        },
+    )
+
+    assert response.status_code == 404

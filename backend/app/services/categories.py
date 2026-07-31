@@ -17,8 +17,6 @@ from app.models.user import User
 def get_categories(
     session: Session,
     user: User,
-    offset: int,
-    limit: int,
     name: str | None,
     is_active: bool | None,
     allowed_type: TransactionType | None,
@@ -33,7 +31,7 @@ def get_categories(
     query = filter_equal(query, Category.is_active, is_active)
     query = filter_equal(query, Category.allowed_type, allowed_type)
 
-    return session.exec(query.offset(offset).limit(limit)).all()
+    return session.exec(query).all()
 
 
 def get_category(

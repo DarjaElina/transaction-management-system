@@ -302,20 +302,70 @@ def test_filter_categories_by_allowed_type(
     assert data[0]["allowed_type"] == "expense"
 
 
-def test_categories_pagination(session: Session, client: TestClient, user: User):
-    for i in range(5):
-        session.add(
-            Category(
-                name=f"Cat{i}",
-                allowed_type=TransactionType.EXPENSE,
-                is_active=True,
-                user_id=user.id,
-            )
-        )
+def test_cannot_access_other_user_category(
+    client: TestClient, session: Session, create_user
+):
+    another_user = create_user("user1@test.com")
+
+    category = Category(
+        name="Secret category",
+        allowed_type=TransactionType.EXPENSE,
+        user_id=another_user.id,
+    )
+
+    session.add(category)
     session.commit()
+    session.refresh(category)
 
-    response = client.get("/api/categories/?offset=0&limit=2")
+    response = client.get(f"/api/categories/{category.id}")
 
-    data = response.json()
+    assert response.status_code == 404
 
-    assert len(data) == 2
+
+def test_cannot_delete_other_user_category(
+    client: TestClient, session: Session, create_user
+):
+    another_user = create_user("user1@test.com")
+
+    category = Category(
+        name="Secret category",
+        allowed_type=TransactionType.EXPENSE,
+        user_id=another_user.id,
+    )
+
+    session.add(category)
+    session.commit()
+    session.refresh(category)
+
+    response = client.delete(f"/api/categories/{category.id}")
+
+    assert response.status_code == 404
+
+    assert session.get(Category, category.id) is not None
+
+
+def test_cannot_update_other_user_category(
+    client: TestClient, session: Session, create_user
+):
+    another_user = create_user("user1@test.com")
+
+    category = Category(
+        name="Secret category",
+        allowed_type=TransactionType.EXPENSE,
+        user_id=another_user.id,
+    )
+
+    session.add(category)
+    session.commit()
+    session.refresh(category)
+
+    client.patch(
+        f"/api/categories/{category.id}",
+        json={
+            "name": "Hehe",
+        },
+    )
+
+    session.refresh(category)
+
+    assert category.name == "Secret category"

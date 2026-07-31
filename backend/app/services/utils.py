@@ -1,15 +1,26 @@
 from decimal import Decimal
+import uuid
 
-from sqlmodel import select
+from sqlmodel import Session, select
 from sqlalchemy import asc, desc
 from app.models.transaction import Category
 from app.exceptions import NotFoundError, ValidationError, ConflictError
 from app.schemas.statistics import Change
+from app.core.enums import TransactionType
+from app.models.user import User
 
 
-def validate_category_for_transaction(category_id, transaction_type, session):
+def validate_category_for_transaction(
+    category_id: uuid.UUID,
+    transaction_type: TransactionType,
+    session: Session,
+    user: User,
+):
     category = session.get(Category, category_id)
     if not category:
+        raise NotFoundError("Category", category_id)
+
+    if category.user_id != user.id:
         raise NotFoundError("Category", category_id)
 
     if category.is_active is not True:

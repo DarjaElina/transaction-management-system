@@ -61,7 +61,7 @@ def get_transaction(session: Session, transaction_id, user: User):
 
 def create_transaction(transaction: TransactionCreate, session: Session, user: User):
     validate_category_for_transaction(
-        transaction.category_id, transaction.transaction_type, session
+        transaction.category_id, transaction.transaction_type, session, user
     )
 
     if transaction.date >= datetime.now(UTC):
@@ -106,7 +106,9 @@ def update_transaction(session: Session, transaction, transaction_id, user: User
             if transaction.transaction_type is not None
             else transaction_db.transaction_type
         )
-        validate_category_for_transaction(transaction.category_id, new_type, session)
+        validate_category_for_transaction(
+            transaction.category_id, new_type, session, user
+        )
 
     if transaction.date:
         if transaction.date >= datetime.now(UTC):
