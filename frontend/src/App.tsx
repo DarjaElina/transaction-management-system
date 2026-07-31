@@ -9,6 +9,7 @@ import RootLayout from './layouts/RootLayout'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import Landing from './pages/Landing/Landing'
+import SessionExpired from './pages/SessionExpired'
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
               <Route path="/" element={<Landing />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
+              <Route path="/session-expired" element={<SessionExpired />} />
             </Route>
 
             <Route element={<ProtectedLayout />}>
