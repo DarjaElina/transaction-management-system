@@ -1,14 +1,15 @@
 import uuid
 
+import fakeredis
 import pytest
 from sqlmodel import Session, SQLModel, create_engine
 from fastapi.testclient import TestClient
 
 from app.main import app
-from app.db.database import get_session
+from app.db.database import get_redis, get_session
 from app.config import get_settings
 from app.models.user import User
-from backend.app.services.users import get_current_active_user
+from app.services.users import get_current_active_user
 
 
 @pytest.fixture(scope="session")
@@ -56,17 +57,47 @@ def user(session):
     return user
 
 
+@pytest.fixture
+def redis_client():
+    return fakeredis.FakeRedis()
+
+
 @pytest.fixture(name="client")
-def client_fixture(session: Session, user: User):
+def client_fixture(session: Session, user: User, redis_client: fakeredis.FakeRedis):
     def get_session_override():
         return session
 
     def get_current_active_user_override():
         return user
 
+    def get_redis_override():
+        return redis_client
+
     app.dependency_overrides[get_session] = get_session_override
     app.dependency_overrides[get_current_active_user] = get_current_active_user_override
+    app.dependency_overrides[get_redis] = get_redis_override
 
     client = TestClient(app)
     yield client
+    app.dependency_overrides.clear()
+
+
+@pytest.fixture(name="auth_client")
+def auth_client_fixture(
+    session: Session,
+    redis_client,
+):
+    def get_session_override():
+        return session
+
+    def get_redis_override():
+        return redis_client
+
+    app.dependency_overrides[get_session] = get_session_override
+    app.dependency_overrides[get_redis] = get_redis_override
+
+    client = TestClient(app)
+
+    yield client
+
     app.dependency_overrides.clear()

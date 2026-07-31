@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Cookie, Depends, Response
 
 from app.services import auth
-from app.db.database import SessionDep
+from app.db.database import RedisDep, SessionDep
 from app.schemas.users import UserCreate, UserPublic
 from app.schemas.auth import LoginRequest
 from app.config import get_settings
@@ -25,12 +25,11 @@ def signup(
 def login(
     response: Response,
     session: SessionDep,
+    redis_client: RedisDep,
     data: LoginRequest,
 ):
     access_token, refresh_token = auth.login(
-        session,
-        email=data.email,
-        password=data.password,
+        session, email=data.email, password=data.password, redis_client=redis_client
     )
 
     response.set_cookie(
@@ -55,7 +54,15 @@ def login(
 
 
 @router.post("/logout")
-def logout(response: Response, refresh_token: str | None = Cookie(default=None)):
+def logout(
+    response: Response,
+    redis_client: RedisDep,
+    refresh_token: str | None = Cookie(default=None),
+):
+    session_id = auth.get_session_id_from_refresh_token(refresh_token)
+
+    auth.logout(session_id, redis_client)
+
     response.delete_cookie(
         key="access_token",
     )
@@ -64,10 +71,6 @@ def logout(response: Response, refresh_token: str | None = Cookie(default=None))
         key="refresh_token",
     )
 
-    session_id = auth.get_session_id_from_refresh_token(refresh_token)
-
-    auth.logout(session_id)
-
     return {"message": "Successfully logged out"}
 
 
@@ -75,9 +78,10 @@ def logout(response: Response, refresh_token: str | None = Cookie(default=None))
 def refresh(
     response: Response,
     session: SessionDep,
+    redis_client: RedisDep,
     refresh_token: Annotated[str, Depends(auth.get_refresh_token)],
 ):
-    access_token, new_refresh_token = auth.refresh(session, refresh_token)
+    access_token, new_refresh_token = auth.refresh(session, refresh_token, redis_client)
 
     response.set_cookie(
         key="access_token",

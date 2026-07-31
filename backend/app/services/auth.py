@@ -7,6 +7,7 @@ from zoneinfo import ZoneInfo
 
 from fastapi import Cookie, HTTPException, status
 from pwdlib import PasswordHash
+from redis import Redis
 from sqlmodel import Session, select
 from sqlalchemy.exc import IntegrityError
 
@@ -14,15 +15,12 @@ from app.models.user import User
 from app.config import get_settings
 from app.schemas.users import UserCreate
 from app.exceptions import ConflictError
-from app.db.database import SessionDep, get_redis
 
 settings = get_settings()
 
 password_hash = PasswordHash.recommended()
 
 DUMMY_HASH = password_hash.hash("dummypassword")
-
-r = get_redis()
 
 
 def verify_password(plain_password, hashed_password):
@@ -92,7 +90,12 @@ def verify_token(token: str):
         raise credentials_exception
 
 
-def login(session: Session, email: str, password: str):
+def login(
+    session: Session,
+    email: str,
+    password: str,
+    redis_client: Redis,
+):
     user = authenticate_user(session, email, password)
 
     if not user:
@@ -102,10 +105,7 @@ def login(session: Session, email: str, password: str):
         )
 
     session_id = secrets.token_urlsafe(32)
-    create_redis_session(
-        session_id,
-        user_id=user.id,
-    )
+    create_redis_session(session_id, user_id=user.id, redis_client=redis_client)
 
     access_token = create_token(
         data={"sub": user.email, "type": "access"},
@@ -153,7 +153,7 @@ def get_refresh_token(
     return refresh_token
 
 
-def refresh(session: SessionDep, refresh_token: str):
+def refresh(session: Session, refresh_token: str, redis_client: Redis):
     email, session_id, type = verify_token(refresh_token)
     if not type or type != "refresh":
         raise HTTPException(
@@ -178,7 +178,7 @@ def refresh(session: SessionDep, refresh_token: str):
             detail="Not authenticated",
         )
 
-    redis_session = get_redis_session(session_id)
+    redis_session = get_redis_session(session_id, redis_client)
 
     if redis_session is None:
         raise HTTPException(
@@ -192,11 +192,8 @@ def refresh(session: SessionDep, refresh_token: str):
     )
 
     new_session_id = secrets.token_urlsafe(32)
-    delete_redis_session(session_id)
-    create_redis_session(
-        new_session_id,
-        user_id=user.id,
-    )
+    delete_redis_session(session_id, redis_client)
+    create_redis_session(new_session_id, user_id=user.id, redis_client=redis_client)
 
     new_refresh_token = create_token(
         data={"sub": user.email, "type": "refresh", "session_id": new_session_id},
@@ -206,43 +203,47 @@ def refresh(session: SessionDep, refresh_token: str):
     return access_token, new_refresh_token
 
 
-def create_redis_session(
-    session_id: str,
-    user_id: uuid.UUID,
-):
+def create_redis_session(session_id: str, user_id: uuid.UUID, redis_client: Redis):
     created_at = datetime.now(ZoneInfo("UTC"))
-    r.hset(
+    redis_client.hset(
         f"user-session:{str(session_id)}",
         mapping={
             "user_id": str(user_id),
             "created_at": str(created_at),
         },
     )
-    r.expire(
+    redis_client.expire(
         f"user-session:{str(session_id)}",
         timedelta(days=settings.refresh_token_expire_days),
     )
 
 
-def get_redis_session(session_id: str):
-    session = r.hgetall(f"user-session:{session_id}")
+def get_redis_session(session_id: str, redis_client: Redis):
+    session = redis_client.hgetall(f"user-session:{session_id}")
 
     return session
 
 
-def delete_redis_session(session_id: str):
-    r.delete(f"user-session:{session_id}")
+def delete_redis_session(session_id: str, redis_client: Redis):
+    redis_client.delete(f"user-session:{session_id}")
 
 
-def logout(session_id: str):
-    delete_redis_session(session_id)
+def logout(session_id: str, redis_client: Redis):
+    delete_redis_session(session_id, redis_client)
 
 
 def get_session_id_from_refresh_token(token):
-    payload = jwt.decode(
-        token,
-        settings.secret_key.get_secret_value(),
-        algorithms=[settings.jwt_algorithm],
-    )
+    try:
+        payload = jwt.decode(
+            token,
+            settings.secret_key.get_secret_value(),
+            algorithms=[settings.jwt_algorithm],
+        )
+
+    except jwt.InvalidTokenError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+        )
 
     return payload["session_id"]

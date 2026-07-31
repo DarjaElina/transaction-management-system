@@ -32,3 +32,5 @@ def get_session():
 
 
 SessionDep = Annotated[Session, Depends(get_session)]
+
+RedisDep = Annotated[redis.Redis, Depends(get_redis)]
