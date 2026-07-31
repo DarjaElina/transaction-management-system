@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { FinanceStatCard } from '../FinanceStatCard/FinanceStatCard'
 import { userTimezone } from '@/helpers/statistics.helpers'
 import FinancialSummarySkeleton from './FinancialSummarySkeleton'
+import { getErrorMessage } from '@/helpers'
 
 export function FinancialSummary() {
   const { data, isLoading, error } = useQuery({
@@ -15,7 +16,7 @@ export function FinancialSummary() {
   }
 
   if (error || !data) {
-    return <p className="text-destructive">Something went wrong 😿</p>
+    return <p className="text-destructive">{getErrorMessage(error)}</p>
   }
 
   const formatMoney = (value: string) => {

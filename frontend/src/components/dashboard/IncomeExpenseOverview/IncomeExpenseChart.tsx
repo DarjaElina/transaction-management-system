@@ -26,6 +26,7 @@ import {
   userTimezone,
 } from '@/helpers/statistics.helpers'
 import LineChartSkeleton from './LineChartSkeleton'
+import { getErrorMessage } from '@/helpers'
 
 const chartConfig = {
   income: {
@@ -71,7 +72,7 @@ function IncomeExpenseChart() {
       <CardContent>
         {isLoading && <LineChartSkeleton />}
 
-        {error && <p className="text-destructive">Something went wrong 😿</p>}
+        {error && <p className="text-destructive">{getErrorMessage(error)}</p>}
 
         {!isLoading && !error && data.length > 0 && (
           <ChartContainer

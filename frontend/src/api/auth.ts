@@ -1,17 +1,16 @@
-import type { LoginRequest, SignupRequest, Token, User } from '@/types/auth'
+import type { LoginRequest, SignupRequest, User } from '@/types/auth'
 import { api } from './client'
 
-export const signup = async (request: SignupRequest) => {
+export const signup = async (request: SignupRequest): Promise<User> => {
   const { data } = await api.post('/auth/signup', request)
   return data
 }
 
-export const login = async (request: LoginRequest): Promise<Token> => {
-  const { data } = await api.post('/auth/login', request)
-  return data
+export const login = async (request: LoginRequest): Promise<void> => {
+  await api.post('/auth/login', request)
 }
 
-export const logout = async () => {
+export const logout = async (): Promise<void> => {
   await api.post('/auth/logout')
 }
 
@@ -20,6 +19,6 @@ export const getCurrentUser = async (): Promise<User> => {
   return data
 }
 
-export const refreshToken = async () => {
+export const refreshToken = async (): Promise<void> => {
   await api.post('auth/token/refresh')
 }

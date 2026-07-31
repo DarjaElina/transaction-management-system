@@ -28,6 +28,7 @@ import {
 } from '@/helpers/statistics.helpers'
 import { getDateRange } from '@/helpers/getDateRange'
 import PieChartSkeleton from './PieChartSkeleton'
+import { getErrorMessage } from '@/helpers'
 
 function CategoryPieChart() {
   const [dateRangeOption, setDateRangeOption] =
@@ -66,7 +67,7 @@ function CategoryPieChart() {
 
       <CardContent className="flex-1 pb-0">
         {isLoading && <PieChartSkeleton />}
-        {error && <p className="text-destructive">Something went wrong 😿</p>}
+        {error && <p className="text-destructive">{getErrorMessage(error)}</p>}
         {!isLoading && !error && chartData.length === 0 && (
           <p className="text-muted-foreground">
             No expenses for selected period.

@@ -27,6 +27,7 @@ import { useEffect, useRef, useState } from 'react'
 import { CategoryList } from './CategoryList'
 import type { Category } from '@/types/categories.types'
 import { Plus } from 'lucide-react'
+import { getErrorMessage } from '@/helpers'
 
 interface TransactionDialogProps {
   mode: 'edit' | 'create'
@@ -121,7 +122,7 @@ export function TransactionDialog({
           },
           {
             onError: (e) => {
-              toast.error(e?.message ?? 'Something went wrong 🥲')
+              toast.error(getErrorMessage(e))
             },
             onSuccess: () => {
               setDialogOpen(false)

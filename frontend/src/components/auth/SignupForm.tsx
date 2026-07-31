@@ -23,6 +23,7 @@ import { signupSchema } from '@/schemas/auth'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { signup } from '@/api/auth'
 import { toast } from 'sonner'
+import { getErrorMessage } from '@/helpers'
 
 function SignupForm() {
   const queryClient = useQueryClient()
@@ -31,9 +32,6 @@ function SignupForm() {
 
   const { isPending, mutate } = useMutation({
     mutationFn: signup,
-    onSuccess: (data) => {
-      console.log(data)
-    },
   })
   const form = useForm({
     defaultValues: {
@@ -56,7 +54,7 @@ function SignupForm() {
         },
         {
           onError: (e) => {
-            toast.error(e?.message ?? 'Something went wrong 🥲')
+            toast.error(getErrorMessage(e))
           },
           onSuccess: () => {
             queryClient.invalidateQueries({

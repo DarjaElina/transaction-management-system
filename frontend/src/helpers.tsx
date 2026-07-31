@@ -1,5 +1,6 @@
 import React from 'react'
 import type { ApiTransaction, Transaction } from './types/transactions.types'
+import { AxiosError } from 'axios'
 
 export const getCategoriesStatus = (
   isFetching: boolean,
@@ -36,4 +37,16 @@ export const mapTransactions = (
     ...t,
     amount: Number(t.amount),
   }))
+}
+
+export const getErrorMessage = (error: unknown): string => {
+  if (error instanceof AxiosError) {
+    return error.response?.data?.error?.message ?? error.message
+  }
+
+  if (error instanceof Error) {
+    return error.message
+  }
+
+  return 'Something went wrong 🥲'
 }

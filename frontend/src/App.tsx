@@ -2,7 +2,6 @@ import { BrowserRouter, Route, Routes } from 'react-router'
 import Transactions from './pages/Transactions'
 import Dashboard from './pages/Dashboard'
 import { ThemeProvider } from './components/ThemeProvider'
-import { Toaster } from 'sonner'
 import ProtectedLayout from './layouts/ProtectedLayout/ProtectedLayout'
 import PublicLayout from './layouts/PublicLayout/PublicLayout'
 import RootLayout from './layouts/RootLayout'
@@ -31,7 +30,6 @@ function App() {
           </Route>
         </Routes>
       </BrowserRouter>
-      <Toaster richColors />
     </ThemeProvider>
   )
 }

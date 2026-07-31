@@ -4,6 +4,7 @@ import { columns } from '@/components/TransactionsTable/Columns'
 import { TransactionsTable } from '@/components/TransactionsTable/TransactionsTable'
 import { mapTransactions } from '@/helpers'
 import { useQuery } from '@tanstack/react-query'
+import { getErrorMessage } from '@/helpers'
 
 function Transactions() {
   const result = useQuery({
@@ -17,12 +18,12 @@ function Transactions() {
   return (
     <div>
       <div className="mb-8 flex">
-        <h1 className="text-3xl font-semibold">Transactions</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Transactions</h1>
       </div>
 
       <div className="bg-background rounded-xl border p-6">
         {result.error && (
-          <p className="text-rose-500">Something went wrong 😿</p>
+          <p className="text-rose-500">{getErrorMessage(result.error)}</p>
         )}
 
         {result.isLoading && (

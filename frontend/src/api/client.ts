@@ -1,5 +1,4 @@
 import axios from 'axios'
-import { refreshTokenOnce } from './refresh'
 const API_URL: string =
   import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
 
@@ -8,37 +7,35 @@ export const api = axios.create({
   withCredentials: true,
 })
 
-api.interceptors.response.use(
-  (response) => response,
+// api.interceptors.response.use(
+//   (response) => response,
 
-  async (error) => {
-    const originalRequest = error.config
+//   async (error) => {
+//     const originalRequest = error.config
 
-    if (!originalRequest) {
-      return Promise.reject(error)
-    }
+//     if (
+//       error.response?.status === 401 &&
+//       !originalRequest._retry &&
+//       !originalRequest.url?.includes('/auth/token/refresh') &&
+//       !originalRequest.url?.includes('/auth/logout') &&
+//       !originalRequest.url?.includes('/auth/login') &&
+//       !originalRequest.url?.includes('/auth/signup')
+//     ) {
+//       originalRequest._retry = true
 
-    if (
-      originalRequest.url?.includes('/auth/token/refresh') ||
-      originalRequest.url?.includes('/auth/logout')
-    ) {
-      return Promise.reject(error)
-    }
+//       try {
+//         await api.post('/auth/token/refresh')
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true
+//         return api(originalRequest)
 
-      try {
-        await refreshTokenOnce()
+//       } catch (refreshError) {
 
-        return api(originalRequest)
-      } catch (refreshError) {
-        window.location.href = '/session-expired'
+//         window.location.href = '/session-expired'
 
-        return Promise.reject(refreshError)
-      }
-    }
+//         return Promise.reject(refreshError)
+//       }
+//     }
 
-    return Promise.reject(error)
-  },
-)
+//     return Promise.reject(error)
+//   }
+// )

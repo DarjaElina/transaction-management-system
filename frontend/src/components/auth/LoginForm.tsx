@@ -24,6 +24,7 @@ import {
 import { loginSchema } from '@/schemas/auth'
 import { login } from '@/api/auth'
 import { toast } from 'sonner'
+import { getErrorMessage } from '@/helpers'
 
 function LoginForm() {
   const queryClient = useQueryClient()
@@ -32,9 +33,6 @@ function LoginForm() {
 
   const { isPending, mutate } = useMutation({
     mutationFn: login,
-    onSuccess: (data) => {
-      console.log(data)
-    },
   })
 
   const form = useForm({
@@ -55,7 +53,7 @@ function LoginForm() {
         },
         {
           onError: (e) => {
-            toast.error(e?.message ?? 'Something went wrong 🥲')
+            toast.error(getErrorMessage(e))
           },
           onSuccess: () => {
             queryClient.invalidateQueries({

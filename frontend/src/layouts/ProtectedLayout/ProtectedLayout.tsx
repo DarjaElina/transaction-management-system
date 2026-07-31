@@ -4,6 +4,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { logout } from '@/api/auth'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 import ProtectedHeader from './ProtectedHeader'
+import { getErrorMessage } from '@/helpers'
 
 function ProtectedLayout() {
   const { data: user, isLoading, error } = useCurrentUser()
@@ -30,8 +31,12 @@ function ProtectedLayout() {
     )
   }
 
-  if (error || !user) {
+  if (!user) {
     return <Navigate to="/login" replace />
+  }
+
+  if (error) {
+    return <p className="text-rose-500">{getErrorMessage(error)}</p>
   }
 
   return (
