@@ -62,7 +62,7 @@ def test_login_unknown_user(auth_client, user):
     login_response = auth_client.post(
         "/api/auth/login",
         json={
-            "email": "wrond@example.com",
+            "email": "wrong@example.com",
             "password": "secret",
         },
     )
