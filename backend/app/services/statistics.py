@@ -9,12 +9,18 @@ from app.models.category import Category
 from app.core.enums import TransactionType
 from app.schemas.statistics import FinancialSummary, MonthlyTotals
 from app.services.utils import calculate_cash_flow, calculate_savings_rate, to_change
+from app.models.user import User
 
 interval_dict = {"day": "1 day", "week": "1 week", "month": "1 month", "year": "1 year"}
 
 
 def get_income_expense_overview(
-    session: Session, start: datetime, end: datetime, period: str, user_timezone: str
+    session: Session,
+    user: User,
+    start: datetime,
+    end: datetime,
+    period: str,
+    user_timezone: str,
 ):
     income_case = case(
         (Transaction.transaction_type == TransactionType.INCOME, Transaction.amount),
@@ -53,7 +59,7 @@ def get_income_expense_overview(
             func.sum(income_case).label("income"),
             func.sum(expense_case).label("expense"),
         )
-        .where(between(Transaction.date, start, end))
+        .where(Transaction.user_id == user.id, between(Transaction.date, start, end))
         .group_by(transaction_period_local)
         .subquery("periods_cte")
     )
@@ -77,7 +83,9 @@ def get_income_expense_overview(
     return result
 
 
-def get_spending_by_category(session: Session, start: datetime, end: datetime):
+def get_spending_by_category(
+    session: Session, user: User, start: datetime, end: datetime
+):
     stmt = (
         select(
             type_coerce(Category.name, VARCHAR).label("category"),
@@ -85,6 +93,7 @@ def get_spending_by_category(session: Session, start: datetime, end: datetime):
         )
         .join(Transaction)
         .where(
+            Transaction.user_id == user.id,
             Transaction.transaction_type == TransactionType.EXPENSE,
             between(Transaction.date, start, end),
         )
@@ -105,6 +114,7 @@ def get_change(prev: Decimal, curr: Decimal):
 
 def get_monthly_totals(
     session: Session,
+    user: User,
     user_timezone: str,
     now: datetime | None = None,
 ):
@@ -151,6 +161,7 @@ def get_monthly_totals(
             func.sum(expense_case).label("expense"),
         )
         .where(
+            Transaction.user_id == user.id,
             Transaction.date >= start_utc,
             Transaction.date < end_utc,
         )
@@ -194,10 +205,11 @@ def get_monthly_totals(
 
 def get_financial_summary(
     session: Session,
+    user: User,
     user_timezone: str,
     now: datetime | None = None,
 ):
-    previous, current = get_monthly_totals(session, user_timezone, now)
+    previous, current = get_monthly_totals(session, user, user_timezone, now)
 
     prev_income = previous.income
     prev_expense = previous.expense

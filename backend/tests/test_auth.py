@@ -5,9 +5,8 @@ from sqlmodel import Session, select
 from app.models.user import User
 from app.services.auth import (
     get_password_hash,
-    get_session_id_from_refresh_token,
-    verify_password,
 )
+from app.services.auth_utils import get_session_id_from_refresh_token, verify_password
 
 
 @pytest.fixture

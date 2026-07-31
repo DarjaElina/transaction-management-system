@@ -1,93 +1,28 @@
 import uuid
 
-import jwt
 import secrets
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
-from fastapi import Cookie, HTTPException, status
-from pwdlib import PasswordHash
 from redis import Redis
-from sqlmodel import Session, select
+from sqlmodel import Session
 from sqlalchemy.exc import IntegrityError
 
 from app.models.user import User
 from app.config import get_settings
 from app.schemas.users import UserCreate
-from app.exceptions import ConflictError
+from app.exceptions import AuthenticationError, ConflictError
+from app.services.auth_utils import (
+    authenticate_user,
+    create_token,
+    delete_redis_session,
+    get_password_hash,
+    get_redis_session,
+    get_user,
+    verify_token,
+)
 
 settings = get_settings()
-
-password_hash = PasswordHash.recommended()
-
-DUMMY_HASH = password_hash.hash("dummypassword")
-
-
-def verify_password(plain_password, hashed_password):
-    return password_hash.verify(plain_password, hashed_password)
-
-
-def get_password_hash(password):
-    return password_hash.hash(password)
-
-
-def authenticate_user(session: Session, email: str, password: str):
-    user = get_user(session, email)
-    if not user:
-        verify_password(password, DUMMY_HASH)
-        return False
-    if not verify_password(password, user.password_hash):
-        return False
-    return user
-
-
-def get_user(session: Session, email: str):
-    stmt = select(User).where(User.email == email)
-    result = session.exec(stmt)
-    user = result.first()
-
-    return user
-
-
-def create_token(data: dict, expires_delta: timedelta | None = None):
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.now(ZoneInfo("UTC")) + expires_delta
-    else:
-        expire = datetime.now(ZoneInfo("UTC")) + timedelta(minutes=15)
-    to_encode.update({"exp": expire, "iat": datetime.now(ZoneInfo("UTC"))})
-    encoded_jwt = jwt.encode(
-        to_encode,
-        settings.secret_key.get_secret_value(),
-        algorithm=settings.jwt_algorithm,
-    )
-    return encoded_jwt
-
-
-def verify_token(token: str):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-    )
-
-    try:
-        payload = jwt.decode(
-            token,
-            settings.secret_key.get_secret_value(),
-            algorithms=[settings.jwt_algorithm],
-        )
-
-        email = payload.get("sub")
-        session_id = payload.get("session_id")
-        type = payload.get("type")
-
-        if email is None:
-            raise credentials_exception
-
-        return email, session_id, type
-
-    except jwt.InvalidTokenError:
-        raise credentials_exception
 
 
 def login(
@@ -99,10 +34,7 @@ def login(
     user = authenticate_user(session, email, password)
 
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password",
-        )
+        raise AuthenticationError("Incorrect email or password")
 
     session_id = secrets.token_urlsafe(32)
     create_redis_session(session_id, user_id=user.id, redis_client=redis_client)
@@ -134,32 +66,17 @@ def signup(session: Session, user: UserCreate):
         session.commit()
     except IntegrityError:
         session.rollback()
-        raise ConflictError("email")
+        raise ConflictError("Email")
 
     session.refresh(db_user)
 
     return db_user
 
 
-def get_refresh_token(
-    refresh_token: str | None = Cookie(default=None),
-):
-    if refresh_token is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated",
-        )
-
-    return refresh_token
-
-
 def refresh(session: Session, refresh_token: str, redis_client: Redis):
     email, session_id, type = verify_token(refresh_token)
     if not type or type != "refresh":
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated",
-        )
+        raise AuthenticationError()
 
     user = get_user(
         session,
@@ -167,24 +84,15 @@ def refresh(session: Session, refresh_token: str, redis_client: Redis):
     )
 
     if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated",
-        )
+        raise AuthenticationError()
 
     if session_id is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated",
-        )
+        raise AuthenticationError()
 
     redis_session = get_redis_session(session_id, redis_client)
 
     if redis_session is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated",
-        )
+        raise AuthenticationError()
 
     access_token = create_token(
         data={"sub": user.email, "type": "access"},
@@ -218,32 +126,5 @@ def create_redis_session(session_id: str, user_id: uuid.UUID, redis_client: Redi
     )
 
 
-def get_redis_session(session_id: str, redis_client: Redis):
-    session = redis_client.hgetall(f"user-session:{session_id}")
-
-    return session
-
-
-def delete_redis_session(session_id: str, redis_client: Redis):
-    redis_client.delete(f"user-session:{session_id}")
-
-
 def logout(session_id: str, redis_client: Redis):
     delete_redis_session(session_id, redis_client)
-
-
-def get_session_id_from_refresh_token(token):
-    try:
-        payload = jwt.decode(
-            token,
-            settings.secret_key.get_secret_value(),
-            algorithms=[settings.jwt_algorithm],
-        )
-
-    except jwt.InvalidTokenError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated",
-        )
-
-    return payload["session_id"]

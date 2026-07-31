@@ -7,6 +7,7 @@ from app.db.database import RedisDep, SessionDep
 from app.schemas.users import UserCreate, UserPublic
 from app.schemas.auth import LoginRequest
 from app.config import get_settings
+from app.services.auth_utils import get_refresh_token, get_session_id_from_refresh_token
 
 router = APIRouter(prefix="/auth")
 
@@ -85,7 +86,7 @@ def logout(
     redis_client: RedisDep,
     refresh_token: str | None = Cookie(default=None),
 ):
-    session_id = auth.get_session_id_from_refresh_token(refresh_token)
+    session_id = get_session_id_from_refresh_token(refresh_token)
 
     auth.logout(session_id, redis_client)
 
@@ -105,7 +106,7 @@ def refresh(
     response: Response,
     session: SessionDep,
     redis_client: RedisDep,
-    refresh_token: Annotated[str, Depends(auth.get_refresh_token)],
+    refresh_token: Annotated[str, Depends(get_refresh_token)],
 ):
     access_token, new_refresh_token = auth.refresh(session, refresh_token, redis_client)
 

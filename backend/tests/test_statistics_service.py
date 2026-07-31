@@ -75,6 +75,7 @@ def test_get_monthly_totals_returns_previous_and_current_month(
 
     result = get_monthly_totals(
         session,
+        user,
         "Europe/Helsinki",
         datetime(2026, 7, 20, tzinfo=UTC),
     )
@@ -88,11 +89,10 @@ def test_get_monthly_totals_returns_previous_and_current_month(
     assert current.expense == Decimal("200")
 
 
-def test_get_monthly_totals_returns_zero_for_empty_month(
-    session: Session,
-):
+def test_get_monthly_totals_returns_zero_for_empty_month(session: Session, user: User):
     result = get_monthly_totals(
         session,
+        user,
         "Europe/Helsinki",
         datetime(2026, 7, 20, tzinfo=UTC),
     )
@@ -120,11 +120,12 @@ def test_get_monthly_totals_respects_timezone(
 
     result = get_monthly_totals(
         session,
+        user,
         "Europe/Helsinki",
         datetime(2026, 1, 1, 0, 30, tzinfo=UTC),
     )
 
-    previous, current = result
+    _, current = result
 
     assert current.expense == Decimal("50")
 
@@ -170,6 +171,7 @@ def test_financial_summary_calculates_cash_flow_and_savings(
 
     result = get_financial_summary(
         session,
+        user,
         "Europe/Helsinki",
         datetime(2026, 7, 20, tzinfo=UTC),
     )

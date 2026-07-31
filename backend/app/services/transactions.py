@@ -1,6 +1,6 @@
 import uuid
 
-from sqlmodel import Session
+from sqlmodel import Session, select
 
 from app.models.transaction import Transaction
 from app.schemas.transactions import TransactionCreate
@@ -33,7 +33,7 @@ def get_transactions(
     sort_by: str,
     order: str,
 ):
-    # TODO: check rights
+    query = select(Transaction).where(Transaction.user_id == user.id)
     query = apply_sorting(Transaction, sort_by, order)
 
     query = filter_equal(query, Transaction.category_id, category_id)
@@ -48,8 +48,11 @@ def get_transactions(
 
 
 def get_transaction(session: Session, transaction_id, user: User):
-    transaction = session.get(Transaction, transaction_id)
-    # TODO: check rights
+    stmt = select(Transaction).where(
+        Transaction.user_id == user.id, Transaction.id == transaction_id
+    )
+    transaction = session.exec(stmt).first()
+
     if not transaction:
         raise NotFoundError("Transaction", transaction_id)
 
@@ -67,15 +70,20 @@ def create_transaction(transaction: TransactionCreate, session: Session, user: U
     db_transaction = Transaction.model_validate(
         transaction, update={"user_id": user.id}
     )
+
     session.add(db_transaction)
     session.commit()
     session.refresh(db_transaction)
+
     return db_transaction
 
 
 def delete_transaction(session: Session, transaction_id, user: User):
-    transaction = session.get(Transaction, transaction_id)
-    # TODO: check rights
+    stmt = select(Transaction).where(
+        Transaction.user_id == user.id, Transaction.id == transaction_id
+    )
+    transaction = session.exec(stmt).first()
+
     if not transaction:
         raise NotFoundError("Transaction", transaction_id)
 
@@ -84,9 +92,11 @@ def delete_transaction(session: Session, transaction_id, user: User):
 
 
 def update_transaction(session: Session, transaction, transaction_id, user: User):
-    transaction_db = session.get(Transaction, transaction_id)
+    stmt = select(Transaction).where(
+        Transaction.user_id == user.id, Transaction.id == transaction_id
+    )
+    transaction_db = session.exec(stmt).first()
 
-    # TODO: check rights
     if not transaction_db:
         raise NotFoundError("Transaction", transaction_id)
 
@@ -104,7 +114,9 @@ def update_transaction(session: Session, transaction, transaction_id, user: User
 
     transaction_data = transaction.model_dump(exclude_unset=True)
     transaction_db.sqlmodel_update(transaction_data)
+
     session.add(transaction_db)
     session.commit()
     session.refresh(transaction_db)
+
     return transaction_db

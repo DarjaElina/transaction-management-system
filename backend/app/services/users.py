@@ -1,19 +1,17 @@
-from fastapi import Cookie, Depends, HTTPException, status
+from fastapi import Cookie, Depends, HTTPException
 from typing import Annotated
 
 from app.models.user import User
 from app.db.database import SessionDep
 from app.services.auth import get_user, verify_token
+from app.exceptions import AuthenticationError
 
 
 def get_access_token(
     access_token: str | None = Cookie(default=None),
 ):
     if access_token is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated",
-        )
+        raise AuthenticationError()
 
     return access_token
 
@@ -30,10 +28,7 @@ def get_current_user(
     )
 
     if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated",
-        )
+        raise AuthenticationError()
 
     return user
 

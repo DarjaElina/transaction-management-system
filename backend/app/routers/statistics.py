@@ -24,7 +24,7 @@ def get_income_expense_overview(
     user_timezone: str,
 ):
     stats = statistics.get_income_expense_overview(
-        session, start, end, period, user_timezone
+        session, user, start, end, period, user_timezone
     )
     return stats
 
@@ -36,11 +36,11 @@ def get_spending_by_category(
     start: datetime,
     end: datetime,
 ):
-    stats = statistics.get_spending_by_category(session, start, end)
+    stats = statistics.get_spending_by_category(session, user, start, end)
     return stats
 
 
 @router.get("/financial-summary", response_model=FinancialSummary)
 def get_financial_summary(session: SessionDep, user: CurrentUser, user_timezone: str):
-    stats = statistics.get_financial_summary(session, user_timezone)
+    stats = statistics.get_financial_summary(session, user, user_timezone)
     return stats
