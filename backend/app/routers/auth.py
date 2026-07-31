@@ -15,10 +15,36 @@ settings = get_settings()
 
 @router.post("/signup", response_model=UserPublic)
 def signup(
-    user: UserCreate,
-    session: SessionDep,
+    response: Response, user: UserCreate, session: SessionDep, redis_client: RedisDep
 ):
-    return auth.signup(session, user)
+    db_user = auth.signup(session, user)
+
+    access_token, refresh_token = auth.login(
+        session,
+        email=db_user.email,
+        password=user.password,
+        redis_client=redis_client,
+    )
+
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        secure=False,
+        samesite="lax",
+        max_age=settings.access_token_expire_minutes * 60,
+    )
+
+    response.set_cookie(
+        key="refresh_token",
+        value=refresh_token,
+        httponly=True,
+        secure=False,
+        samesite="lax",
+        max_age=settings.refresh_token_expire_days * 86400,
+    )
+
+    return db_user
 
 
 @router.post("/login")

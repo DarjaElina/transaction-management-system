@@ -1,4 +1,4 @@
-import { Link } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 import { useForm } from '@tanstack/react-form'
 import { Wallet } from 'lucide-react'
 
@@ -20,10 +20,15 @@ import {
   FieldLabel,
 } from '@/components/ui/field'
 import { signupSchema } from '@/schemas/auth'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { signup } from '@/api/auth'
+import { toast } from 'sonner'
 
 function SignupForm() {
+  const queryClient = useQueryClient()
+
+  const navigate = useNavigate()
+
   const { isPending, mutate } = useMutation({
     mutationFn: signup,
     onSuccess: (data) => {
@@ -42,12 +47,25 @@ function SignupForm() {
       onSubmit: signupSchema,
     },
     onSubmit: async ({ value }) => {
-      mutate({
-        first_name: value.firstName,
-        last_name: value.lastName,
-        email: value.email,
-        password: value.password,
-      })
+      mutate(
+        {
+          first_name: value.firstName,
+          last_name: value.lastName,
+          email: value.email,
+          password: value.password,
+        },
+        {
+          onError: (e) => {
+            toast.error(e?.message ?? 'Something went wrong 🥲')
+          },
+          onSuccess: () => {
+            queryClient.invalidateQueries({
+              queryKey: ['current-user'],
+            })
+            navigate('/transactions')
+          },
+        },
+      )
     },
   })
 
