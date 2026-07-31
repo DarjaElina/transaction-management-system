@@ -1,12 +1,5 @@
 import { Link } from 'react-router'
-import {
-  ArrowRight,
-  CheckCircle2,
-  Code2,
-  Database,
-  Lock,
-  TestTube2,
-} from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 
 import { buttonVariants } from '@/components/ui/button'
 import FeatureCard from './FeatureCard'
@@ -75,27 +68,27 @@ function Landing() {
 
       <section className="grid gap-6 md:grid-cols-2">
         <FeatureCard
-          icon={<Code2 />}
-          title="Modern Full-Stack Architecture"
-          description="Feature-based project structure, reusable components, API layer, dependency injection, and clean separation between frontend and backend."
+          emoji="🏗️"
+          title="Full-Stack Architecture"
+          description="Separated frontend and backend layers with API services, dependency injection, reusable components and clean project structure."
         />
 
         <FeatureCard
-          icon={<Lock />}
-          title="Authentication"
-          description="JWT authentication with HTTP-only cookies, password hashing, protected routes, user isolation and secure API endpoints."
+          emoji="🔐"
+          title="Authentication Flow"
+          description="JWT authentication with HTTP-only cookies, refresh tokens, Redis sessions and protected routes."
         />
 
         <FeatureCard
-          icon={<Database />}
-          title="Database Design"
-          description="SQLModel models, UUID primary keys, Alembic migrations, relationships, validation and PostgreSQL."
+          emoji="🗄️"
+          title="Database & Migrations"
+          description="PostgreSQL database design with SQLModel, Alembic migrations and relational models."
         />
 
         <FeatureCard
-          icon={<TestTube2 />}
-          title="Developer Experience"
-          description="TypeScript, React Query, schema validation, reusable hooks, clean API services and scalable project organization."
+          emoji="🧪"
+          title="Testing & Developer Experience"
+          description="Backend API tests, React Query integration, TypeScript validation and reusable frontend architecture."
         />
       </section>
 
@@ -105,8 +98,6 @@ function Landing() {
         <div className="mt-6 grid gap-4 md:grid-cols-2">
           {highlights.map((item) => (
             <div key={item} className="flex items-center gap-3">
-              <CheckCircle2 className="h-5 w-5 text-primary" />
-
               <span>{item}</span>
             </div>
           ))}

@@ -13,6 +13,7 @@ function Transactions() {
 
   const transactions = result.data ?? []
   const mappedTransactions = mapTransactions(transactions)
+
   return (
     <div>
       <div className="mb-8 flex">
