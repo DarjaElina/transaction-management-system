@@ -1,5 +1,5 @@
 import axios from 'axios'
-
+import { refreshTokenOnce } from './refresh'
 const API_URL: string =
   import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
 
@@ -14,18 +14,22 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      if (
-        originalRequest.url?.includes('/auth/token/refresh') ||
-        originalRequest.url?.includes('/auth/logout')
-      ) {
-        return Promise.reject(error)
-      }
+    if (!originalRequest) {
+      return Promise.reject(error)
+    }
 
+    if (
+      originalRequest.url?.includes('/auth/token/refresh') ||
+      originalRequest.url?.includes('/auth/logout')
+    ) {
+      return Promise.reject(error)
+    }
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true
 
       try {
-        await api.post('/auth/token/refresh')
+        await refreshTokenOnce()
 
         return api(originalRequest)
       } catch (refreshError) {

@@ -20,6 +20,6 @@ export const getCurrentUser = async (): Promise<User> => {
   return data
 }
 
-export const refresh = async () => {
+export const refreshToken = async () => {
   await api.post('auth/token/refresh')
 }
