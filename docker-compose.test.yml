@@ -38,7 +38,7 @@ services:
       JWT_ALGORITHM: HS256
       ACCESS_TOKEN_EXPIRE_MINUTES: 15
       REFRESH_TOKEN_EXPIRE_DAYS: 30
-      SECRET_KEY: 6a36ebfd88dbdc80310f3c463a23a79f78dca4055b8e76ffd83bb4206462aa21
+      SECRET_KEY: test-secret-key
     depends_on:
       postgres:
         condition: service_healthy

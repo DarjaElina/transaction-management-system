@@ -53,6 +53,16 @@ jobs:
     env:
       DATABASE_URL: postgresql://postgres:mysecretpassword@localhost:5432/postgres_test
 
+      REDIS_HOST: localhost
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: testpassword
+
+      JWT_ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: 15
+      REFRESH_TOKEN_EXPIRE_DAYS: 30
+
+      SECRET_KEY: test-secret-key
+
     steps:
       - uses: actions/checkout@v6
 
