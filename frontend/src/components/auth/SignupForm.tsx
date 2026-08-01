@@ -133,7 +133,7 @@ function SignupForm() {
             />
 
             <form.Field
-              name="password"
+              name="confirmPassword"
               children={(field) => (
                 <FormInputField
                   field={field}
