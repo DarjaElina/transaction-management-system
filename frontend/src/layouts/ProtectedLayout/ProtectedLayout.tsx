@@ -4,7 +4,6 @@ import { Spinner } from '@/components/ui/spinner'
 import { logout } from '@/api/auth'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 import ProtectedHeader from './ProtectedHeader'
-import { getErrorMessage } from '@/helpers'
 
 function ProtectedLayout() {
   const { data: user, isLoading, error } = useCurrentUser()
@@ -26,17 +25,13 @@ function ProtectedLayout() {
   if (isLoading) {
     return (
       <div className="flex min-h-[calc(100vh-5rem)] items-center justify-center">
-        <Spinner />
+        <Spinner data-testid="spinner" />
       </div>
     )
   }
 
-  if (!user) {
+  if (error || !user) {
     return <Navigate to="/login" replace />
-  }
-
-  if (error) {
-    return <p className="text-rose-500">{getErrorMessage(error)}</p>
   }
 
   return (

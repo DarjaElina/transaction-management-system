@@ -1,20 +1,21 @@
 import { expect, test } from '@playwright/test'
 import { subMonths } from 'date-fns'
 
-import { resetDb } from '../helpers/resetDb'
 import { createTransaction, selectStatisticsPeriod } from '../helpers/ui'
 import { selectDate } from '../helpers/common'
+import { resetEnvironment } from '../helpers/reset'
+import { signup } from '../helpers/auth'
 
 test.describe('Income expense overview chart', () => {
-  test.beforeEach(async () => {
-    await resetDb()
+  test.beforeEach(async ({ page }) => {
+    await resetEnvironment()
+    await page.goto('/')
+    await signup(page)
   })
 
   test('filters statistics according to selected date range', async ({
     page,
   }) => {
-    await page.goto('/')
-
     await createTransaction(page, {
       amount: '10',
       description: 'Today expense',
@@ -50,8 +51,6 @@ test.describe('Income expense overview chart', () => {
   test('editing transaction date updates dashboard statistics', async ({
     page,
   }) => {
-    await page.goto('/')
-
     await createTransaction(page, {
       date: subMonths(new Date(), 2),
       amount: '10',
@@ -64,7 +63,7 @@ test.describe('Income expense overview chart', () => {
     const chart = page.getByTestId('income-expense-chart')
     await expect(chart).toHaveAttribute('data-total-expense', '0')
 
-    await page.goto('/')
+    await page.goto('/transactions')
 
     await page.getByRole('button', { name: 'Open menu' }).click()
     await page.getByRole('menuitem', { name: 'Edit' }).click()
@@ -81,8 +80,6 @@ test.describe('Income expense overview chart', () => {
   test('deleting transaction updates dashboard statistics', async ({
     page,
   }) => {
-    await page.goto('/')
-
     await createTransaction(page, {
       amount: '25',
     })
@@ -94,7 +91,7 @@ test.describe('Income expense overview chart', () => {
     const chart = page.getByTestId('income-expense-chart')
     await expect(chart).toHaveAttribute('data-total-expense', '25')
 
-    await page.goto('/')
+    await page.goto('/transactions')
 
     await page.getByRole('button', { name: 'Open menu' }).click()
     await page.getByRole('menuitem', { name: 'Delete' }).click()

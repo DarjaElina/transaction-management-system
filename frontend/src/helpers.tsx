@@ -41,12 +41,12 @@ export const mapTransactions = (
 
 export const getErrorMessage = (error: unknown): string => {
   if (error instanceof AxiosError) {
-    return error.response?.data?.error?.message ?? error.message
+    return error.response?.data?.error?.message ?? 'Something went wrong'
   }
 
   if (error instanceof Error) {
     return error.message
   }
 
-  return 'Something went wrong 🥲'
+  return 'Something went wrong'
 }

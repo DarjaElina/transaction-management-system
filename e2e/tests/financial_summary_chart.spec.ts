@@ -1,15 +1,16 @@
 import test, { expect } from '@playwright/test'
-import { resetDb } from '../helpers/resetDb'
 import { createTransaction } from '../helpers/ui'
+import { resetEnvironment } from '../helpers/reset'
+import { signup } from '../helpers/auth'
 
 test.describe('Financial summary', () => {
-  test.beforeEach(async () => {
-    await resetDb()
+  test.beforeEach(async ({ page }) => {
+    await resetEnvironment()
+    await page.goto('/')
+    await signup(page)
   })
 
   test('calculates financial summary from transactions', async ({ page }) => {
-    await page.goto('/')
-
     await createTransaction(page, {
       amount: '25',
     })
@@ -36,8 +37,6 @@ test.describe('Financial summary', () => {
   })
 
   test('updates summary after editing transaction', async ({ page }) => {
-    await page.goto('/')
-
     await createTransaction(page, {
       amount: '50',
     })
@@ -47,7 +46,7 @@ test.describe('Financial summary', () => {
     const expenseBlock = page.getByTestId('monthly-expense')
     await expect(expenseBlock).toContainText('€50')
 
-    await page.goto('/')
+    await page.goto('/transactions')
 
     await page.getByRole('button', { name: 'Open menu' }).click()
     await page.getByRole('menuitem', { name: 'Edit' }).click()
@@ -61,8 +60,6 @@ test.describe('Financial summary', () => {
   })
 
   test('updates summary after deleting transaction', async ({ page }) => {
-    await page.goto('/')
-
     await createTransaction(page, {
       amount: '50',
     })
@@ -72,7 +69,7 @@ test.describe('Financial summary', () => {
     const expenseBlock = page.getByTestId('monthly-expense')
     await expect(expenseBlock).toContainText('€50')
 
-    await page.goto('/')
+    await page.goto('/transactions')
 
     await page.getByRole('button', { name: 'Open menu' }).click()
     await page.getByRole('menuitem', { name: 'Delete' }).click()

@@ -1,19 +1,20 @@
 import test, { expect } from '@playwright/test'
 import { subMonths } from 'date-fns'
 import { createTransaction, selectStatisticsPeriod } from '../helpers/ui'
-import { resetDb } from '../helpers/resetDb'
 import { selectDate } from '../helpers/common'
+import { resetEnvironment } from '../helpers/reset'
+import { signup } from '../helpers/auth'
 
 test.describe('Spending by category chart', () => {
-  test.beforeEach(async () => {
-    await resetDb()
+  test.beforeEach(async ({ page }) => {
+    await resetEnvironment()
+    await page.goto('/')
+    await signup(page)
   })
 
   test('filters spending categories according to selected date range', async ({
     page,
   }) => {
-    await page.goto('/')
-
     await createTransaction(page, {
       amount: '10',
       description: 'Today expense',
@@ -45,8 +46,6 @@ test.describe('Spending by category chart', () => {
   test('editing transaction date updates spending categories', async ({
     page,
   }) => {
-    await page.goto('/')
-
     await createTransaction(page, {
       amount: '15',
       description: 'Old groceries',
@@ -61,7 +60,7 @@ test.describe('Spending by category chart', () => {
     await expect(page.getByText('Food')).not.toBeVisible()
     await expect(page.getByText('No expenses for selected')).toBeVisible()
 
-    await page.goto('/')
+    await page.goto('/transactions')
 
     await page.getByRole('button', { name: 'Open menu' }).click()
 
@@ -82,8 +81,6 @@ test.describe('Spending by category chart', () => {
   })
 
   test('deleting transaction updates spending categories', async ({ page }) => {
-    await page.goto('/')
-
     await createTransaction(page, {
       amount: '25',
       description: 'Dinner',
@@ -97,7 +94,7 @@ test.describe('Spending by category chart', () => {
     await expect(page.getByText('Food')).toBeVisible()
     await expect(page.getByText('25', { exact: true })).toBeVisible()
 
-    await page.goto('/')
+    await page.goto('/transactions')
 
     await page.getByRole('button', { name: 'Open menu' }).click()
 
@@ -115,6 +112,10 @@ test.describe('Spending by category chart', () => {
   })
 
   test('shows empty state when there are no expenses', async ({ page }) => {
+    await expect(
+      page.getByRole('link', { name: 'Budget Tracker Welcome back,' }),
+    ).toBeVisible()
+
     await page.goto('/dashboard')
 
     await selectStatisticsPeriod(page, 'Last 7 days', 'spending-category')
