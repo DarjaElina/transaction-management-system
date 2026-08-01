@@ -112,9 +112,7 @@ test.describe('Spending by category chart', () => {
   })
 
   test('shows empty state when there are no expenses', async ({ page }) => {
-    await expect(
-      page.getByRole('link', { name: 'Budget Tracker Welcome back,' }),
-    ).toBeVisible()
+    await expect(page.getByText('Welcome back, Jane 🤍')).toBeVisible()
 
     await page.goto('/dashboard')
 
