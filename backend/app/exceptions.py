@@ -52,3 +52,14 @@ class ConflictError(AppException):
             error_code="CONFLICT",
             details={"resource": resource},
         )
+
+
+class AuthenticationError(AppException):
+    """Authentication failed"""
+
+    def __init__(self, message: str = "Authentication failed"):
+        super().__init__(
+            message=message,
+            status_code=401,
+            error_code="AUTHENTICATION_ERROR",
+        )

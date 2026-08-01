@@ -56,4 +56,32 @@ export const handlers = [
       },
     ])
   }),
+
+  http.get(`${API_URL}/users/me`, () => {
+    return HttpResponse.json({
+      id: '1',
+      email: 'test@test.com',
+      first_name: 'John',
+      last_name: 'Doe',
+    })
+  }),
+
+  http.post(`${API_URL}/auth/login`, () => {
+    return HttpResponse.json({
+      message: 'Successfully logged in',
+    })
+  }),
+
+  http.post(`${API_URL}/auth/signup`, async () => {
+    return HttpResponse.json({
+      id: '1',
+      email: 'john@test.com',
+    })
+  }),
+
+  http.post(`${API_URL}/auth/logout`, () => {
+    return new HttpResponse(null, {
+      status: 200,
+    })
+  }),
 ]

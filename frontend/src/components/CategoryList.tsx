@@ -27,6 +27,8 @@ import { Input } from './ui/input'
 import { toast } from 'sonner'
 import { RadioGroup, RadioGroupItem } from './ui/radio-group'
 import { getCategoriesStatus } from '@/helpers'
+import { getErrorMessage } from '@/helpers'
+
 interface CategoryListProps {
   container?: HTMLElement | null
   onFocus: () => void
@@ -97,7 +99,7 @@ export function CategoryList({
       },
       {
         onError: (e) => {
-          toast.error(e?.message ?? 'Something went wrong 🥲')
+          toast.error(getErrorMessage(e))
         },
         onSuccess: (category: Category) => {
           toast.success(`Category ${category.name} created successfully!`)

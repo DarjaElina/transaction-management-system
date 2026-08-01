@@ -4,6 +4,7 @@ from sqlmodel import Field, SQLModel, Column, Enum, Relationship
 from sqlalchemy import DateTime
 from app.core.enums import TransactionType
 from app.models.category import Category
+from app.models.user import User
 import uuid
 
 
@@ -16,11 +17,13 @@ class TransactionBase(SQLModel):
     transaction_type: TransactionType = Field(
         sa_column=Column(Enum(TransactionType), nullable=False)
     )
-    category_id: uuid.UUID | None = Field(default=None, foreign_key="categories.id")
+    category_id: uuid.UUID = Field(foreign_key="categories.id", nullable=False)
 
     __tablename__: str = "transactions"  # type: ignore
 
 
 class Transaction(TransactionBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    user_id: uuid.UUID = Field(foreign_key="users.id", nullable=False)
     category: Category = Relationship(back_populates="transactions")
+    user: User = Relationship(back_populates="transactions")

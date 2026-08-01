@@ -1,23 +1,26 @@
+import uuid
+import pytest
+
 from datetime import datetime, UTC
 from decimal import Decimal
-import uuid
-
 from fastapi.testclient import TestClient
-import pytest
+from sqlmodel import Session
 
 from app.models.transaction import Transaction
 from app.models.category import Category
+from app.models.user import User
 from app.core.enums import TransactionType
 
 
 @pytest.fixture
-def category(session):
+def category(session: Session, user: User):
     category = Category(
         id=uuid.uuid4(),
         name="Software Licenses",
         description="Test category",
         allowed_type=TransactionType.EXPENSE,
         is_active=True,
+        user_id=user.id,
     )
     session.add(category)
     session.commit()
@@ -26,9 +29,7 @@ def category(session):
 
 
 def test_income_expense_overview_respects_user_timezone(
-    client: TestClient,
-    session,
-    category: Category,
+    client: TestClient, session: Session, category: Category, user: User
 ):
     transaction = Transaction(
         id=uuid.uuid4(),
@@ -37,6 +38,7 @@ def test_income_expense_overview_respects_user_timezone(
         amount=Decimal("10.50"),
         transaction_type=TransactionType.EXPENSE,
         category_id=category.id,
+        user_id=user.id,
     )
 
     session.add(transaction)
@@ -63,9 +65,7 @@ def test_income_expense_overview_respects_user_timezone(
 
 
 def test_income_expense_overview_respects_new_york_timezone(
-    client: TestClient,
-    session,
-    category: Category,
+    client: TestClient, session: Session, category: Category, user: User
 ):
     transaction = Transaction(
         id=uuid.uuid4(),
@@ -74,6 +74,7 @@ def test_income_expense_overview_respects_new_york_timezone(
         amount=Decimal("15.00"),
         transaction_type=TransactionType.EXPENSE,
         category_id=category.id,
+        user_id=user.id,
     )
 
     session.add(transaction)
@@ -99,9 +100,7 @@ def test_income_expense_overview_respects_new_york_timezone(
 
 
 def test_income_expense_overview_respects_tokyo_timezone(
-    client: TestClient,
-    session,
-    category: Category,
+    client: TestClient, session: Session, category: Category, user: User
 ):
     transaction = Transaction(
         id=uuid.uuid4(),
@@ -110,6 +109,7 @@ def test_income_expense_overview_respects_tokyo_timezone(
         amount=Decimal("20.00"),
         transaction_type=TransactionType.EXPENSE,
         category_id=category.id,
+        user_id=user.id,
     )
 
     session.add(transaction)
@@ -135,9 +135,7 @@ def test_income_expense_overview_respects_tokyo_timezone(
 
 
 def test_income_expense_overview_groups_transactions_by_day(
-    client: TestClient,
-    session,
-    category: Category,
+    client: TestClient, session: Session, category: Category, user: User
 ):
     transactions = [
         Transaction(
@@ -147,6 +145,7 @@ def test_income_expense_overview_groups_transactions_by_day(
             amount=Decimal("10.00"),
             transaction_type=TransactionType.EXPENSE,
             category_id=category.id,
+            user_id=user.id,
         ),
         Transaction(
             id=uuid.uuid4(),
@@ -155,6 +154,7 @@ def test_income_expense_overview_groups_transactions_by_day(
             amount=Decimal("25.00"),
             transaction_type=TransactionType.EXPENSE,
             category_id=category.id,
+            user_id=user.id,
         ),
     ]
 
@@ -179,9 +179,7 @@ def test_income_expense_overview_groups_transactions_by_day(
 
 
 def test_income_expense_overview_returns_income_and_expense(
-    client: TestClient,
-    session,
-    category: Category,
+    client: TestClient, session: Session, category: Category, user: User
 ):
     session.add_all(
         [
@@ -192,6 +190,7 @@ def test_income_expense_overview_returns_income_and_expense(
                 amount=Decimal("1000.00"),
                 transaction_type=TransactionType.INCOME,
                 category_id=category.id,
+                user_id=user.id,
             ),
             Transaction(
                 id=uuid.uuid4(),
@@ -200,6 +199,7 @@ def test_income_expense_overview_returns_income_and_expense(
                 amount=Decimal("5.00"),
                 transaction_type=TransactionType.EXPENSE,
                 category_id=category.id,
+                user_id=user.id,
             ),
         ]
     )
@@ -249,9 +249,7 @@ def test_income_expense_overview_returns_empty_periods(
 
 
 def test_income_expense_overview_puts_transaction_into_users_local_day(
-    client: TestClient,
-    session,
-    category: Category,
+    client: TestClient, session: Session, category: Category, user: User
 ):
     transaction = Transaction(
         id=uuid.uuid4(),
@@ -260,6 +258,7 @@ def test_income_expense_overview_puts_transaction_into_users_local_day(
         amount=Decimal("12.00"),
         transaction_type=TransactionType.EXPENSE,
         category_id=category.id,
+        user_id=user.id,
     )
 
     session.add(transaction)
@@ -285,9 +284,7 @@ def test_income_expense_overview_puts_transaction_into_users_local_day(
 
 
 def test_income_expense_overview_respects_negative_timezone_offset(
-    client: TestClient,
-    session,
-    category: Category,
+    client: TestClient, session: Session, category: Category, user: User
 ):
     transaction = Transaction(
         id=uuid.uuid4(),
@@ -296,6 +293,7 @@ def test_income_expense_overview_respects_negative_timezone_offset(
         amount=Decimal("20.00"),
         transaction_type=TransactionType.EXPENSE,
         category_id=category.id,
+        user_id=user.id,
     )
 
     session.add(transaction)
@@ -319,9 +317,7 @@ def test_income_expense_overview_respects_negative_timezone_offset(
 
 
 def test_income_expense_filter_uses_utc_range_but_groups_by_local_time(
-    client: TestClient,
-    session,
-    category: Category,
+    client: TestClient, session: Session, category: Category, user: User
 ):
     transaction = Transaction(
         id=uuid.uuid4(),
@@ -330,6 +326,7 @@ def test_income_expense_filter_uses_utc_range_but_groups_by_local_time(
         amount=Decimal("30.00"),
         transaction_type=TransactionType.EXPENSE,
         category_id=category.id,
+        user_id=user.id,
     )
 
     session.add(transaction)
@@ -353,9 +350,7 @@ def test_income_expense_filter_uses_utc_range_but_groups_by_local_time(
 
 
 def test_income_expense_overview_excludes_transaction_outside_utc_range(
-    client: TestClient,
-    session,
-    category: Category,
+    client: TestClient, session: Session, category: Category, user: User
 ):
     transaction = Transaction(
         id=uuid.uuid4(),
@@ -364,6 +359,7 @@ def test_income_expense_overview_excludes_transaction_outside_utc_range(
         amount=Decimal("50.00"),
         transaction_type=TransactionType.EXPENSE,
         category_id=category.id,
+        user_id=user.id,
     )
 
     session.add(transaction)
@@ -385,9 +381,7 @@ def test_income_expense_overview_excludes_transaction_outside_utc_range(
 
 
 def test_spending_by_category_returns_category_totals(
-    client: TestClient,
-    session,
-    category: Category,
+    client: TestClient, session: Session, category: Category, user: User
 ):
     session.add_all(
         [
@@ -398,6 +392,7 @@ def test_spending_by_category_returns_category_totals(
                 amount=Decimal("10.00"),
                 transaction_type=TransactionType.EXPENSE,
                 category_id=category.id,
+                user_id=user.id,
             ),
             Transaction(
                 id=uuid.uuid4(),
@@ -406,6 +401,7 @@ def test_spending_by_category_returns_category_totals(
                 amount=Decimal("20.00"),
                 transaction_type=TransactionType.EXPENSE,
                 category_id=category.id,
+                user_id=user.id,
             ),
         ]
     )
@@ -430,9 +426,7 @@ def test_spending_by_category_returns_category_totals(
 
 
 def test_spending_by_category_ignores_income_transactions(
-    client: TestClient,
-    session,
-    category: Category,
+    client: TestClient, session: Session, category: Category, user: User
 ):
     session.add_all(
         [
@@ -443,6 +437,7 @@ def test_spending_by_category_ignores_income_transactions(
                 amount=Decimal("10.00"),
                 transaction_type=TransactionType.EXPENSE,
                 category_id=category.id,
+                user_id=user.id,
             ),
             Transaction(
                 id=uuid.uuid4(),
@@ -451,6 +446,7 @@ def test_spending_by_category_ignores_income_transactions(
                 amount=Decimal("1000.00"),
                 transaction_type=TransactionType.INCOME,
                 category_id=category.id,
+                user_id=user.id,
             ),
         ]
     )
@@ -472,9 +468,7 @@ def test_spending_by_category_ignores_income_transactions(
 
 
 def test_spending_by_category_ignores_transactions_outside_period(
-    client: TestClient,
-    session,
-    category: Category,
+    client: TestClient, session: Session, category: Category, user: User
 ):
     session.add_all(
         [
@@ -485,6 +479,7 @@ def test_spending_by_category_ignores_transactions_outside_period(
                 amount=Decimal("100.00"),
                 transaction_type=TransactionType.EXPENSE,
                 category_id=category.id,
+                user_id=user.id,
             ),
             Transaction(
                 id=uuid.uuid4(),
@@ -493,6 +488,7 @@ def test_spending_by_category_ignores_transactions_outside_period(
                 amount=Decimal("20.00"),
                 transaction_type=TransactionType.EXPENSE,
                 category_id=category.id,
+                user_id=user.id,
             ),
         ]
     )
@@ -529,7 +525,7 @@ def test_spending_by_category_returns_empty_list_when_no_expenses(
 
 
 def test_financial_summary_endpoint(
-    client,
+    client: TestClient,
 ):
     response = client.get(
         "/api/statistics/financial-summary",
@@ -544,3 +540,150 @@ def test_financial_summary_endpoint(
     assert "expense" in data
     assert "cash_flow" in data
     assert "savings_rate" in data
+
+
+def test_income_expense_overview_ignores_other_users_transactions(
+    client: TestClient,
+    session: Session,
+    category: Category,
+    user: User,
+    create_user,
+):
+    another_user = create_user("user1@test.com")
+
+    session.add_all(
+        [
+            Transaction(
+                id=uuid.uuid4(),
+                date=datetime(2026, 7, 7, 12, tzinfo=UTC),
+                description="Mine",
+                amount=Decimal("10.00"),
+                transaction_type=TransactionType.EXPENSE,
+                category_id=category.id,
+                user_id=user.id,
+            ),
+            Transaction(
+                id=uuid.uuid4(),
+                date=datetime(2026, 7, 7, 12, tzinfo=UTC),
+                description="Not mine",
+                amount=Decimal("999.00"),
+                transaction_type=TransactionType.EXPENSE,
+                category_id=category.id,
+                user_id=another_user.id,
+            ),
+        ]
+    )
+
+    session.commit()
+
+    response = client.get(
+        "/api/statistics/income-expense",
+        params={
+            "start": "2026-07-01T00:00:00Z",
+            "end": "2026-07-10T23:59:59Z",
+            "period": "day",
+            "user_timezone": "UTC",
+        },
+    )
+
+    data = response.json()
+
+    july_7 = next(item for item in data if item["label"].startswith("2026-07-07"))
+
+    assert Decimal(july_7["expense"]) == Decimal("10.00")
+
+
+def test_spending_by_category_ignores_other_users_transactions(
+    client: TestClient,
+    session: Session,
+    category: Category,
+    user: User,
+    create_user,
+):
+    another_user = create_user("user1@test.com")
+
+    session.add_all(
+        [
+            Transaction(
+                id=uuid.uuid4(),
+                date=datetime(2026, 7, 5, tzinfo=UTC),
+                description="Mine",
+                amount=Decimal("15.00"),
+                transaction_type=TransactionType.EXPENSE,
+                category_id=category.id,
+                user_id=user.id,
+            ),
+            Transaction(
+                id=uuid.uuid4(),
+                date=datetime(2026, 7, 5, tzinfo=UTC),
+                description="Other",
+                amount=Decimal("500.00"),
+                transaction_type=TransactionType.EXPENSE,
+                category_id=category.id,
+                user_id=another_user.id,
+            ),
+        ]
+    )
+
+    session.commit()
+
+    response = client.get(
+        "/api/statistics/spending-by-category",
+        params={
+            "start": "2026-07-01T00:00:00Z",
+            "end": "2026-07-31T23:59:59Z",
+        },
+    )
+
+    data = response.json()
+
+    assert len(data) == 1
+    assert Decimal(data[0]["amount"]) == Decimal("15.00")
+
+
+def test_financial_summary_ignores_other_users_transactions(
+    client: TestClient,
+    session: Session,
+    category: Category,
+    user: User,
+    create_user,
+):
+    another_user = create_user("user1@test.com")
+
+    session.add_all(
+        [
+            Transaction(
+                id=uuid.uuid4(),
+                date=datetime.now(UTC),
+                description="Mine",
+                amount=Decimal("100.00"),
+                transaction_type=TransactionType.INCOME,
+                category_id=category.id,
+                user_id=user.id,
+            ),
+            Transaction(
+                id=uuid.uuid4(),
+                date=datetime.now(UTC),
+                description="Other",
+                amount=Decimal("99999.00"),
+                transaction_type=TransactionType.INCOME,
+                category_id=category.id,
+                user_id=another_user.id,
+            ),
+        ]
+    )
+
+    session.commit()
+
+    response = client.get(
+        "/api/statistics/financial-summary",
+        params={
+            "user_timezone": "UTC",
+        },
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert "income" in data

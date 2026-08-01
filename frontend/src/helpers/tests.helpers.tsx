@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, type RenderOptions } from '@testing-library/react'
+import { MemoryRouter } from 'react-router'
 import { Toaster } from 'sonner'
 
 export const renderWithProviders = (
@@ -19,7 +20,7 @@ export const renderWithProviders = (
 
   return render(
     <QueryClientProvider client={queryClient}>
-      {ui}
+      <MemoryRouter>{ui}</MemoryRouter>
       <Toaster />
     </QueryClientProvider>,
     options,

@@ -1,8 +1,9 @@
 import uuid
 
+from sqlmodel import Session, select
+
 from app.models.transaction import Transaction
 from app.schemas.transactions import TransactionCreate
-from app.db.database import SessionDep
 from app.exceptions import NotFoundError, ValidationError
 from app.core.enums import TransactionType
 from app.services.utils import (
@@ -16,9 +17,12 @@ from app.services.utils import (
 from datetime import datetime, UTC
 from decimal import Decimal
 
+from app.models.user import User
+
 
 def get_transactions(
-    session: SessionDep,
+    session: Session,
+    user: User,
     category_id: uuid.UUID | None,
     transaction_type: TransactionType | None,
     description: str | None,
@@ -29,6 +33,7 @@ def get_transactions(
     sort_by: str,
     order: str,
 ):
+    query = select(Transaction).where(Transaction.user_id == user.id)
     query = apply_sorting(Transaction, sort_by, order)
 
     query = filter_equal(query, Transaction.category_id, category_id)
@@ -42,8 +47,11 @@ def get_transactions(
     return session.exec(query).all()
 
 
-def get_transaction(session: SessionDep, transaction_id):
-    transaction = session.get(Transaction, transaction_id)
+def get_transaction(session: Session, transaction_id, user: User):
+    stmt = select(Transaction).where(
+        Transaction.user_id == user.id, Transaction.id == transaction_id
+    )
+    transaction = session.exec(stmt).first()
 
     if not transaction:
         raise NotFoundError("Transaction", transaction_id)
@@ -51,23 +59,30 @@ def get_transaction(session: SessionDep, transaction_id):
     return transaction
 
 
-def create_transaction(transaction: TransactionCreate, session: SessionDep):
+def create_transaction(transaction: TransactionCreate, session: Session, user: User):
     validate_category_for_transaction(
-        transaction.category_id, transaction.transaction_type, session
+        transaction.category_id, transaction.transaction_type, session, user
     )
 
     if transaction.date >= datetime.now(UTC):
         raise ValidationError("date", "Transaction date must be in the past")
 
-    db_transaction = Transaction.model_validate(transaction)
+    db_transaction = Transaction.model_validate(
+        transaction, update={"user_id": user.id}
+    )
+
     session.add(db_transaction)
     session.commit()
     session.refresh(db_transaction)
+
     return db_transaction
 
 
-def delete_transaction(session: SessionDep, transaction_id):
-    transaction = session.get(Transaction, transaction_id)
+def delete_transaction(session: Session, transaction_id, user: User):
+    stmt = select(Transaction).where(
+        Transaction.user_id == user.id, Transaction.id == transaction_id
+    )
+    transaction = session.exec(stmt).first()
 
     if not transaction:
         raise NotFoundError("Transaction", transaction_id)
@@ -76,8 +91,11 @@ def delete_transaction(session: SessionDep, transaction_id):
     session.commit()
 
 
-def update_transaction(session: SessionDep, transaction, transaction_id):
-    transaction_db = session.get(Transaction, transaction_id)
+def update_transaction(session: Session, transaction, transaction_id, user: User):
+    stmt = select(Transaction).where(
+        Transaction.user_id == user.id, Transaction.id == transaction_id
+    )
+    transaction_db = session.exec(stmt).first()
 
     if not transaction_db:
         raise NotFoundError("Transaction", transaction_id)
@@ -88,7 +106,9 @@ def update_transaction(session: SessionDep, transaction, transaction_id):
             if transaction.transaction_type is not None
             else transaction_db.transaction_type
         )
-        validate_category_for_transaction(transaction.category_id, new_type, session)
+        validate_category_for_transaction(
+            transaction.category_id, new_type, session, user
+        )
 
     if transaction.date:
         if transaction.date >= datetime.now(UTC):
@@ -96,7 +116,9 @@ def update_transaction(session: SessionDep, transaction, transaction_id):
 
     transaction_data = transaction.model_dump(exclude_unset=True)
     transaction_db.sqlmodel_update(transaction_data)
+
     session.add(transaction_db)
     session.commit()
     session.refresh(transaction_db)
+
     return transaction_db

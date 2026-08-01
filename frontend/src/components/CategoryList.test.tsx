@@ -135,8 +135,6 @@ describe('TransactionDialog', () => {
       await screen.findByRole('button', { name: /save changes/i }),
     )
 
-    expect(
-      await screen.findByText(/request failed with status code 500/i),
-    ).toBeInTheDocument()
+    expect(await screen.findByText(/something went wrong/i)).toBeInTheDocument()
   })
 })

@@ -11,15 +11,38 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:latest
+    ports:
+        - '6379:6379'
+    command: >
+      redis-server
+      --appendonly yes
+      --requirepass mysecretpassword
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "mysecretpassword", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   backend:
     build: ./backend
     ports:
         - 8000:8000
     environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: mysecretpassword
       DATABASE_URL: postgresql://postgres:mysecretpassword@postgres:5432/postgres
       ENVIRONMENT: test
+      JWT_ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: 15
+      REFRESH_TOKEN_EXPIRE_DAYS: 30
+      SECRET_KEY: test-secret-key
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]

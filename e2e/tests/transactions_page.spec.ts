@@ -1,15 +1,17 @@
 import { test, expect } from '@playwright/test'
-import { resetDb } from '../helpers/resetDb'
 import {
   createCategory,
   createTransaction,
   openTransactionDialog,
 } from '../helpers/ui'
+import { resetEnvironment } from '../helpers/reset'
+import { signup } from '../helpers/auth'
 
 test.describe('Transactions page', () => {
   test.beforeEach(async ({ page }) => {
-    await resetDb()
+    await resetEnvironment()
     await page.goto('/')
+    await signup(page)
   })
 
   test('user can create income category', async ({ page }) => {

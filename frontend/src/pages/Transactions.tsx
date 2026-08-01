@@ -1,26 +1,32 @@
+import { getTransactons } from '@/api/transactions'
 import { TransactionRowSkeleton } from '@/components/TransactionRowSkeleton'
 import { columns } from '@/components/TransactionsTable/Columns'
 import { TransactionsTable } from '@/components/TransactionsTable/TransactionsTable'
-import type { Transaction } from '@/types/transactions.types'
+import { mapTransactions } from '@/helpers'
+import { useQuery } from '@tanstack/react-query'
+import { getErrorMessage } from '@/helpers'
 
-interface TransactionsProps {
-  transactions: Transaction[]
-  loading: boolean
-  error: Error | null
-}
+function Transactions() {
+  const result = useQuery({
+    queryKey: ['transactions'],
+    queryFn: getTransactons,
+  })
 
-function Transactions({ transactions, error, loading }: TransactionsProps) {
-  console.log('TRANSACTIONS ARE', transactions)
+  const transactions = result.data ?? []
+  const mappedTransactions = mapTransactions(transactions)
+
   return (
     <div>
       <div className="mb-8 flex">
-        <h1 className="text-3xl font-semibold">Transactions</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Transactions</h1>
       </div>
 
       <div className="bg-background rounded-xl border p-6">
-        {error && <p className="text-rose-500">Something went wrong 😿</p>}
+        {result.error && (
+          <p className="text-rose-500">{getErrorMessage(result.error)}</p>
+        )}
 
-        {loading && (
+        {result.isLoading && (
           <div className="space-y-2">
             {Array.from({ length: 5 }).map((_, i) => (
               <TransactionRowSkeleton key={i} />
@@ -28,8 +34,8 @@ function Transactions({ transactions, error, loading }: TransactionsProps) {
           </div>
         )}
 
-        {!loading && !error && (
-          <TransactionsTable columns={columns} data={transactions} />
+        {!result.isLoading && !result.error && (
+          <TransactionsTable columns={columns} data={mappedTransactions} />
         )}
       </div>
     </div>
