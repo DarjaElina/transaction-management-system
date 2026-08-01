@@ -1,6 +1,7 @@
 import { deleteTransaction } from '@/api/transactions'
 import type { Transaction } from '@/types/transactions.types'
 import { useQueryClient, useMutation } from '@tanstack/react-query'
+import { toast } from 'sonner'
 
 export const useDeleteTransaction = () => {
   const queryClient = useQueryClient()
@@ -22,8 +23,13 @@ export const useDeleteTransaction = () => {
       }
     },
 
+    onSuccess: () => {
+      toast.success('Transaction deleted successfully 🗑️')
+    },
+
     onError: (_, __, context) => {
       queryClient.setQueryData(['transactions'], context?.previousTransactions)
+      toast.error('Failed to delete 🥲')
     },
   })
 }

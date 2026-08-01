@@ -1,7 +1,7 @@
 import { Navigate, Outlet, useNavigate } from 'react-router'
 import { Spinner } from '@/components/ui/spinner'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
-import ProtectedHeader from './ProtectedHeader'
+import ProtectedHeader from './ProtectedHeader/ProtectedHeader'
 import { useLogout } from '@/hooks/useLogout'
 import { getErrorMessage } from '@/helpers'
 

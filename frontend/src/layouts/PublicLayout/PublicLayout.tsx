@@ -1,5 +1,5 @@
 import { Outlet } from 'react-router'
-import PublicHeader from './PublicHeader'
+import PublicHeader from './PublicHeader/PublicHeader'
 
 function PublicLayout() {
   return (

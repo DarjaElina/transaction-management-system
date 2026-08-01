@@ -25,15 +25,7 @@ function TransactionActions({ transaction }: { transaction: Transaction }) {
       toast.warning('Are you sure you want to delete this transaction?', {
         action: {
           label: 'Delete',
-          onClick: () =>
-            mutate(transaction.id, {
-              onSuccess: () => {
-                toast.success('Transaction deleted successfully 🗑️')
-              },
-              onError: () => {
-                toast.error('Failed to delete 🥲')
-              },
-            }),
+          onClick: () => mutate(transaction.id, {}),
         },
         cancel: {
           label: 'Cancel',
