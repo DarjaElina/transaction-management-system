@@ -1,7 +1,6 @@
 import { NavLink } from 'react-router'
 import { Wallet } from 'lucide-react'
 
-import { Button } from '@/components/ui/button'
 import { ModeToggle } from '@/components/ModeToggle'
 
 function PublicHeader() {
@@ -23,16 +22,64 @@ function PublicHeader() {
         </NavLink>
 
         <div className="flex items-center gap-2">
-          <NavLink to="/">
-            <Button variant="ghost">Home</Button>
+          <NavLink
+            className={({ isActive }) =>
+              `
+                rounded-lg
+                px-3
+                py-2
+                text-sm
+                transition-colors
+                ${
+                  isActive
+                    ? 'bg-primary text-primary-foreground'
+                    : 'hover:bg-muted'
+                }
+                `
+            }
+            to="/"
+          >
+            Home
           </NavLink>
 
-          <NavLink to="/login">
-            <Button variant="ghost">Sign in</Button>
+          <NavLink
+            className={({ isActive }) =>
+              `
+                rounded-lg
+                px-3
+                py-2
+                text-sm
+                transition-colors
+                ${
+                  isActive
+                    ? 'bg-primary text-primary-foreground'
+                    : 'hover:bg-muted'
+                }
+                `
+            }
+            to="/login"
+          >
+            Sign in
           </NavLink>
 
-          <NavLink to="/signup">
-            <Button>Create account</Button>
+          <NavLink
+            className={({ isActive }) =>
+              `
+                rounded-lg
+                px-3
+                py-2
+                text-sm
+                transition-colors
+                ${
+                  isActive
+                    ? 'bg-primary text-primary-foreground'
+                    : 'hover:bg-muted'
+                }
+                `
+            }
+            to="/signup"
+          >
+            Create account
           </NavLink>
 
           <ModeToggle />

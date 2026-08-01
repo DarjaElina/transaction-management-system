@@ -1,26 +1,27 @@
 import { Navigate, Outlet, useNavigate } from 'react-router'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Spinner } from '@/components/ui/spinner'
-import { logout } from '@/api/auth'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 import ProtectedHeader from './ProtectedHeader'
+import { useLogout } from '@/hooks/useLogout'
+import { getErrorMessage } from '@/helpers'
 
 function ProtectedLayout() {
   const { data: user, isLoading, error } = useCurrentUser()
 
-  const queryClient = useQueryClient()
   const navigate = useNavigate()
 
-  const { mutate: logoutUser } = useMutation({
-    mutationFn: logout,
-    onSuccess: () => {
-      queryClient.removeQueries({
-        queryKey: ['current-user'],
-      })
+  const { mutate } = useLogout()
 
-      navigate('/login')
-    },
-  })
+  const logoutUser = () => {
+    mutate(undefined, {
+      onSuccess: () => {
+        navigate('/')
+      },
+      onError: (error) => {
+        getErrorMessage(error)
+      },
+    })
+  }
 
   if (isLoading) {
     return (

@@ -1,5 +1,4 @@
 import type { Transaction } from '@/types/transactions.types'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,50 +9,31 @@ import {
 } from '../ui/dropdown-menu'
 import { MoreHorizontal } from 'lucide-react'
 import { Button } from '../ui/button'
-import { deleteTransaction } from '@/api/transactions'
 import { toast } from 'sonner'
 import { TransactionDialog } from '../TransactionDialog'
 import { useState } from 'react'
+import { useDeleteTransaction } from '@/hooks/useDeleteTransaction'
 
 function TransactionActions({ transaction }: { transaction: Transaction }) {
-  const queryClient = useQueryClient()
   const [open, setOpen] = useState(false)
   const [dialogOpen, setDialogOpen] = useState(false)
 
-  const { isPending, mutate } = useMutation({
-    mutationFn: deleteTransaction,
+  const { mutate, isPending } = useDeleteTransaction()
 
-    onMutate: async (transactionId: string) => {
-      const previousTransaction = queryClient.getQueryData<Transaction[]>([
-        'transactions',
-      ])
-
-      queryClient.setQueryData(
-        ['transactions'],
-        (oldTransactions: Transaction[] = []) =>
-          oldTransactions.filter((t) => t.id !== transactionId),
-      )
-
-      return { previousTransaction }
-    },
-
-    onError: (_, __, context) => {
-      queryClient.setQueryData(['transactions'], context?.previousTransaction)
-
-      toast.error('Failed to delete 🥲')
-    },
-
-    onSuccess: () => {
-      toast.success('Transaction deleted successfully 🗑️')
-    },
-  })
-
-  const handleDelete = (transactionId: string) => {
+  const handleDelete = () => {
     try {
       toast.warning('Are you sure you want to delete this transaction?', {
         action: {
           label: 'Delete',
-          onClick: () => mutate(transactionId),
+          onClick: () =>
+            mutate(transaction.id, {
+              onSuccess: () => {
+                toast.success('Transaction deleted successfully 🗑️')
+              },
+              onError: () => {
+                toast.error('Failed to delete 🥲')
+              },
+            }),
         },
         cancel: {
           label: 'Cancel',
@@ -106,7 +86,7 @@ function TransactionActions({ transaction }: { transaction: Transaction }) {
           <DropdownMenuItem
             variant="destructive"
             disabled={isPending}
-            onSelect={() => handleDelete(transaction.id)}
+            onSelect={() => handleDelete()}
           >
             Delete
           </DropdownMenuItem>

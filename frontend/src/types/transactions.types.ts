@@ -1,11 +1,15 @@
 import type { createTransactionSchema } from '@/schemas/transactions'
 import * as z from 'zod'
 
+export const transactionTypes = ['income', 'expense'] as const
+
+export type TransactionType = (typeof transactionTypes)[number]
+
 export interface Transaction {
   id: string
   date: Date
   description: string
-  transaction_type: 'income' | 'expense'
+  transaction_type: TransactionType
   amount: number
   category: {
     id: string

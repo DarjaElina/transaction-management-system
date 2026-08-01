@@ -1,7 +1,6 @@
 import { Link, useNavigate } from 'react-router'
 import { useForm } from '@tanstack/react-form'
 import { Wallet } from 'lucide-react'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -12,28 +11,18 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
 
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from '@/components/ui/field'
+import { FieldGroup } from '@/components/ui/field'
 
 import { loginSchema } from '@/schemas/auth'
-import { login } from '@/api/auth'
-import { toast } from 'sonner'
+import { useLogin } from '@/hooks/useLogin'
 import { getErrorMessage } from '@/helpers'
+import { toast } from 'sonner'
+import { FormInputField } from '../form/FormField'
 
 function LoginForm() {
-  const queryClient = useQueryClient()
-
+  const { mutate, isPending } = useLogin()
   const navigate = useNavigate()
-
-  const { isPending, mutate } = useMutation({
-    mutationFn: login,
-  })
 
   const form = useForm({
     defaultValues: {
@@ -52,14 +41,12 @@ function LoginForm() {
           password: value.password,
         },
         {
-          onError: (e) => {
-            toast.error(getErrorMessage(e))
-          },
           onSuccess: () => {
-            queryClient.invalidateQueries({
-              queryKey: ['current-user'],
-            })
             navigate('/transactions')
+          },
+
+          onError: (error) => {
+            toast.error(getErrorMessage(error))
           },
         },
       )
@@ -92,54 +79,28 @@ function LoginForm() {
           <FieldGroup>
             <form.Field
               name="email"
-              children={(field) => {
-                const invalid =
-                  field.state.meta.isTouched && !field.state.meta.isValid
-
-                return (
-                  <Field data-invalid={invalid}>
-                    <FieldLabel htmlFor={field.name}>Email</FieldLabel>
-
-                    <Input
-                      id={field.name}
-                      type="email"
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      placeholder="john@example.com"
-                      autoComplete="email"
-                    />
-
-                    {invalid && <FieldError errors={field.state.meta.errors} />}
-                  </Field>
-                )
-              }}
+              children={(field) => (
+                <FormInputField
+                  field={field}
+                  label="Email"
+                  placeholder="john@example.com"
+                  type="email"
+                  autoComplete="email"
+                />
+              )}
             />
 
             <form.Field
               name="password"
-              children={(field) => {
-                const invalid =
-                  field.state.meta.isTouched && !field.state.meta.isValid
-
-                return (
-                  <Field data-invalid={invalid}>
-                    <FieldLabel htmlFor={field.name}>Password</FieldLabel>
-
-                    <Input
-                      id={field.name}
-                      type="password"
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      placeholder="••••••••"
-                      autoComplete="current-password"
-                    />
-
-                    {invalid && <FieldError errors={field.state.meta.errors} />}
-                  </Field>
-                )
-              }}
+              children={(field) => (
+                <FormInputField
+                  field={field}
+                  label="Password"
+                  placeholder="••••••••"
+                  autoComplete="new-password"
+                  type="password"
+                />
+              )}
             />
           </FieldGroup>
         </form>

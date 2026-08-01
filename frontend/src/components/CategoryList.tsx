@@ -1,4 +1,3 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   Combobox,
   ComboboxContent,
@@ -7,7 +6,6 @@ import {
   ComboboxList,
 } from './ui/combobox'
 import { useState } from 'react'
-import { createCategory, getCategories } from '@/api/categories'
 import useDebounce from '@/hooks/useDebounce'
 import { PlusIcon } from 'lucide-react'
 import type { Category } from '@/types/categories.types'
@@ -28,6 +26,9 @@ import { toast } from 'sonner'
 import { RadioGroup, RadioGroupItem } from './ui/radio-group'
 import { getCategoriesStatus } from '@/helpers'
 import { getErrorMessage } from '@/helpers'
+import { useCategories } from '@/hooks/useCategories'
+import { useCreateCategory } from '@/hooks/useCreateCategory'
+import type { TransactionType } from '@/types/transactions.types'
 
 interface CategoryListProps {
   container?: HTMLElement | null
@@ -45,31 +46,12 @@ export function CategoryList({
   const [searchTerm, setSearchTerm] = useState('')
   const debouncedSearchTerm = useDebounce(searchTerm, 300)
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [allowedType, setAllowedType] = useState('income')
+  const [allowedType, setAllowedType] = useState<TransactionType>('income')
 
-  const queryClient = useQueryClient()
+  const { data, isError, error, isFetching } =
+    useCategories(debouncedSearchTerm)
 
-  const { data, isError, error, isFetching } = useQuery({
-    queryKey: ['categories', debouncedSearchTerm],
-    queryFn: () => getCategories({ name: debouncedSearchTerm }),
-    enabled: Boolean(debouncedSearchTerm),
-  })
-
-  const { isPending, mutate } = useMutation({
-    mutationFn: createCategory,
-    onSuccess: (newCategory) => {
-      setSelectedCategory(newCategory)
-
-      setDialogOpen(false)
-
-      queryClient.setQueryData(
-        ['categories'],
-        (oldCategories: Category[] = []) => [...oldCategories, newCategory],
-      )
-      setSearchTerm('')
-      setAllowedType('income')
-    },
-  })
+  const { mutate, isPending } = useCreateCategory()
 
   const trimmedSearchTerm = searchTerm.trim()
 
@@ -102,6 +84,11 @@ export function CategoryList({
           toast.error(getErrorMessage(e))
         },
         onSuccess: (category: Category) => {
+          setSelectedCategory(category)
+
+          setDialogOpen(false)
+          setSearchTerm('')
+          setAllowedType('income')
           toast.success(`Category ${category.name} created successfully!`)
         },
       },
@@ -205,7 +192,7 @@ export function CategoryList({
             <Field>
               <RadioGroup
                 value={allowedType}
-                onValueChange={(v) => setAllowedType(v)}
+                onValueChange={(v) => setAllowedType(v as TransactionType)}
               >
                 <div className="flex items-center gap-3">
                   <RadioGroupItem value="income" id="income" />
