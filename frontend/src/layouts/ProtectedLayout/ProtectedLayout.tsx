@@ -1,4 +1,4 @@
-import { Navigate, Outlet, useNavigate } from 'react-router'
+import { Navigate, Outlet } from 'react-router'
 import { Spinner } from '@/components/ui/spinner'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 import ProtectedHeader from './ProtectedHeader/ProtectedHeader'
@@ -8,15 +8,10 @@ import { getErrorMessage } from '@/helpers'
 function ProtectedLayout() {
   const { data: user, isLoading, error } = useCurrentUser()
 
-  const navigate = useNavigate()
-
   const { mutate } = useLogout()
 
   const logoutUser = () => {
     mutate(undefined, {
-      onSuccess: () => {
-        navigate('/')
-      },
       onError: (error) => {
         getErrorMessage(error)
       },
