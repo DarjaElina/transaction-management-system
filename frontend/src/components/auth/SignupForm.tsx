@@ -11,28 +11,18 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
 
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from '@/components/ui/field'
+import { FieldGroup } from '@/components/ui/field'
 import { signupSchema } from '@/schemas/auth'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { signup } from '@/api/auth'
+import { useSignup } from '@/hooks/useSignup'
 import { toast } from 'sonner'
 import { getErrorMessage } from '@/helpers'
+import { FormInputField } from '../form/FormField'
 
 function SignupForm() {
-  const queryClient = useQueryClient()
-
+  const { mutate, isPending } = useSignup()
   const navigate = useNavigate()
 
-  const { isPending, mutate } = useMutation({
-    mutationFn: signup,
-  })
   const form = useForm({
     defaultValues: {
       firstName: '',
@@ -53,14 +43,11 @@ function SignupForm() {
           password: value.password,
         },
         {
-          onError: (e) => {
-            toast.error(getErrorMessage(e))
-          },
           onSuccess: () => {
-            queryClient.invalidateQueries({
-              queryKey: ['current-user'],
-            })
             navigate('/transactions')
+          },
+          onError: (error) => {
+            toast.error(getErrorMessage(error))
           },
         },
       )
@@ -98,137 +85,64 @@ function SignupForm() {
             <div className="grid gap-4 sm:grid-cols-2">
               <form.Field
                 name="firstName"
-                children={(field) => {
-                  const invalid =
-                    field.state.meta.isTouched && !field.state.meta.isValid
-
-                  return (
-                    <Field data-invalid={invalid}>
-                      <FieldLabel htmlFor={field.name}>First name</FieldLabel>
-
-                      <Input
-                        id={field.name}
-                        value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(e) => field.handleChange(e.target.value)}
-                        placeholder="John"
-                        autoComplete="given-name"
-                      />
-
-                      {invalid && (
-                        <FieldError errors={field.state.meta.errors} />
-                      )}
-                    </Field>
-                  )
-                }}
+                children={(field) => (
+                  <FormInputField
+                    field={field}
+                    label="First name"
+                    placeholder="John"
+                  />
+                )}
               />
 
               <form.Field
                 name="lastName"
-                children={(field) => {
-                  const invalid =
-                    field.state.meta.isTouched && !field.state.meta.isValid
-
-                  return (
-                    <Field data-invalid={invalid}>
-                      <FieldLabel htmlFor={field.name}>Last name</FieldLabel>
-
-                      <Input
-                        id={field.name}
-                        value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(e) => field.handleChange(e.target.value)}
-                        placeholder="Doe"
-                        autoComplete="family-name"
-                      />
-
-                      {invalid && (
-                        <FieldError errors={field.state.meta.errors} />
-                      )}
-                    </Field>
-                  )
-                }}
+                children={(field) => (
+                  <FormInputField
+                    field={field}
+                    label="Last name"
+                    placeholder="Doe"
+                  />
+                )}
               />
             </div>
 
             <form.Field
               name="email"
-              children={(field) => {
-                const invalid =
-                  field.state.meta.isTouched && !field.state.meta.isValid
-
-                return (
-                  <Field data-invalid={invalid}>
-                    <FieldLabel htmlFor={field.name}>Email</FieldLabel>
-
-                    <Input
-                      id={field.name}
-                      type="email"
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      placeholder="john@example.com"
-                      autoComplete="email"
-                    />
-
-                    {invalid && <FieldError errors={field.state.meta.errors} />}
-                  </Field>
-                )
-              }}
+              children={(field) => (
+                <FormInputField
+                  field={field}
+                  label="Email"
+                  placeholder="john@example.com"
+                  type="email"
+                  autoComplete="email"
+                />
+              )}
             />
 
             <form.Field
               name="password"
-              children={(field) => {
-                const invalid =
-                  field.state.meta.isTouched && !field.state.meta.isValid
-
-                return (
-                  <Field data-invalid={invalid}>
-                    <FieldLabel htmlFor={field.name}>Password</FieldLabel>
-
-                    <Input
-                      id={field.name}
-                      type="password"
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      placeholder="••••••••"
-                      autoComplete="new-password"
-                    />
-
-                    {invalid && <FieldError errors={field.state.meta.errors} />}
-                  </Field>
-                )
-              }}
+              children={(field) => (
+                <FormInputField
+                  field={field}
+                  label="Password"
+                  placeholder="••••••••"
+                  autoComplete="new-password"
+                  type="password"
+                />
+              )}
             />
 
             <form.Field
               name="confirmPassword"
-              children={(field) => {
-                const invalid =
-                  field.state.meta.isTouched && !field.state.meta.isValid
-
-                return (
-                  <Field data-invalid={invalid}>
-                    <FieldLabel htmlFor={field.name}>
-                      Confirm password
-                    </FieldLabel>
-
-                    <Input
-                      id={field.name}
-                      type="password"
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      placeholder="••••••••"
-                      autoComplete="new-password"
-                    />
-
-                    {invalid && <FieldError errors={field.state.meta.errors} />}
-                  </Field>
-                )
-              }}
+              children={(field) => (
+                <FormInputField
+                  field={field}
+                  label="Confirm password"
+                  placeholder="••••••••"
+                  autoComplete="new-password"
+                  type="password"
+                />
+              )}
             />
           </FieldGroup>
         </form>

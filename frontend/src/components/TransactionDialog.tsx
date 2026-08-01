@@ -20,14 +20,15 @@ import { DatePicker } from './DatePicker'
 import { useForm } from '@tanstack/react-form'
 import { createTransactionSchema } from '@/schemas/transactions'
 import { toast } from 'sonner'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { createTransaction, editTransaction } from '@/api/transactions'
 import type { Transaction } from '@/types/transactions.types'
 import { useEffect, useRef, useState } from 'react'
 import { CategoryList } from './CategoryList'
 import type { Category } from '@/types/categories.types'
 import { Plus } from 'lucide-react'
 import { getErrorMessage } from '@/helpers'
+import { useCreateTransaction } from '@/hooks/useCreateTransaction'
+import { useEditTransaction } from '@/hooks/useEditTransaction'
+import { FormInputField } from './form/FormField'
 
 interface TransactionDialogProps {
   mode: 'edit' | 'create'
@@ -53,44 +54,10 @@ export function TransactionDialog({
     allowed_type: undefined,
   })
 
-  const queryClient = useQueryClient()
-  const { isPending, mutate } = useMutation({
-    mutationFn: createTransaction,
-    onSuccess: (newTransaction) => {
-      setSelectedCategory({
-        id: '',
-        name: '',
-        creatable: false,
-        allowed_type: undefined,
-      })
-      queryClient.setQueryData(
-        ['transactions'],
-        (oldTransactions: Transaction[] = []) => [
-          ...oldTransactions,
-          newTransaction,
-        ],
-      )
-    },
-  })
+  const { mutate: createTransaction, isPending } = useCreateTransaction()
 
-  const { isPending: isEditPending, mutate: mutateEdit } = useMutation({
-    mutationFn: editTransaction,
-    onSuccess: (newTransaction) => {
-      setSelectedCategory({
-        id: '',
-        name: '',
-        creatable: false,
-        allowed_type: undefined,
-      })
-      queryClient.setQueryData(
-        ['transactions'],
-        (oldTransactions: Transaction[]) =>
-          oldTransactions.map((t) =>
-            t.id === newTransaction.id ? newTransaction : t,
-          ),
-      )
-    },
-  })
+  const { mutate: editTransaction, isPending: isEditPending } =
+    useEditTransaction()
 
   const form = useForm({
     defaultValues: existing
@@ -113,7 +80,7 @@ export function TransactionDialog({
         return
       }
       if (mode === 'create') {
-        mutate(
+        createTransaction(
           {
             ...value,
             amount: Number(value.amount),
@@ -132,7 +99,7 @@ export function TransactionDialog({
           },
         )
       } else if (existing && existing.id) {
-        mutateEdit(
+        editTransaction(
           {
             ...value,
             amount: Number(value.amount),
@@ -208,58 +175,28 @@ export function TransactionDialog({
           <FieldGroup>
             <form.Field
               name="amount"
-              children={(field) => {
-                const isInvalid =
-                  field.state.meta.isTouched && !field.state.meta.isValid
-                return (
-                  <Field data-invalid={isInvalid}>
-                    <FieldLabel htmlFor={field.name}>Amount</FieldLabel>
-                    <Input
-                      autoFocus
-                      id={field.name}
-                      name={field.name}
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      aria-invalid={isInvalid}
-                      placeholder="10.50"
-                      autoComplete="off"
-                      type="number"
-                      min={0.1}
-                      step={0.01}
-                    />
-                    {isInvalid && (
-                      <FieldError errors={field.state.meta.errors} />
-                    )}
-                  </Field>
-                )
-              }}
+              children={(field) => (
+                <FormInputField
+                  field={field}
+                  label="Amount"
+                  placeholder="10.50"
+                  type="number"
+                  min={0.1}
+                  step={0.01}
+                  autoFocus
+                />
+              )}
             />
 
             <form.Field
               name="description"
-              children={(field) => {
-                const isInvalid =
-                  field.state.meta.isTouched && !field.state.meta.isValid
-                return (
-                  <Field data-invalid={isInvalid}>
-                    <FieldLabel htmlFor={field.name}>Description</FieldLabel>
-                    <Input
-                      id={field.name}
-                      name={field.name}
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      aria-invalid={isInvalid}
-                      placeholder="Example description"
-                      autoComplete="off"
-                    />
-                    {isInvalid && (
-                      <FieldError errors={field.state.meta.errors} />
-                    )}
-                  </Field>
-                )
-              }}
+              children={(field) => (
+                <FormInputField
+                  field={field}
+                  label="Description"
+                  placeholder="Example description"
+                />
+              )}
             />
 
             <CategoryList

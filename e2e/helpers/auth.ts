@@ -1,4 +1,4 @@
-import { expect, type Page } from '@playwright/test'
+import { type Page } from '@playwright/test'
 
 export const signup = async (
   page: Page,
@@ -11,7 +11,7 @@ export const signup = async (
 ) => {
   await page.goto('/')
 
-  await page.getByRole('button', { name: 'Create account' }).click()
+  await page.getByRole('link', { name: 'Create account' }).click()
 
   await page.getByRole('textbox', { name: 'First name' }).fill(firstName)
 
@@ -30,7 +30,7 @@ export const signup = async (
     })
     .fill(password)
 
-  await page.getByRole('button', { name: 'Create account' }).nth(1).click()
+  await page.getByRole('button', { name: 'Create account' }).click()
 }
 
 export const login = async (
@@ -48,5 +48,5 @@ export const login = async (
     })
     .fill(password)
 
-  await page.getByRole('button', { name: 'Sign in' }).nth(1).click()
+  await page.getByRole('button', { name: 'Sign in' }).click()
 }

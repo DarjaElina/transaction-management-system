@@ -10,9 +10,7 @@ test.describe('Auth flow', () => {
   test('user can sign up', async ({ page }) => {
     await signup(page)
 
-    await expect(
-      page.getByRole('link', { name: 'Budget Tracker Welcome back,' }),
-    ).toBeVisible()
+    await expect(page.getByText('Welcome back, Jane 🤍')).toBeVisible()
   })
 
   test('user can sign in', async ({ page }) => {
@@ -24,9 +22,7 @@ test.describe('Auth flow', () => {
 
     await login(page)
 
-    await expect(
-      page.getByRole('link', { name: 'Budget Tracker Welcome back,' }),
-    ).toBeVisible()
+    await expect(page.getByText('Welcome back, Jane 🤍')).toBeVisible()
   })
 
   test('user can logout', async ({ page }) => {
