@@ -1,0 +1,17 @@
+name: Check Branch
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  check_branch:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check branch
+        if: github.head_ref != 'dev'
+        run: |
+          echo "ERROR: Only dev can merge into main."
+          exit 1
