@@ -35,7 +35,12 @@ export function TransactionsTable<TData, TValue>({
   columns,
   data,
 }: TransactionsTableProps<TData, TValue>) {
-  const [sorting, setSorting] = useState<SortingState>([])
+  const [sorting, setSorting] = useState<SortingState>([
+    {
+      id: 'date',
+      desc: true,
+    },
+  ])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = useState({})
