@@ -91,7 +91,7 @@ The dashboard uses PostgreSQL aggregation queries to prepare data for visualizat
 ## Screenshots
 
 #### Main flow
-<img src="https://res.cloudinary.com/dy0k0hjzv/image/upload/v1785793687/transactions-gif_wwgga6.gif" alt="Create transaction flow" width="800"/>
+<img src="screenshots/flow.gif" alt="Create transaction flow" width="800"/>
 
 ---
 
