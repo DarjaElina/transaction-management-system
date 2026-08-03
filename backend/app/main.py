@@ -19,7 +19,7 @@ if settings.environment == "test":
 
     app.include_router(test.router, prefix="/api")
 
-origins = ["http://localhost:5173"]
+origins = [settings.frontend_url]
 
 app.add_middleware(
     CORSMiddleware,
