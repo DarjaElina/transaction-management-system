@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router'
 import { navLinkClass } from '@/helpers'
+import { ModeToggle } from '@/components/ModeToggle'
 
 function PublicNavMenu() {
   return (
@@ -15,6 +16,8 @@ function PublicNavMenu() {
       <NavLink to="/signup" className={navLinkClass}>
         Create account
       </NavLink>
+
+      <ModeToggle />
     </nav>
   )
 }
