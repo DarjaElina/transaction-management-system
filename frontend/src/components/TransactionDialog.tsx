@@ -28,7 +28,7 @@ import { Plus } from 'lucide-react'
 import { getErrorMessage } from '@/helpers'
 import { useCreateTransaction } from '@/hooks/useCreateTransaction'
 import { useEditTransaction } from '@/hooks/useEditTransaction'
-import { FormInputField } from './form/FormField'
+import FormInputField from './form/FormInputField'
 
 interface TransactionDialogProps {
   mode: 'edit' | 'create'
