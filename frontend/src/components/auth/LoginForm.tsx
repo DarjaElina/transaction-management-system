@@ -18,7 +18,8 @@ import { loginSchema } from '@/schemas/auth'
 import { useLogin } from '@/hooks/useLogin'
 import { getErrorMessage } from '@/helpers'
 import { toast } from 'sonner'
-import { FormInputField } from '../form/FormField'
+import FormInputField from '../form/FormInputField'
+import PasswordInputField from '../form/PasswordInputField'
 
 function LoginForm() {
   const { mutate, isPending } = useLogin()
@@ -93,12 +94,10 @@ function LoginForm() {
             <form.Field
               name="password"
               children={(field) => (
-                <FormInputField
+                <PasswordInputField
                   field={field}
                   label="Password"
                   placeholder="••••••••"
-                  autoComplete="new-password"
-                  type="password"
                 />
               )}
             />

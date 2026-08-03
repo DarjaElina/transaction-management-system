@@ -17,7 +17,8 @@ import { signupSchema } from '@/schemas/auth'
 import { useSignup } from '@/hooks/useSignup'
 import { toast } from 'sonner'
 import { getErrorMessage } from '@/helpers'
-import { FormInputField } from '../form/FormField'
+import FormInputField from '../form/FormInputField'
+import PasswordInputField from '../form/PasswordInputField'
 
 function SignupForm() {
   const { mutate, isPending } = useSignup()
@@ -122,12 +123,10 @@ function SignupForm() {
             <form.Field
               name="password"
               children={(field) => (
-                <FormInputField
+                <PasswordInputField
                   field={field}
                   label="Password"
                   placeholder="••••••••"
-                  autoComplete="new-password"
-                  type="password"
                 />
               )}
             />
@@ -135,12 +134,10 @@ function SignupForm() {
             <form.Field
               name="confirmPassword"
               children={(field) => (
-                <FormInputField
+                <PasswordInputField
                   field={field}
                   label="Confirm password"
                   placeholder="••••••••"
-                  autoComplete="new-password"
-                  type="password"
                 />
               )}
             />
