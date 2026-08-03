@@ -7,8 +7,8 @@ export const useLogin = () => {
   return useMutation({
     mutationFn: login,
 
-    onSuccess: () => {
-      queryClient.invalidateQueries({
+    onSuccess: async () => {
+      await queryClient.refetchQueries({
         queryKey: ['current-user'],
       })
     },
