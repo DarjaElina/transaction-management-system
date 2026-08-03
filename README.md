@@ -1,156 +1,266 @@
 # Transaction Management System
 
-A full-stack application for managing financial transactions.
+A full-stack transaction management application built to explore modern backend development, frontend architecture, authentication, testing, and production-oriented engineering practices.
 
-The main goal of this project is to practice building a complete application while exploring modern development practices, especially **code quality tools, testing workflows, and the Python ecosystem**.
-
-The project focuses on improving the development workflow through automated checks, static analysis, testing, and maintainable project structure.
-
+The project focuses on maintainable code structure, automated quality checks, database design, authentication flows, and building a complete development workflow from local environment to deployment.
 
 ---
 
-## Project Status
+# Tech Stack
 
-The project is currently under active development.
-
-Implemented:
-
-* CRUD functionality for transactions
-* Frontend and backend integration
-* PostgreSQL database integration
-* Containerized backend development environment with Docker
-* End-to-end testing with Playwright
-
-Currently working on:
-
-* Building a dashboard for transaction analytics
-* Writing aggregation queries for statistics and reporting
-* Improving backend test coverage
-* Expanding CI/CD workflow
-* Further improving validation and application architecture
-
----
-
-## Tech Stack
-
-### Frontend
+## Frontend
 
 * React (Vite)
 * TypeScript
+* TanStack Query
 * TanStack Table
-* TanStack Form / custom form validation
-* Playwright for end-to-end testing
+* Tailwind CSS
 
-### Backend
+## Backend
 
 * FastAPI
-* SQLModel (ORM)
+* SQLModel
 * PostgreSQL
+* Alembic migrations
+* Redis
 
-### Development & Tooling
+## Development & Quality Tools
 
 * Docker
+* GitHub Actions
+* Playwright
 * Pre-commit hooks
 * Ruff
 * Pyright
+* Pytest
+* Vitest
+* React Testing Library
 * ESLint
 * Prettier
+
+---
+
+# Features
+
+## Transaction Management
+
+* Create, read, update, and delete transactions
+* Transaction categories
+* Transaction type validation
+* Filtering and sorting
+* Form validation
+
+## Authentication
+
+Implemented authentication flow with:
+
+* JWT-based authentication
+* HTTP-only cookies
+* Refresh token rotation
+* Redis-based session management
+* Protected routes
+* Secure cookie configuration for production deployment
+
+Planned improvements:
+
+* Email verification
+* Password reset flow
+* Role-based permissions
+* Multi-factor authentication
+
+---
+
+# Dashboard & Financial Analytics
+
+The application includes a dashboard built around aggregated database queries.
+
+Implemented analytics:
+
+* Income and expense overview by time period
+* Spending breakdown by category
+* Monthly financial summaries
+* Cash flow calculation
+* Savings rate tracking
+* Month-over-month comparisons
+* Timezone-aware date aggregation
+
+The dashboard uses PostgreSQL aggregation queries to prepare data for visualization.
+
+---
+
+## Screenshots
+
+#### Main flow
+<img src="https://res.cloudinary.com/dy0k0hjzv/image/upload/v1785793687/transactions-gif_wwgga6.gif" alt="Create transaction flow" width="800"/>
+
+---
+
+#### Dashboard
+<img src="screenshots/dashboard.png" alt="Dashboard" width="600"/>
+
+---
+
+#### Spendings by category pie chart
+<img src="screenshots/category-chart.png" alt="Category pie chart" width="400"/>
+
+---
+
+
+# Testing & Code Quality
+
+The project uses automated testing and static analysis to maintain code quality.
+
+## Backend
+
 * Pytest
-* GitHub Actions
-
-## Code Quality & CI/CD
-
-This project uses automated quality checks to keep the codebase consistent and maintainable.
-
-### Pre-commit Hooks
-
-Pre-commit hooks are used to automatically run checks before commits.
-
-Configured checks include:
-
-### Backend
-
 * Ruff linting and formatting
 * Pyright static type checking
 
-### Frontend
+## Frontend
 
+* Playwright end-to-end tests
 * ESLint
-* Prettier formatting
-* TypeScript type checking
+* Prettier
+* TypeScript validation
+* Vitest
+* React Testing Library
 
-### General Checks
+## Automated Checks
 
-* YAML and TOML validation
-* Detection of large files
-* Trailing whitespace removal
-* End-of-file consistency checks
+Pre-commit hooks and GitHub Actions are used to automatically validate changes.
 
-Install pre-commit hooks:
+Configured checks include:
 
+* Code formatting
+* Static analysis
+* Type checking
+* Automated tests
+* Configuration validation
+
+---
+
+# Running Locally
+
+## Requirements
+
+* Docker
+* Python 3.12+
+* Node.js
+
+---
+
+## Backend
+
+## How to Run
+
+1. Create and activate virtual environment
+```bash
+cd backend
+
+python -m venv .venv
+
+source .venv/bin/activate
+```
+
+2. Install dependencies
+```
+pip install -r requirements.txt
+```
+
+3. Copy .env template and add environment variables
+```bash
+cp .env.example .env
+```
+
+4. Start PostgreSQL and Redis containers
+```bash
+docker compose -f docker-compose.dev.yml up -d
+```
+
+5. Run migrations
+```bash
+alembic upgrade head
+```
+
+6. Install pre-commit hooks
 ```bash
 pre-commit install
 ```
 
-Run all checks manually:
-
+7. Start development server
 ```bash
-pre-commit run --all-files
+fastapi dev app/main.py
+```
+
+
+Backend runs by default at:
+
+```
+http://localhost:8000
 ```
 
 ---
 
-## Continuous Integration
+## Frontend
 
-The project uses GitHub Actions to automatically validate changes.
+1. Install dependencies
 
-The CI pipeline includes:
+```bash
+cd frontend
 
-* Running pre-commit checks
-* Backend unit tests with pytest
-* Frontend tests
-* End-to-end testing with Playwright
-* Static type checking
+npm install
+```
 
-The workflow uses separate jobs for frontend and backend validation and runs checks only when relevant parts of the project are changed.
+2. Copy .env template and add environment variables
+```bash
+cp .env.example .env
+```
 
----
+2. Start development server
+```bash
+npm run dev
+```
 
-## Project Goals
+Frontend runs by default at:
 
-The goal of this project is to gain practical experience in developing a full-stack application and improving the overall development workflow.
-
-The main areas of focus are:
-
-* Practicing backend development with FastAPI and PostgreSQL
-* Exploring Python development tools and best practices
-* Improving code quality with automated checks and static analysis
-* Building testing workflows for frontend and backend
-* Learning how CI/CD pipelines can support development
-
+```
+http://localhost:5173
+```
 
 ---
 
-## Current Features
+# Deployment
 
-* Create, read, update, and delete financial transactions
-* Interactive transaction table built with TanStack Table
-* Backend API built with FastAPI
-* PostgreSQL database integration
-* Form validation
-* End-to-end testing with Playwright
+The application is deployed using:
+
+* Frontend: Vercel
+* Backend: Fly.io
+* Database: Supabase PostgreSQL
+* Redis: Upstash/Fly.io Redis
 
 ---
 
-## Upcoming Dashboard
+# Engineering Practices
 
-The next development stage focuses on adding a transaction analytics dashboard.
+The project follows production-oriented development practices:
 
-The purpose of this feature is to practice:
+* Database migrations with Alembic
+* Dependency injection with FastAPI
+* Automated testing workflows
+* Static analysis and formatting
+* CI/CD automation
+* Containerized development environment
 
-* Writing aggregation queries
-* Processing database statistics
-* Preparing backend data for visualization
-* Designing data-driven user interfaces
+---
 
-Planned dashboard features include transaction summaries and visual analytics based on aggregated transaction data.
+# Future Improvements
+
+Planned features:
+
+* More advanced financial analytics
+* Additional dashboard visualizations
+* Email verification
+* Role-based permissions
+* Password recovery
+* Multi-factor authentication
+* Expanded test coverage
