@@ -28,7 +28,7 @@ jobs:
   backend-test:
     needs:
       - changes
-    if : ${{ needs.changes.outputs.changed == 'true' }}
+    if: ${{ needs.changes.outputs.changed == 'true' }}
     runs-on: ubuntu-latest
 
     defaults:
