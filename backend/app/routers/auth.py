@@ -13,6 +13,8 @@ router = APIRouter(prefix="/auth")
 
 settings = get_settings()
 
+is_production = settings.environment == "production"
+
 
 @router.post("/signup", response_model=UserPublic)
 def signup(
@@ -31,8 +33,8 @@ def signup(
         key="access_token",
         value=access_token,
         httponly=True,
-        secure=True,
-        samesite="none",
+        secure=is_production,
+        samesite="none" if is_production else "lax",
         max_age=settings.access_token_expire_minutes * 60,
     )
 
@@ -40,8 +42,8 @@ def signup(
         key="refresh_token",
         value=refresh_token,
         httponly=True,
-        secure=True,
-        samesite="none",
+        secure=is_production,
+        samesite="none" if is_production else "lax",
         max_age=settings.refresh_token_expire_days * 86400,
     )
 
@@ -63,8 +65,8 @@ def login(
         key="access_token",
         value=access_token,
         httponly=True,
-        secure=True,
-        samesite="none",
+        secure=is_production,
+        samesite="none" if is_production else "lax",
         max_age=settings.access_token_expire_minutes * 60,
     )
 
@@ -72,8 +74,8 @@ def login(
         key="refresh_token",
         value=refresh_token,
         httponly=True,
-        secure=True,
-        samesite="none",
+        secure=is_production,
+        samesite="none" if is_production else "lax",
         max_age=settings.refresh_token_expire_days * 86400,
     )
 
@@ -114,8 +116,8 @@ def refresh(
         key="access_token",
         value=access_token,
         httponly=True,
-        secure=True,
-        samesite="none",
+        secure=is_production,
+        samesite="none" if is_production else "lax",
         max_age=settings.access_token_expire_minutes * 60,
     )
 
@@ -123,8 +125,8 @@ def refresh(
         key="refresh_token",
         value=new_refresh_token,
         httponly=True,
-        secure=True,
-        samesite="none",
+        secure=is_production,
+        samesite="none" if is_production else "lax",
         max_age=settings.refresh_token_expire_days * 86400,
     )
 
