@@ -16,7 +16,7 @@ import uuid
 router = APIRouter(prefix="/categories")
 
 
-@router.get("/", response_model=list[CategoryPublic])
+@router.get("", response_model=list[CategoryPublic])
 def read_categories(
     session: SessionDep,
     user: CurrentUser,
@@ -45,7 +45,7 @@ def read_category(category_id: uuid.UUID, session: SessionDep, user: CurrentUser
     return category
 
 
-@router.post("/", response_model=CategoryPublic)
+@router.post("", response_model=CategoryPublic)
 def create_category(category: CategoryCreate, session: SessionDep, user: CurrentUser):
     db_category = categories.create_category(category, session, user)
     return db_category

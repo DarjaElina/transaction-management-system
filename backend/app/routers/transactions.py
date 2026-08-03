@@ -18,7 +18,7 @@ import uuid
 router = APIRouter(prefix="/transactions")
 
 
-@router.get("/", response_model=list[TransactionPublicWithCategory])
+@router.get("", response_model=list[TransactionPublicWithCategory])
 def read_transactions(
     session: SessionDep,
     user: CurrentUser,
@@ -55,7 +55,7 @@ def read_transaction(transaction_id: uuid.UUID, session: SessionDep, user: Curre
     return transaction
 
 
-@router.post("/", response_model=TransactionPublicWithCategory)
+@router.post("", response_model=TransactionPublicWithCategory)
 def create_transaction(
     transaction: TransactionCreate, session: SessionDep, user: CurrentUser
 ):
