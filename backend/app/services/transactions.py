@@ -34,7 +34,7 @@ def get_transactions(
     order: str,
 ):
     query = select(Transaction).where(Transaction.user_id == user.id)
-    query = apply_sorting(Transaction, sort_by, order)
+    query = apply_sorting(query, Transaction, sort_by, order)
 
     query = filter_equal(query, Transaction.category_id, category_id)
     query = filter_equal(query, Transaction.transaction_type, transaction_type)
