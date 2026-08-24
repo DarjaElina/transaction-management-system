@@ -33,15 +33,13 @@ def validate_category_for_transaction(
         )
 
 
-def apply_sorting(model, sort_by, order):
-    query = select(model)
+def apply_sorting(query, model, sort_by, order):
     if order == "desc":
         ordering = desc(getattr(model, sort_by))
     else:
         ordering = asc(getattr(model, sort_by))
 
-    query = query.order_by(ordering)
-    return query
+    return query.order_by(ordering)
 
 
 def filter_equal(query, column, value):
