@@ -25,7 +25,7 @@ def get_categories(
 ):
     query = select(Category).where(Category.user_id == user.id)
 
-    query = apply_sorting(Category, sort_by, order)
+    query = apply_sorting(query, Category, sort_by, order)
 
     query = filter_ilike(query, Category.name, name)
     query = filter_equal(query, Category.is_active, is_active)
